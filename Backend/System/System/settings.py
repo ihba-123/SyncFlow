@@ -35,6 +35,7 @@ ALLOWED_HOSTS = []
 INSTALLED_APPS = [
     'channels',
     'daphne',
+    "django_extensions",
     'corsheaders',
     'rest_framework',
     'cloudinary',
@@ -48,7 +49,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'authentication',
-    'chatapp'
+    'chatapp',
+    'team',
 ]
 
 MIDDLEWARE = [
