@@ -7,12 +7,42 @@ from django.utils import timezone
 from django.core.exceptions import ValidationError
 from cloudinary.models import CloudinaryField
 
+
+
+# ===============================
+# Project Model
+# ===============================
+class Project(models.Model):
+    name = models.CharField(max_length=255)
+    description = models.TextField(blank=True, null=True)
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name="created_projects")
+    is_solo = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    chat_room = models.ForeignKey(ChatRoom, on_delete=models.SET_NULL, null=True, blank=True)
+
+    def save(self, *args, **kwargs):
+        if not self.chat_room and not self.is_solo:
+            chatroom = ChatRoom.objects.create(name=f"{self.name} Chat", is_group=True, admin=self.created_by)
+            chatroom.add_participant(self.created_by)
+            self.chat_room = chatroom
+        super().save(*args, **kwargs)  
+
+    class Meta:
+        indexes = [ 
+            models.Index(fields=['created_by'])
+        ]
+
+    def __str__(self):
+        return self.name
+    
 # ===============================
 # Invite Model
 # ===============================
 class Invite(models.Model):
-    project = models.ForeignKey('Project', on_delete=models.CASCADE, related_name="invites")
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name="invites")
     token = models.CharField(max_length=255, unique=True) 
+    invited_email = models.EmailField(blank=True, null=True)
     plain_token = models.CharField(max_length=255, unique=True)
     expires_at = models.DateTimeField()
     is_used = models.BooleanField(default=False)
@@ -42,31 +72,7 @@ class Invite(models.Model):
     def __str__(self):
         return f"Invite for {self.project.name} (Role: {self.role})"
 
-# ===============================
-# Project Model
-# ===============================
-class Project(models.Model):
-    name = models.CharField(max_length=255)
-    description = models.TextField(blank=True, null=True)
-    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name="created_projects")
-    is_solo = models.BooleanField(default=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    chat_room = models.ForeignKey(ChatRoom, on_delete=models.SET_NULL, null=True, blank=True)
 
-    def save(self, *args, **kwargs):
-        if not self.chat_room and not self.is_solo:
-            chatroom = ChatRoom.objects.create(name=f"{self.name} Chat")
-            self.chat_room = chatroom
-        super().save(*args, **kwargs)  
-
-    class Meta:
-        indexes = [ 
-            models.Index(fields=['created_by'])
-        ]
-
-    def __str__(self):
-        return self.name
 
 # ===============================
 # Project Member
@@ -177,7 +183,7 @@ class TaskAttachment(models.Model):
     def __str__(self):
         return f"{self.file_name} for {self.task.title}"
 
-# ===============================
+# =============================== 
 # Activity Log
 # ===============================
 class ActivityLog(models.Model):
