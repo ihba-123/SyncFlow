@@ -4,7 +4,7 @@ from chatapp.models import ChatRoom
 import uuid
 import hashlib
 from django.utils import timezone
-
+    
 
 
 # ===============================
@@ -124,3 +124,5 @@ class ActivityLog(models.Model):
 
     def __str__(self):
         return f"{self.action} by {self.user.email} in {self.project.name}"
+
+

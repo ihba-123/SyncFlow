@@ -16,45 +16,58 @@ class ThrottleView(UserRateThrottle):
   rate='120/hour' # 120 requests per hour per user
 
 class InviteView(APIView):
-  permission_classes = [IsAuthenticated]
-  throttle_classes = [ThrottleView]
+    permission_classes = [IsAuthenticated]
+    throttle_classes = [ThrottleView]
 
-  def post(self , request , project_id:int):
-    project = get_object_or_404(Project , id=project_id)
-    serializers = UserInviteSerializer(data=request.data)
-    print("data" , request.data)
-    if not serializers .is_valid():
-      logger.warning(f"Invite creation failed: {serializers.errors}")
-      return Response(serializers.errors, status=status.HTTP_400_BAD_REQUEST)
-      
-     
-    try:
-      invite_url,plain_token = is_invite(
-        project = project,
-        created_by = request.user,
-        role = serializers.validated_data['role'],
-        expires_days=serializers.validated_data['expires_days'],
-        invited_email=serializers.validated_data['invited_email']
-      )
-      
+    def post(self, request, project_id: int):
+        project = get_object_or_404(Project, id=project_id)
+        serializer = UserInviteSerializer(data=request.data)
 
-    except (ValidationError, PermissionError):
-      return Response({'detail': 'Error creating invite'}, status=status.HTTP_400_BAD_REQUEST)
-    
-    except Exception:
-      logger.error("Unexpected error while creating invite" , exc_info=True, stack_info=True)
-      return Response({'detail': 'Unexpected error while creating invite'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        if not serializer.is_valid():
+            logger.warning(f"Invite creation failed: {serializer.errors}")
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    return Response({
+        try:
+            invite_url, plain_token = is_invite(
+                project=project,
+                created_by=request.user,
+                role=serializer.validated_data["role"],
+                expires_days=serializer.validated_data["expires_days"],
+                invited_email=serializer.validated_data.get("invited_email")  # FIXED
+            )
+
+        except ValidationError as exc:
+            return Response(
+                {"detail": str(exc)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        except PermissionError:
+            return Response(
+                {"detail": "You do not have permission to create invites"},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        except Exception:
+            logger.error(
+                "Unexpected error while creating invite",
+                exc_info=True,
+                stack_info=True
+            )
+            return Response(
+                {"detail": "Unexpected error while creating invite"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+        return Response(
+            {
                 "message": "Invite created",
                 "token": plain_token,
                 "invite_url": invite_url,
-                "expires_days": serializers.validated_data['expires_days'],
+                "expires_days": serializer.validated_data["expires_days"],
             },
             status=status.HTTP_201_CREATED,
         )
-
-
 
 
 class UseInviteView(APIView):
