@@ -3,7 +3,7 @@ from .models import Project, ProjectMember, Invite
 
 @admin.register(Project)
 class ProjectAdmin(admin.ModelAdmin):
-  list_display = ('name', 'created_by', 'is_solo', 'created_at')
+  list_display = ('id','name', 'created_by', 'is_solo', 'created_at')
   search_fields = ('name', 'created_by__email')
 
 @admin.register(ProjectMember)

@@ -4,10 +4,9 @@ from team.models import Project
 from django.utils import timezone
 from django.core.exceptions import ValidationError
 from cloudinary.models import CloudinaryField
+from decimal import Decimal
 
 
-# Create your models here.
-# ===============================
 # Task (Kanban)
 # ===============================
 class Task(models.Model):
@@ -31,7 +30,7 @@ class Task(models.Model):
     due_date = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    order = models.PositiveBigIntegerField(default=0)
+    order = models.DecimalField(max_digits=20, decimal_places=10, default=0 , db_index=True)
     tags = models.CharField(max_length=255, blank=True, null=True)
 
     class Meta:
@@ -47,7 +46,7 @@ class Task(models.Model):
     def __str__(self):
         return f"{self.title} ({self.status})"
 
-# ===============================
+
 # Task Comment
 # ===============================
 class TaskComment(models.Model):
@@ -90,3 +89,26 @@ class TaskAttachment(models.Model):
 
     def __str__(self):
         return f"{self.file_name} for {self.task.title}"
+    
+
+
+
+
+class OfflineTaskUpdate(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    payload = models.JSONField()  
+    timestamp = models.DateTimeField(auto_now_add=True)
+    delivered = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ['timestamp']
+        unique_together = ['user', 'project', 'payload', 'timestamp']  # prevent duplicates
+        indexes = [
+            models.Index(fields=['user', 'delivered']),
+            models.Index(fields=['project', 'delivered']),
+            models.Index(fields=['user', 'project', 'delivered']),
+        ]
+
+    def __str__(self):
+        return f"Offline update for {self.user.email} in project {self.project.id}"
