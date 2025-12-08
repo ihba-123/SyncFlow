@@ -3,6 +3,9 @@
 * {
   font-family: "Inter", sans-serif;
 }
+html {
+  scroll-behavior: smooth;
+}
 
 :root {
   /* Updated color scheme for glassy, modern aesthetic with soft pastel gradients */
@@ -205,3 +208,4 @@
     @apply transition-all duration-300 hover:shadow-xl hover:scale-105;
   }
 }
+
