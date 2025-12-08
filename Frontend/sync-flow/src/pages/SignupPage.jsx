@@ -1,10 +1,10 @@
 import React from 'react';
 import Signup from '../features/auth/Signup';
-import Loader from '../components/Spinner';
+
 const SignupPage = () => {
   return (
     <div className="min-h-screen w-screen flex flex-col md:flex-row items-center justify-center bg-gradient-to-br from-white via-gray-50 to-gray-100 p-4 md:p-12">
-      <Loader />
+      
       {/* Logo Section */}
       <div className="flex flex-col items-center md:items-start md:mr-12 mb-6 md:mb-0">
         <img src="sync.png" alt="SyncFlow Logo" className="w-22 sm:w-40 md:w-52 lg:w-60" />
