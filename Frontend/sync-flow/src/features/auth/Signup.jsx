@@ -9,6 +9,17 @@ import InputAdornment from "@mui/material/InputAdornment";
 import Checkbox from "@mui/material/Checkbox";
 import FormControlLabel from "@mui/material/FormControlLabel";
 
+// Motion wrapper (defined outside so it doesn't recreate every render)
+const MotionItem = ({ children, delay = 0 }) => (
+  <motion.div
+    initial={{ opacity: 0, y: 15 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ delay: delay * 0.1, duration: 0.5, ease: "easeOut" }}
+  >
+    {children}
+  </motion.div>
+);
+
 export default function Signup() {
   const [formData, setFormData] = useState({
     name: "",
@@ -16,70 +27,57 @@ export default function Signup() {
     password: "",
     confirmPassword: "",
   });
+
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
+  // Fix input lag: simple change handler
   const handleChange = (e) => {
-    setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await new Promise((resolve) => setTimeout(resolve, 1200));
     setIsLoading(false);
   };
 
-  const motionDiv = (children, i) => (
-    <motion.div
-      custom={i}
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0, transition: { delay: i * 0.1, duration: 0.5 } }}
-    >
-      {children}
-    </motion.div>
-  );
-
   return (
-    <div className="relative w-full flex justify-center items-center ">
-      {/* Background Blobs */}
-      <motion.div
-        className="absolute w-72 h-72 sm:w-96 sm:h-96 bg-gradient-to-br from-gray-200/30 to-gray-100/30 rounded-full blur-3xl"
-        animate={{ x: [0, 50, -50, 0], y: [0, 30, -30, 0] }}
-        transition={{ duration: 8, repeat: Infinity }}
-        style={{ top: "-10%", left: "-10%" }}
-      />
-      <motion.div
-        className="absolute w-72 h-72 sm:w-96 sm:h-96 bg-gradient-to-br from-gray-300/20 to-gray-200/20 rounded-full blur-3xl"
-        animate={{ x: [0, -50, 50, 0], y: [0, -30, 30, 0] }}
-        transition={{ duration: 10, repeat: Infinity }}
-        style={{ bottom: "-10%", right: "-10%" }}
-      />
+    <div className="relative w-full">
 
+      {/* SAFE STATIC BACKGROUND (no animation to avoid reflow lag) */}
+      <div className="absolute inset-0 -z-10 pointer-events-none">
+        <div className="absolute w-72 h-72 bg-gray-200/25 rounded-full blur-3xl -top-20 -left-20"></div>
+        <div className="absolute w-72 h-72 bg-gray-300/20 rounded-full blur-3xl -bottom-20 -right-20"></div>
+      </div>
+
+      {/* Main container */}
       <motion.div
-        className="w-full max-w-md sm:max-w-lg lg:max-w-xl z-10"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } }}
+        initial={{ opacity: 0, y: 25 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        className="relative z-10 w-full max-w-md mx-auto"
       >
-        <div className="backdrop-blur-xl bg-white/80 border border-gray-200 rounded-2xl p-6 sm:p-8 shadow-2xl">
-          {/* Header */}
-          {motionDiv(
-            <div className="mb-6 sm:mb-8 text-center sm:text-left">
-              <div className="flex items-center justify-center sm:justify-start gap-3 mb-2">
-                <img src="sync.png" alt="SyncFlow Logo" className="w-12 h-12 sm:w-14 sm:h-14" />
-                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Create Account</h1>
-              </div>
-              <p className="text-gray-600 text-sm sm:text-base">
-                Sign up to start managing your projects
-              </p>
-            </div>,
-            0
-          )}
+        <div className="bg-white/90 backdrop-blur-xl border border-gray-200 rounded-2xl shadow-xl p-6 sm:p-8 lg:p-10">
+          
+          <MotionItem delay={0}>
+            <div className="text-center mb-8">
+              <h2 className="text-3xl font-bold text-gray-900">
+                Create Your Account
+              </h2>
+              <p className="mt-2 text-gray-600">Start managing projects today</p>
+            </div>
+          </MotionItem>
 
-          {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {motionDiv(
+          <form onSubmit={handleSubmit} className="space-y-5">
+            {/* Name */}
+            <MotionItem delay={1}>
               <TextField
                 fullWidth
                 label="Full Name"
@@ -90,34 +88,35 @@ export default function Signup() {
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <User size={18} className="text-gray-500" />
+                      <User size={20} className="text-gray-500" />
                     </InputAdornment>
                   ),
                 }}
-              />,
-              1
-            )}
+              />
+            </MotionItem>
 
-            {motionDiv(
+            {/* Email */}
+            <MotionItem delay={2}>
               <TextField
                 fullWidth
                 label="Email Address"
                 name="email"
+                type="email"
                 value={formData.email}
                 onChange={handleChange}
                 variant="outlined"
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <Mail size={18} className="text-gray-500" />
+                      <Mail size={20} className="text-gray-500" />
                     </InputAdornment>
                   ),
                 }}
-              />,
-              2
-            )}
+              />
+            </MotionItem>
 
-            {motionDiv(
+            {/* Password */}
+            <MotionItem delay={3}>
               <TextField
                 fullWidth
                 label="Password"
@@ -129,22 +128,22 @@ export default function Signup() {
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <Lock size={18} className="text-gray-500" />
+                      <Lock size={20} className="text-gray-500" />
                     </InputAdornment>
                   ),
                   endAdornment: (
                     <InputAdornment position="end">
-                      <IconButton edge="end" onClick={() => setShowPassword(!showPassword)}>
-                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                      <IconButton onClick={() => setShowPassword(!showPassword)}>
+                        {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                       </IconButton>
                     </InputAdornment>
                   ),
                 }}
-              />,
-              3
-            )}
+              />
+            </MotionItem>
 
-            {motionDiv(
+            {/* Confirm Password */}
+            <MotionItem delay={4}>
               <TextField
                 fullWidth
                 label="Confirm Password"
@@ -156,82 +155,98 @@ export default function Signup() {
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <Lock size={18} className="text-gray-500" />
+                      <Lock size={20} className="text-gray-500" />
                     </InputAdornment>
                   ),
                   endAdornment: (
                     <InputAdornment position="end">
-                      <IconButton edge="end" onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
-                        {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                      <IconButton
+                        onClick={() =>
+                          setShowConfirmPassword(!showConfirmPassword)
+                        }
+                      >
+                        {showConfirmPassword ? (
+                          <EyeOff size={20} />
+                        ) : (
+                          <Eye size={20} />
+                        )}
                       </IconButton>
                     </InputAdornment>
                   ),
                 }}
-              />,
-              4
-            )}
+              />
+            </MotionItem>
 
-            {motionDiv(
+            {/* Terms Checkbox */}
+            <MotionItem delay={5}>
               <FormControlLabel
-                control={<Checkbox />}
-                label="I agree to the Terms of Service and Privacy Policy"
-              />,
-              5
-            )}
+                control={<Checkbox required />}
+                label={
+                  <span className="text-sm text-gray-700">
+                    I agree to the{" "}
+                    <a href="#" className="underline">
+                      Terms
+                    </a>{" "}
+                    &{" "}
+                    <a href="#" className="underline">
+                      Privacy Policy
+                    </a>
+                  </span>
+                }
+              />
+            </MotionItem>
 
-            {motionDiv(
+            {/* Submit Button */}
+            <MotionItem delay={6}>
               <Button
                 type="submit"
                 fullWidth
                 variant="contained"
                 disabled={isLoading}
                 sx={{
-                  background: "linear-gradient(to right, #1f2937, #000)",
-                  py: "10px",
-                  borderRadius: "8px",
+                  mt: 1,
+                  py: 1.8,
+                  borderRadius: 2,
+                  textTransform: "none",
+                  fontSize: "1.05rem",
+                  fontWeight: 600,
+                  background: "linear-gradient(to right, #1f2937, #000000)",
                   "&:hover": {
-                    background: "linear-gradient(to right, #374151, #111)",
+                    background: "linear-gradient(to right, #374151, #111111)",
                   },
                 }}
               >
                 {isLoading ? (
-                  <>
+                  <span className="flex items-center gap-3">
                     <motion.div
                       animate={{ rotate: 360 }}
-                      transition={{ duration: 1, repeat: Infinity }}
-                      className="w-4 h-4 border-2 border-white border-t-transparent rounded-full"
+                      transition={{
+                        duration: 1,
+                        repeat: Infinity,
+                        ease: "linear",
+                      }}
+                      className="w-5 h-5 border-2 border-white border-t-transparent rounded-full"
                     />
-                    &nbsp;Creating Account...
-                  </>
+                    Creating Account...
+                  </span>
                 ) : (
-                  <>
-                    Sign Up <ArrowRight size={16} />
-                  </>
+                  <span className="flex items-center gap-2">
+                    Sign Up <ArrowRight size={20} />
+                  </span>
                 )}
-              </Button>,
-              6
-            )}
+              </Button>
+            </MotionItem>
           </form>
 
-          {motionDiv(
-            <p className="text-center text-sm text-gray-600 mt-6">
+          <MotionItem delay={7}>
+            <p className="text-center text-sm text-gray-600 mt-8">
               Already have an account?{" "}
-              <Link to="/login" className="text-gray-900 font-semibold hover:underline">
+              <Link to="/login" className="font-semibold text-gray-900 underline">
                 Sign in
               </Link>
-            </p>,
-            7
-          )}
+            </p>
+          </MotionItem>
         </div>
-
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1, duration: 0.5 }}
-          className="text-center text-xs text-gray-500 mt-6 sm:mt-8"
-        >
-          &copy; {new Date().getFullYear()} SyncFlow. All rights reserved.
-        </motion.p>
       </motion.div>
     </div>
   );
