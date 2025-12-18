@@ -1,25 +1,52 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { Mail, Lock, ArrowRight, Eye, EyeOff } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import TextField from "@mui/material/TextField";
 import IconButton from "@mui/material/IconButton";
 import Button from "@mui/material/Button";
 import InputAdornment from "@mui/material/InputAdornment";
 import Checkbox from "@mui/material/Checkbox";
 import FormControlLabel from "@mui/material/FormControlLabel";
+import { login } from "../../api/auth";
+import { useMutation } from "@tanstack/react-query";
+import { toast } from "react-toastify";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
 
-  const handleSubmit = async (e) => {
+  const loginMutation = useMutation({
+    mutationFn: login,
+    onSuccess: (res) => {
+      toast.success("Login Successful");
+      navigate("/dashboard"); 
+    },
+    onError: (error) => {
+      const data = error.response?.data;
+      let message = "Login failed. Please try again.";
+      if (data) {
+        if (data.email) message = data.email[0];
+        else if (data.password) message = data.password[0];
+        else if (typeof data === "string") message = data;
+      }
+      toast.error(message);
+    },
+  });
+
+  const handleSubmit = (e) => {
     e.preventDefault();
-    setIsLoading(true);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    setIsLoading(false);
+
+    // Basic validation
+    if (!email || !password) {
+      toast.error("Please fill in all required fields.");
+      return;
+    }
+
+    // Trigger mutation
+    loginMutation.mutate({ email, password });
   };
 
   const motionDiv = (children, i) => (
@@ -33,8 +60,8 @@ export default function Login() {
   );
 
   return (
-    <div className="relative w-full flex justify-center items-center">
-      {/* Background Blobs */}
+    <div className="relative w-full flex justify-center items-center overflow-hidden">
+      {/* Background blobs */}
       <motion.div
         className="absolute w-72 h-72 sm:w-96 sm:h-96 bg-gradient-to-br from-gray-200/30 to-gray-100/30 rounded-full blur-3xl"
         animate={{ x: [0, 50, -50, 0], y: [0, 30, -30, 0] }}
@@ -48,6 +75,7 @@ export default function Login() {
         style={{ bottom: "-10%", right: "-10%" }}
       />
 
+      {/* Form card */}
       <motion.div
         className="w-full max-w-md sm:max-w-lg lg:max-w-xl z-10"
         initial={{ opacity: 0, y: 20 }}
@@ -56,11 +84,10 @@ export default function Login() {
         <div className="backdrop-blur-xl bg-white/80 border border-gray-200 rounded-2xl p-6 sm:p-8 shadow-2xl">
           {/* Header */}
           {motionDiv(
-            <div className="mb-6 sm:mb-8 flex flex-col items-center justify-center text-center sm:text-left">
-              <div className="flex items-center justify-center  sm:justify-start gap-3 mb-2">
-                
-                <h1 className="text-2xl sm:text-3xl  font-bold text-gray-900">Welcome Back</h1>
-              </div>
+            <div className="mb-6 sm:mb-8 flex flex-col items-center text-center sm:text-left">
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
+                Welcome Back
+              </h1>
               <p className="text-gray-600 text-sm sm:text-base">
                 Sign in to your SyncFlow account
               </p>
@@ -115,7 +142,7 @@ export default function Login() {
             )}
 
             {motionDiv(
-              <div className="flex flex-col sm:flex-row items-center justify-between items-start text-sm">
+              <div className="flex flex-col sm:flex-row items-center justify-between text-sm">
                 <FormControlLabel control={<Checkbox />} label="Remember me" />
               </div>,
               3
@@ -126,7 +153,7 @@ export default function Login() {
                 type="submit"
                 fullWidth
                 variant="contained"
-                disabled={isLoading}
+                disabled={loginMutation.isPending}
                 sx={{
                   background: "linear-gradient(to right, #1f2937, #000)",
                   py: "10px",
@@ -136,20 +163,7 @@ export default function Login() {
                   },
                 }}
               >
-                {isLoading ? (
-                  <>
-                    <motion.div
-                      animate={{ rotate: 360 }}
-                      transition={{ duration: 1, repeat: Infinity }}
-                      className="w-4 h-4 border-2 border-white border-t-transparent rounded-full"
-                    />
-                    &nbsp;Signing in...
-                  </>
-                ) : (
-                  <>
-                    Sign In <ArrowRight size={16} />
-                  </>
-                )}
+                {loginMutation.isPending ? "Signing in..." : <>Sign In <ArrowRight size={16} /></>}
               </Button>,
               4
             )}

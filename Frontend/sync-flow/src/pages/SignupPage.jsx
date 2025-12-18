@@ -5,14 +5,14 @@ const SignupPage = () => {
   return (
     <>
       
-      <div className="min-h-screen w-full overflow-x-hidden bg-gradient-to-br from-white via-gray-50 to-gray-100">
+      <div className="  relative  hide-scrollbar  bg-gradient-to-br  from-white via-gray-50 to-gray-100">
         
         <div className="flex flex-col lg:flex-row items-center justify-center px-4 py-8 lg:px-12 lg:py-16 gap-10 lg:gap-16 max-w-7xl mx-auto w-full">
           
           
           <div className="flex flex-col items-center lg:items-start text-center lg:text-left flex-1 max-w-lg">
             <img
-              src="/sync.png"
+              src="sync.png"
               alt="SyncFlow Logo"
               className="w-32 sm:w-32 lg:w-52 xl:w-64 mb-6 select-none pointer-events-none"
             />

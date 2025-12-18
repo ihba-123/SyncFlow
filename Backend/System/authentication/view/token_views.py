@@ -2,9 +2,12 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 from django.views.decorators.csrf import ensure_csrf_cookie
-from authentication.utils.set_refiresh import set_refresh_cookie
+from authentication.utils.set_refiresh import set_refresh_cookie , set_access_cookie
 from authentication.services.token_service import refresh_access_token_service
 from django.utils.decorators import method_decorator
+#import cookies
+
+
 import logging
 
 logger = logging.getLogger(__name__)
@@ -22,8 +25,9 @@ class RefreshTokenView(APIView):
         if 'error' in data:
             return Response({'detail': data['error']}, status=status_code)
 
-        # If new refresh token is present, set cookie
-        response = Response({'access': data['access']}, status=status_code)
+        response = Response(data, status=status_code)
+        set_access_cookie(response, data['access'])
+
         if 'refresh' in data:
             set_refresh_cookie(response, data['refresh'])
 

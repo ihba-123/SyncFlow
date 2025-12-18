@@ -7,7 +7,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.throttling import AnonRateThrottle
 from ..serializers import loginSerializer
 from ..services.login_services import login_services
-from ..utils.set_refiresh import set_refresh_cookie
+from ..utils.set_refiresh import set_refresh_cookie , set_access_cookie
 import logging
 
 logger = logging.getLogger(__name__)
@@ -30,9 +30,11 @@ class UserLoginView(APIView):
 
             response = Response({
                 "access": data['access'],
+                "refresh": data['refresh'],
                 "user": data['user']
             }, status=status.HTTP_200_OK)
             set_refresh_cookie(response, data['refresh'])
+            set_access_cookie(response, data['access']) 
 
             return response
 
