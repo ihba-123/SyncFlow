@@ -63,9 +63,9 @@ export function Footer() {
             <div className="flex items-center gap-2 mb-4">
                 <div className="w-8 h-8   rounded-lg flex items-center justify-center">
                     <img src="sync.png" alt="#" />                </div>
-              <span className="text-xl font-bold text-foreground">SyncFlow</span>
+              <span className="text-xl font-bold text-gray-950">SyncFlow</span>
             </div>
-            <p className="text-foreground/60 text-sm">Modern project management for builders and creators.</p>
+            <p className="text-gray-950 text-sm">Modern project management for builders and creators.</p>
             {/* Social Icons */}
             <div className="flex gap-3 mt-4">
               {socialLinks.map((social, index) => {
@@ -75,7 +75,7 @@ export function Footer() {
                     key={index}
                     href={social.href}
                     aria-label={social.label}
-                    className="w-9 h-9 rounded-lg glass-light flex items-center justify-center text-foreground/60 hover:text-foreground hover:bg-primary/20 transition-all duration-300"
+                    className="w-9 h-9 rounded-lg glass-light flex items-center justify-center text-gray-950 hover:text-foreground hover:bg-primary/20 transition-all duration-300"
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.95 }}
                   >
@@ -97,13 +97,13 @@ export function Footer() {
               viewport={{ once: true }}
               transition={{ delay: idx * 0.05 }}
             >
-              <h4 className="font-semibold text-foreground mb-4">{title}</h4>
+              <h4 className="font-semibold text-gray-950 mb-4">{title}</h4>
               <ul className="space-y-2">
                 {links.map((link, index) => (
                   <li key={index}>
                     <a
                       href={link.href}
-                      className="text-foreground/60 hover:text-foreground text-sm transition-colors duration-200"
+                      className="text-gray-950 hover:text-foreground text-sm transition-colors duration-200"
                     >
                       {link.label}
                     </a>
@@ -122,17 +122,17 @@ export function Footer() {
           variants={itemVariants}
           viewport={{ once: true }}
         >
-          <p className="text-foreground/60 text-sm text-center sm:text-left">
+          <p className="text-gray-950 text-sm text-center sm:text-left">
             © {currentYear} SyncFlow. All rights reserved.
           </p>
-          <div className="flex gap-6 text-sm text-foreground/60">
-            <a href="#" className="hover:text-foreground transition-colors">
+          <div className="flex gap-6 text-sm text-gray-950">
+            <a href="#" className="hover:text-gray-800 transition-colors">
               Status
             </a>
-            <a href="#" className="hover:text-foreground transition-colors">
+            <a href="#" className="hover:text-gray-800  transition-colors">
               Changelog
             </a>
-            <a href="#" className="hover:text-foreground transition-colors">
+            <a href="#" className="hover:text-gray-800  transition-colors">
               Sitemap
             </a>
           </div>

@@ -25,7 +25,7 @@ export default function Hero() {
   };
 
   return (
-    <section id="Hero" className="relative min-h-screen flex items-center justify-center pt-30 pb-12 px-4 sm:px-6 lg:px-8 overflow-hidden">
+    <section id="Hero" className="relativez min-h-screen flex items-center justify-center pt-30 pb-12 px-4 sm:px-6 lg:px-8 overflow-hidden">
       <div className="absolute top-0 right-0 w-96 h-96 gradient-blur opacity-30 -z-10"></div>
       <div className="absolute bottom-0 left-0 w-80 h-80 gradient-blur opacity-20 -z-10 delay-1000"></div>
       <div className="absolute inset-0 bg-gradient-to-b from-secondary/5 via-transparent to-accent/5 -z-10"></div>
@@ -58,7 +58,7 @@ export default function Hero() {
         </motion.h1>
 
         <motion.p
-          className="text-sm sm:text-xl text-foreground/70 text-balance mb-8 max-w-2xl mx-auto leading-relaxed"
+          className="text-sm sm:text-xl text-gray-800  text-balance mb-8 max-w-2xl mx-auto leading-relaxed"
           variants={itemVariants}
         >
           SyncFlow is the modern project management platform that brings clarity

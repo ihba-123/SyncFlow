@@ -5,7 +5,7 @@ export const slowScrollTo = (id) => {
   const start = window.scrollY;
   const end = target.offsetTop;
   const distance = end - start;
-  const duration = 900; 
+  const duration = 900;
 
   let startTime = null;
 
@@ -16,9 +16,10 @@ export const slowScrollTo = (id) => {
     const progress = Math.min(elapsed / duration, 1);
 
     // ease-in-out
-    const ease = progress < 0.5
-      ? 2 * progress * progress
-      : -1 + (4 - 2 * progress) * progress;
+    const ease =
+      progress < 0.5
+        ? 2 * progress * progress
+        : -1 + (4 - 2 * progress) * progress;
 
     window.scrollTo(0, start + distance * ease);
 

@@ -66,7 +66,7 @@ export function Features() {
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 text-gray-800">
             Powerful Features for Modern Teams
           </h2>
-          <p className="text-lg text-foreground/60 text-balance max-w-2xl mx-auto">
+          <p className="text-lg text-gray-800  text-balance max-w-2xl mx-auto">
             Everything you need to manage projects efficiently and keep your team synchronized.
           </p>
         </motion.div>
@@ -91,10 +91,10 @@ export function Features() {
                 <div className="w-12 h-12 rounded-lg  flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
                   <Icon size={24} className="text-black font-extrabold" />
                 </div>
-                <h3 className="text-xl font-semibold mb-3 text-foreground">
+                <h3 className="text-xl text-gray-800  font-semibold mb-3 ">
                   {feature.title}
                 </h3>
-                <p className="text-foreground/70 leading-relaxed">
+                <p className="text-gray-800  leading-relaxed">
                   {feature.description}
                 </p>
               </motion.div>

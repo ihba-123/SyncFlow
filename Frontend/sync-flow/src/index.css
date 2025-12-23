@@ -2,10 +2,10 @@
 
 * {
   font-family: "Inter", sans-serif;
+
 }
 html {
   scroll-behavior: smooth;
-  
 }
 
 /* Hide scrollbar ONLY inside containers */
@@ -14,15 +14,14 @@ html {
 }
 
 .hide-scrollbar {
-  scrollbar-width: none;       /* Firefox */
-  -ms-overflow-style: none;    /* IE & Edge */
+  scrollbar-width: none; 
+  -ms-overflow-style: none; 
 }
-
-
+/* className="bg-[var(--foreground)] color-[var(--background)]" */
 :root {
   /* Updated color scheme for glassy, modern aesthetic with soft pastel gradients */
-  --background: oklch(0.98 0.001 280);
-  --foreground: oklch(0.16 0.02 280);
+  --background: oklch(16.827% 0.02537 276.089);
+  --foreground: oklch(0.98 0.001 280);
   --card: oklch(0.98 0.001 280);
   --card-foreground: oklch(0.16 0.02 280);
   --popover: oklch(1 0 0);
@@ -221,3 +220,30 @@ html {
   }
 }
 
+
+
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Glassmorphism utilities */
+/* Reduced glassmorphism for better visibility and professional look */
+.glass {
+  background: rgba(20, 20, 20, 0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.glass-card {
+  background: rgba(15, 15, 15, 0.9);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}

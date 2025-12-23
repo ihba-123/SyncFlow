@@ -49,7 +49,7 @@ export function HowItWorks() {
       id="how-it-works"
       className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-accent/5 via-transparent to-primary/5"
     >
-      <div className="max-w-7xl mx-auto">
+      <div className="max-w-7xl mx-auto ">
         {/* Section Header */}
         <motion.div
           className="text-center mb-16"
@@ -61,7 +61,7 @@ export function HowItWorks() {
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 text-gray-700">
             Simple Workflow, Powerful Results
           </h2>
-          <p className="text-lg text-foreground/60 text-balance max-w-2xl mx-auto">
+          <p className="text-lg text-gray-800  text-balance max-w-2xl mx-auto">
             Get started in minutes and see the difference TaskFlow makes in your
             team's productivity.
           </p>
@@ -87,10 +87,10 @@ export function HowItWorks() {
                       {/* Left side content */}
                       <div className="flex-1 text-right">
                         <div className="glass-light rounded-xl p-6 text-right">
-                          <h3 className="text-xl font-semibold mb-2 text-foreground">
+                          <h3 className="text-xl font-semibold mb-2 text-gray-950 ">
                             {step.title}
                           </h3>
-                          <p className="text-foreground/70">{step.description}</p>
+                          <p className="text-gray-800 ">{step.description}</p>
                         </div>
                       </div>
 
@@ -121,10 +121,10 @@ export function HowItWorks() {
 
                       <div className="flex-1">
                         <div className="glass-light rounded-xl p-6">
-                          <h3 className="text-xl font-semibold mb-2 text-foreground">
+                          <h3 className="text-xl font-semibold mb-2 text-gray-950">
                             {step.title}
                           </h3>
-                          <p className="text-foreground/70">{step.description}</p>
+                          <p className="text-gray-800">{step.description}</p>
                         </div>
                       </div>
                     </>

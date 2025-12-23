@@ -247,7 +247,7 @@ export default function Signup() {
                 fullWidth
                 variant="contained"
                 disabled={registerMutation.isPending}
-                sx={{
+                sx={{ 
                   mt: 1,
                   py: 1.8,
                   borderRadius: 2,

@@ -21,16 +21,17 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    // If 401 and not already retried
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      // Prevent infinite loop on refresh endpoint itself
+    
+    if (error.response?.status === 401  && !originalRequest._retry) {
+      
       if (originalRequest.url?.includes("refresh-token")) {
         useAuthStore.getState().clearUser();
-        return Promise.reject(error);
+        return Promise.reject(error); // real error
       }
-
+      
+     
+      // If already refreshing, queue the request
       if (isRefreshing) {
-        // Queue requests while refreshing
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject });
         })
@@ -43,17 +44,22 @@ api.interceptors.response.use(
 
       try {
         await api.post("refresh-token/");
-        isRefreshing = false;
         processQueue(null);
         return api(originalRequest);
       } catch (refreshError) {
-        isRefreshing = false;
         processQueue(refreshError);
-        useAuthStore.getState().clearUser(); // Trigger logout
+        useAuthStore.getState().clearUser();
         return Promise.reject(refreshError);
+      } finally {
+        isRefreshing = false;
       }
     }
 
+    if (error.response?.status === 401 && originalRequest._retry) {
+      return;
+    }
+
+    // Other errors are real
     return Promise.reject(error);
   }
 );

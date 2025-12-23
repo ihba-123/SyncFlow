@@ -5,15 +5,18 @@ from rest_framework import permissions
 from rest_framework import status
 from django.conf import settings
 import logging
+from ..utils.authentication import CookieJWTAuthentication
 
 
 logger = logging.getLogger(__name__)
 class UserLogoutView(APIView):
+    authentication_classes = [CookieJWTAuthentication]
     permission_classes = [permissions.IsAuthenticated]
     def post(self, request):
         try:
             data = logout(request.user)
             response = Response({'detail': 'Logged out successfully'}, status=status.HTTP_200_OK)
+            response.delete_cookie('access_token', path=settings.SIMPLE_JWT.get('COOKIE_PATH', '/'))
             response.delete_cookie('refresh_token', path=settings.SIMPLE_JWT.get('COOKIE_PATH', '/'))
             return response
         

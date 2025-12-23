@@ -38,10 +38,10 @@ class ProfileSerializer(serializers.ModelSerializer):
 
 class ProfileUpdateSerializer(serializers.ModelSerializer):
     photo = serializers.ImageField(required=False)
-
+    name = serializers.CharField(source='user.name', read_only=True)
     class Meta:
         model = Profile
-        fields = ['id','bio', 'photo']
+        fields = ['id','name','bio', 'photo']
 
     def get_photo(self, obj):
         

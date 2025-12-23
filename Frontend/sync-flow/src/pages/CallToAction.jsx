@@ -46,13 +46,13 @@ export function CTA() {
         </motion.div>
 
         {/* Heading */}
-        <motion.h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6 text-balance" variants={itemVariants}>
+        <motion.h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6 text-gray-700" variants={itemVariants}>
           Ready to Transform Your Workflow?
         </motion.h2>
 
         {/* Subheading */}
         <motion.p
-          className="text-lg text-foreground/70 text-balance mb-8 max-w-2xl mx-auto leading-relaxed"
+          className="text-lg text-gray-950 text-balance mb-8 max-w-2xl mx-auto leading-relaxed"
           variants={itemVariants}
         >
           Start exploring TaskFlow today and see how it can revolutionize the way you manage your personal and

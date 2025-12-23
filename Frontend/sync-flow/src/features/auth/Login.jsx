@@ -7,9 +7,9 @@ import IconButton from "@mui/material/IconButton";
 import Button from "@mui/material/Button";
 import InputAdornment from "@mui/material/InputAdornment";
 import Checkbox from "@mui/material/Checkbox";
-import FormControlLabel from "@mui/material/FormControlLabel";
+import { FormControlLabel, CircularProgress } from "@mui/material";
 import { login } from "../../api/auth";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
 
 export default function Login() {
@@ -17,13 +17,17 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
-
+  const queryClient = useQueryClient();
+  
   const loginMutation = useMutation({
     mutationFn: login,
     onSuccess: (res) => {
+      queryClient.invalidateQueries(["auth"]);
+      navigate("/dashboard");
       toast.success("Login Successful");
-      navigate("/dashboard"); 
     },
+
+
     onError: (error) => {
       const data = error.response?.data;
       let message = "Login failed. Please try again.";
@@ -36,6 +40,8 @@ export default function Login() {
     },
   });
 
+
+  
   const handleSubmit = (e) => {
     e.preventDefault();
 
@@ -53,7 +59,11 @@ export default function Login() {
     <motion.div
       custom={i}
       initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0, transition: { delay: i * 0.1, duration: 0.5 } }}
+      animate={{
+        opacity: 1,
+        y: 0,
+        transition: { delay: i * 0.1, duration: 0.5 },
+      }}
     >
       {children}
     </motion.div>
@@ -79,7 +89,11 @@ export default function Login() {
       <motion.div
         className="w-full max-w-md sm:max-w-lg lg:max-w-xl z-10"
         initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } }}
+        animate={{
+          opacity: 1,
+          y: 0,
+          transition: { duration: 0.6, ease: "easeOut" },
+        }}
       >
         <div className="backdrop-blur-xl bg-white/80 border border-gray-200 rounded-2xl p-6 sm:p-8 shadow-2xl">
           {/* Header */}
@@ -131,8 +145,15 @@ export default function Login() {
                   ),
                   endAdornment: (
                     <InputAdornment position="end">
-                      <IconButton edge="end" onClick={() => setShowPassword(!showPassword)}>
-                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                      <IconButton
+                        edge="end"
+                        onClick={() => setShowPassword(!showPassword)}
+                      >
+                        {showPassword ? (
+                          <EyeOff size={18} />
+                        ) : (
+                          <Eye size={18} />
+                        )}
                       </IconButton>
                     </InputAdornment>
                   ),
@@ -163,16 +184,29 @@ export default function Login() {
                   },
                 }}
               >
-                {loginMutation.isPending ? "Signing in..." : <>Sign In <ArrowRight size={16} /></>}
-              </Button>,
-              4
+                {loginMutation.isPending ? (
+                  <>
+                    <CircularProgress
+                      size={20}
+                      sx={{ color: "white", mr: 1 }}
+                    />
+                  </>
+                ) : (
+                  <>
+                    Sign In <ArrowRight size={20} style={{ marginLeft: 8 }} />
+                  </>
+                )}
+              </Button>
             )}
           </form>
 
           {motionDiv(
             <p className="text-center text-sm text-gray-600 mt-6">
               Don't have an account?{" "}
-              <Link to="/signup" className="text-gray-900 font-semibold hover:underline">
+              <Link
+                to="/signup"
+                className="text-gray-900 font-semibold hover:underline"
+              >
                 Sign up
               </Link>
             </p>,
