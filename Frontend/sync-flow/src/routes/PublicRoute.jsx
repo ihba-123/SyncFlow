@@ -6,7 +6,7 @@ const PublicRoute = () => {
   const { hasCheckedAuth, data } = useAuth();
   // console.log(hasCheckedAuth , is_Authenticated , data)
   if (!hasCheckedAuth) {
-    return <div className="min-h-screen  flex justify-center items-center"><Loader /></div>;
+    return <div className="min-h-screen  flex justify-center bg-white items-center"><Loader /></div>;
   }
 
   if (data) {

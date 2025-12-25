@@ -10,101 +10,156 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/Avatar";
-import { Button } from "../ui/Button";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/Popover";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "../ui/Toolltip";
+} from "../../components/ui/Toolltip";
 import { cn } from "../../utils/utils";
 import { useAuth } from "../../hooks/Auth";
 import { useUserProfile } from "../../hooks/UserProfile";
 import Logout from "../../features/auth/Logout";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useState } from "react";
 
 export function Sidebar({ isExpanded, setIsExpanded, isMobile }) {
   const { data } = useAuth();
-  const { name, photo, bio, is_online } = useUserProfile();
+  const { name, photo, is_online } = useUserProfile();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [open, setOpen] = useState(false);
 
   const navItems = [
-    { icon: Home, label: "Home", href: "#" },
-    { icon: LayoutDashboard, label: "Dashboard", href: "#" },
-    { icon: Users, label: "Team", href: "#" },
-    { icon: FileText, label: "Documents", href: "#" },
-    { icon: MessageSquare, label: "Messages", href: "#" },
+    { icon: Home, label: "Home", to: "/home" },
+    { icon: LayoutDashboard, label: "Dashboard", to: "/dashboard" },
+    { icon: Users, label: "Team", to: "/team" },
+    { icon: FileText, label: "Documents", to: "/documents" },
+    { icon: MessageSquare, label: "Messages", to: "/messages" },
   ];
 
   const bottomItems = [
-    { icon: Bell, label: "Notifications", href: "#" },
-    { icon: Settings, label: "Settings", href: "#" },
+    { icon: Bell, label: "Notifications", to: "/notifications" },
+    { icon: Settings, label: "Settings", to: "/settings" },
   ];
+
+  const handleNavClick = () => {
+    if (isMobile) {
+      setIsExpanded(false);
+    }
+  };
+
+  const handleEditProfileClick = () => {
+    setOpen(false);
+    if (isMobile) setIsExpanded(false);
+    navigate("/dashboard/profile");
+  };
+
+  const isActive = (path) => location.pathname.startsWith(path);
 
   return (
     <aside
       className={cn(
-        "fixed left-0 top-0 h-full glass-card border-r border-white/10  transition-all duration-600 z-40",
-        isExpanded ? "w-64" : "w-16",
-        isMobile && !isExpanded && "-translate-x-full"
+        "fixed left-0 top-0 h-full glass-card border-r border-black/20 dark:border-white/10 z-50",
+        "flex flex-col", // better structure
+        // Desktop: smooth width transition
+        !isMobile && "transition-[width] duration-500 ease-in-out",
+        // Mobile: instant or translate-based only
+        isMobile && "transition-transform duration-300 ease-in-out",
+        // Width control
+        isExpanded ? "w-64" : "w-16", // use consistent w-64 instead of w-54
+        // Mobile: hide when closed using translate
+        isMobile && !isExpanded && "-translate-x-full",
+        isMobile && isExpanded && "translate-x-0"
       )}
     >
-      <div className="flex bg-[var(--background)] flex-col h-full p-3">
-        {/* Logo Section */}
-        <div
-          className={cn(
-            "flex items-center mb-6 h-14",
-            isExpanded ? "justify-between px-2" : "justify-center"
-          )}
-        >
-          {!isExpanded && (
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-white/20 to-white/5 flex items-center justify-center">
-                <span className="text-sm font-bold text-foreground">V</span>
+      <div className="relative flex flex-col h-full bg-[var(--background)] p-3 overflow-hidden">
+        {/* Logo & Toggle */}
+        <div className="relative flex items-center justify-between h-14 mb-6">
+          <div
+            className={cn(
+              "flex items-center",
+              isExpanded ? "justify-start" : "justify-center w-full"
+            )}
+          >
+            {isExpanded ? (
+              <div className="flex items-center gap-3 px-2">
+                <div className="w-10 h-10 rounded-lg bg-gradient-to-br dark:from-indigo-500/20 to-white flex items-center justify-center backdrop-blur-sm border border-indigo-400/20">
+                  <img src="/sync.png" alt="Logo" className="w-10 h-8" />
+                </div>
+                <span className="text-lg font-semibold text-black/60 dark:text-white">
+                  SyncFlow
+                </span>
               </div>
-            </div>
-          )}
+            ) : (
+              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-gray-200 to-white flex items-center justify-center backdrop-blur-sm border border-indigo-400/20">
+                <img src="/sync.png" alt="Logo" className="w-10 h-8" />
+              </div>
+            )}
+          </div>
 
-            {isExpanded && (
-            <div className="flex items-center justify-center ml-12 gap-2">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-white/100 to-white/5 flex items-center justify-center">
-                <img src="sync.png" alt="" />
-              </div>
-            </div>
+          {!isMobile && (
+            <button
+              onClick={() => setIsExpanded(!isExpanded)}
+              className={cn(
+                "absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full border border-gray-500/70 dark:border-indigo-400/30",
+                "bg-background/80 backdrop-blur-sm flex items-center justify-center hover:bg-indigo-500/20 transition-all duration-300 z-10"
+              )}
+            >
+              {isExpanded ? (
+                <ChevronLeft className="w-4 h-4 text-gray-800 dark:text-gray-300" />
+              ) : (
+                <ChevronRight className="w-4 h-4 text-gray-800 dark:text-gray-300" />
+              )}
+            </button>
           )}
         </div>
 
-        {/* Navigation Items */}
+        {/* Navigation */}
         <nav className="flex-1 space-y-1">
-          
           {navItems.map((item) => (
             <TooltipProvider key={item.label}>
               <Tooltip delayDuration={200}>
                 <TooltipTrigger asChild>
-                  <a
-                    href={item.href}
+                  <Link
+                    to={item.to}
+                    onClick={handleNavClick}
                     className={cn(
-                      "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200",
-                      "hover:bg-white/10 text-white hover:text-white",
+                      "group flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-300",
+                      "hover:bg-indigo-500/20 hover:border-indigo-400/30 hover:shadow-lg hover:shadow-indigo-500/10",
+                      isActive(item.to)
+                        ? "bg-indigo-500/25 border border-indigo-400/40 text-indigo-300 shadow-md shadow-indigo-500/20"
+                        : "text-gray-300",
                       isExpanded ? "justify-start" : "justify-center"
                     )}
                   >
-                    <item.icon className="w-5 h-5 flex-shrink-0" />
+                    <item.icon
+                      className={cn(
+                        "w-5 h-5 flex-shrink-0 transition-colors",
+                        isActive(item.to)
+                          ? "text-black/80 dark:text-indigo-300"
+                          : "text-gray-800 dark:text-gray-400 group-hover:text-indigo-900 dark:group-hover:text-indigo-300"
+                      )}
+                    />
                     {isExpanded && (
                       <span
                         className={cn(
-                          "overflow-hidden whitespace-nowrap transition-all duration-300",
-                          isExpanded ? "opacity-100 w-40" : "opacity-0 w-0"
+                          "text-sm font-medium transition-colors",
+                          isActive(item.to)
+                            ? "text-black/80 dark:text-indigo-200"
+                            : "text-gray-800 dark:text-gray-200 group-hover:text-indigo-900 dark:group-hover:text-indigo-200"
                         )}
                       >
                         {item.label}
                       </span>
                     )}
-                  </a>
+                  </Link>
                 </TooltipTrigger>
                 {!isExpanded && (
                   <TooltipContent
                     side="right"
-                    className="bg-background text-white rounded-md px-2 py-1 shadow-lg"
+                    className="dark:bg-indigo-500/10 bg-black/30 backdrop-blur-md border-indigo-400/30 text-white"
                   >
                     <p>{item.label}</p>
                   </TooltipContent>
@@ -113,39 +168,53 @@ export function Sidebar({ isExpanded, setIsExpanded, isMobile }) {
             </TooltipProvider>
           ))}
 
-          {/* Divider */}
-          <div className="py-3">
-            <div className="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+          <div className="py-4">
+            <div className="h-px bg-gradient-to-r from-transparent via-gray-800 dark:via-indigo-400/30 to-transparent" />
           </div>
 
-          {/* Bottom Items */}
           {bottomItems.map((item) => (
-            <TooltipProvider delayDuration={200} key={item.label}>
-              <Tooltip delayDuration={0}>
+            <TooltipProvider key={item.label}>
+              <Tooltip delayDuration={200}>
                 <TooltipTrigger asChild>
-                  <a
-                    href={item.href}
+                  <Link
+                    to={item.to}
+                    onClick={handleNavClick}
                     className={cn(
-                      "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200",
-                      "hover:bg-white/10 text-white hover:text-white",
+                      "group flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-300",
+                      "hover:bg-indigo-500/20 hover:border-indigo-400/30 hover:shadow-lg hover:shadow-indigo-500/10",
+                      isActive(item.to)
+                        ? "bg-indigo-500/25 border border-indigo-400/40 text-indigo-300 shadow-md shadow-indigo-500/20"
+                        : "text-gray-300",
                       isExpanded ? "justify-start" : "justify-center"
                     )}
                   >
-                    <item.icon className="w-5 h-5 flex-shrink-0" />
+                    <item.icon
+                      className={cn(
+                        "w-5 h-5 flex-shrink-0 transition-colors",
+                        isActive(item.to)
+                          ? "text-black/80 dark:text-indigo-300"
+                          : "text-gray-800 dark:text-gray-400 group-hover:text-indigo-900 dark:group-hover:text-indigo-300"
+                      )}
+                    />
                     {isExpanded && (
                       <span
                         className={cn(
-                          "overflow-hidden whitespace-nowrap transition-all duration-300",
-                          isExpanded ? "opacity-100 w-40" : "opacity-0 w-0"
+                          "text-sm font-medium transition-colors",
+                          isActive(item.to)
+                            ? "text-black/80 dark:text-indigo-200"
+                            : "text-gray-800 dark:text-gray-200 group-hover:text-indigo-900 dark:group-hover:text-indigo-200"
                         )}
                       >
                         {item.label}
                       </span>
                     )}
-                  </a>
+                  </Link>
                 </TooltipTrigger>
                 {!isExpanded && (
-                  <TooltipContent side="right">
+                  <TooltipContent
+                    side="right"
+                    className="dark:bg-indigo-500/10 bg-black/30 backdrop-blur-md border-indigo-400/30 text-white"
+                  >
                     <p>{item.label}</p>
                   </TooltipContent>
                 )}
@@ -154,81 +223,68 @@ export function Sidebar({ isExpanded, setIsExpanded, isMobile }) {
           ))}
         </nav>
 
-        {/* User Profile */}
-        <div className="pt-3 border-t border-white/10 flex-shrink-0">
-          <Popover>
+        {/* User Profile Popover */}
+        <div className="pt-4 z-100">
+          <div className="py-4">
+            <div className="h-px bg-gradient-to-r from-transparent via-gray-800 dark:via-indigo-400/30 to-transparent" />
+          </div>
+          <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
               <button
-                className={cn(  
-                  "flex items-center gap-3 w-full px-3 py-2 rounded-lg transition-all duration-200 hover:bg-white/10",
+                className={cn(
+                  "group flex items-center gap-3 w-full px-4 py-3 rounded-2xl transition-all duration-300",
                   isExpanded ? "justify-start" : "justify-center"
                 )}
               >
                 <div className="relative">
-                  <Avatar className="w-8 h-8 border border-white/10">
+                  <Avatar className="w-10 h-10 border-2 border-indigo-400/40">
                     <AvatarImage src={photo} />
-                    <AvatarFallback>{name?.[0] || "CN"}</AvatarFallback>
+                    <AvatarFallback className="bg-indigo-500/20 text-indigo-300 text-sm font-medium">
+                      {name?.[0]?.toUpperCase() || "U"}
+                    </AvatarFallback>
                   </Avatar>
-                  {/* Online/Offline Dot outside avatar */}
-                  <span
-                    className={cn(
-                      "absolute w-3 h-3 rounded-full border-2 border-black top-5 left-5",
-                      is_online ? "bg-green-500" : "bg-gray-400"
-                    )}
-                  />
+                  {is_online && (
+                    <span className="absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full bg-green-500 border-2 border-background ring-2 ring-background" />
+                  )}
                 </div>
 
                 {isExpanded && (
-                  <div
-                    className={cn(
-                      "overflow-hidden transition-all duration-200",
-                      isExpanded ? "opacity-100 w-auto" : "opacity-0 w-0"
-                    )}
-                  >
-                    <p className="text-sm font-medium text-white">{name || "SyncFlow"}</p>
-                    <p className="text-xs text-white/60">{data?.email || "syncflow@email.com"}</p>
+                  <div className="text-left flex-1">
+                    <p className="text-sm font-extrabold text-black/80 dark:text-gray-400 truncate">
+                      {name || "User"}
+                    </p>
+                    <p className="text-xs text-black/80 font-bold dark:text-gray-400 truncate">
+                      {data?.email}
+                    </p>
                   </div>
                 )}
               </button>
             </PopoverTrigger>
 
             <PopoverContent
-              side="right"
-              align="end"
-              className="w-56 glass-card  border-white/10 p-2 rounded-2xl ml-5"
+              side="top"
+              align={isExpanded ? "start" : "center"}
+              sideOffset={12}
+              className="w-44 h-auto z-100 p-3 bg-background/95 backdrop-blur-md rounded-2xl border border-black/20 dark:border-white/10 shadow-2xl"
             >
-              <div className="space-y-">
-                <button className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-md hover:bg-white/10 text-white">
+              <div className="space-y-1"> 
+                <button
+                  onClick={handleEditProfileClick}
+                  className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-800 dark:text-gray-200 hover:text-gray-600 cursor-pointer rounded-lg transition-colors"
+                >
                   <Users className="w-4 h-4" />
-                  Edit Profile
+                  Profile
                 </button>
-                <div className="py-2">
-            <div className="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-          </div>
-                <Logout/>
+
+                <div>
+                  <div className="h-px bg-gradient-to-r from-transparent via-gray-800 dark:via-indigo-400/30 to-transparent" />
+                </div>
+
+                <Logout onLogout={() => setOpen(false)} />
               </div>
             </PopoverContent>
           </Popover>
         </div>
-
-        {/* Toggle Button */}
-        {!isMobile && (
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setIsExpanded(!isExpanded)}
-            className={cn(
-              "mt-2 w-full hover:bg-white/10",
-              !isExpanded && "justify-center"
-            )}
-          >
-            {isExpanded ? (
-              <ChevronLeft className="w-4 h-4 text-white" />
-            ) : (
-              <ChevronRight className="w-4 h-4 text-white" />
-            )}
-          </Button>
-        )}
       </div>
     </aside>
   );

@@ -38,7 +38,7 @@ class ProfileSerializer(serializers.ModelSerializer):
 
 class ProfileUpdateSerializer(serializers.ModelSerializer):
     photo = serializers.ImageField(required=False)
-    name = serializers.CharField(source='user.name', read_only=True)
+    name = serializers.CharField(required=False)
     class Meta:
         model = Profile
         fields = ['id','name','bio', 'photo']
@@ -62,6 +62,16 @@ class ProfileUpdateSerializer(serializers.ModelSerializer):
             secure=True
         )[0]
         return default_url
+    
+    def update(self, instance, validated_data):
+        # Update user name if present
+        new_name = validated_data.pop('name', None)
+        if new_name:
+            instance.user.name = new_name
+            instance.user.save()
+
+        # Update Profile fields
+        return super().update(instance, validated_data)
 
     
 

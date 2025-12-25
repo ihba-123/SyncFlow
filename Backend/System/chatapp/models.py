@@ -2,8 +2,7 @@ from django.db import models
 from authentication.models import User  
 from cloudinary.models import CloudinaryField
 from .utils.encrypt_decrypt import message_encrypt , message_decrypt
-# Profile Model (Friends)
-
+    
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile", db_index=True)
     friends = models.ManyToManyField(User, blank=True, related_name="friends" ,db_index=True)

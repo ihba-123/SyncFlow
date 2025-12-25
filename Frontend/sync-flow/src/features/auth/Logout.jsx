@@ -32,7 +32,7 @@ const Logout = () => {
   });
 
   return (
-    <button className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-md hover:bg-white/10 text-destructive"
+    <button className="w-full flex text-red-700 items-center gap-2 px-3 py-2 text-sm rounded-md cursor-pointer text-destructive"
       onClick={() => mutation.mutate()}
       disabled={mutation.isPending}
     >

@@ -7,7 +7,12 @@ import { ToastContainer } from "react-toastify";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import PublicRoute from "./routes/PublicRoute";
 import { useUserProfile } from "./hooks/UserProfile";
+import UserProfileEdit from "./features/profile/UserProfile";
+import { useEffect } from "react";
+import useTheme from "./hooks/useTheme";
+import {EditProfile }from "./features/profile/EditProfile";
 const App = () => {
+useTheme();
  useUserProfile();
   return (
     <div>
@@ -33,6 +38,8 @@ const App = () => {
 
         <Route  element={<ProtectedRoute />}>
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/dashboard/edit-profile" element={<EditProfile />} />
+          <Route path="/dashboard/profile" element={<UserProfileEdit />} />
         </Route>
       </Routes>
     </div>
