@@ -11,6 +11,7 @@ export const useUserProfileStore = create((set) => {
             photo:profile.photo,
             bio:profile.bio,
             is_online:profile.is_online
+
         }),
 
         clearProfile: () => set({

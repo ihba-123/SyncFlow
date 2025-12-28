@@ -1,34 +1,37 @@
 import { Navigate, Outlet } from "react-router-dom";
 import { useAuth } from "../hooks/Auth";
-import Loader from "../components/Spinner";
+import { useState, useEffect } from "react";
+import { cn } from "../utils/utils";
 import { Sidebar } from "../components/ProtectedNav/SideNavbar";
 import { ProtectedNavbar } from "../components/ProtectedNav/ProtectedNavbar";
-import { useEffect, useState } from "react";
-import { cn } from "../utils/utils";
+import ProgressBar from "../components/ui/ProgressBar";
 
 const ProtectedRoute = () => {
   const { hasCheckedAuth, data, isError } = useAuth();
 
   const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
-  const [isExpanded, setIsExpanded] = useState(false); // always closed on reload
+
+  // CHANGE HERE: Start with sidebar CLOSED by default on all devices
+  const [isExpanded, setIsExpanded] = useState(false);
 
   useEffect(() => {
     const handleResize = () => {
       const mobile = window.innerWidth < 768;
       setIsMobile(mobile);
-      if (mobile) setIsExpanded(false);
+
+      if (mobile) {
+        setIsExpanded(false);
+      }
     };
 
     window.addEventListener("resize", handleResize);
+    handleResize();
+
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   if (!hasCheckedAuth) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-800">
-        <Loader />
-      </div>
-    );
+    return null;
   }
 
   if (!data || isError) {
@@ -36,19 +39,21 @@ const ProtectedRoute = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--background)] ">
+    <div className="min-h-screen  bg-card text-foreground ">
+      <ProgressBar />
       <Sidebar
         isExpanded={isExpanded}
         setIsExpanded={setIsExpanded}
         isMobile={isMobile}
       />
 
+      {/* Mobile overlay when sidebar is open */}
       {isMobile && isExpanded && (
         <div
           onClick={() => setIsExpanded(false)}
-          className="fixed inset-0  dark:bg-[var(--background)]   backdrop-blur-sm z-40"
+          className="fixed inset-0 dark:bg-black/10 bg-white/30 backdrop-blur-sm z-40"
         />
-      )}  
+      )}
 
       <ProtectedNavbar
         isExpanded={isExpanded}
@@ -67,6 +72,5 @@ const ProtectedRoute = () => {
     </div>
   );
 };
-
 
 export default ProtectedRoute;

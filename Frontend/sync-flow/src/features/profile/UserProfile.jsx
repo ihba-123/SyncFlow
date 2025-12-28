@@ -2,50 +2,37 @@ import { useState } from "react";
 import { useAuth } from "../../hooks/Auth";
 import { useUserProfile } from "../../hooks/UserProfile";
 import { Mail, Calendar, Edit3 } from "lucide-react";
-
+import {Link} from "react-router-dom"
+import UserProfileSkeleton from "../../components/skeleton/UserProfileSkeleton";
 export default function UserProfile() {
-  const [previewPhoto, setPreviewPhoto] = useState("");
-
   const { data: authData } = useAuth();
-  const { name, photo, bio } = useUserProfile();
+  const { name, photo, bio , isLoading } = useUserProfile();
 
-  const displayName = name || "Hello";
+  const displayName = name || authData?.name;
   const initials = displayName.charAt(0).toUpperCase();
   const email = authData?.email || "abhishekbhatta110@gmail.com";
-  const joinDate = "Dec 25, 2025"; // Make dynamic later if needed
   const userBio = bio || "No bio yet. Click Edit Profile to add one.";
 
-  const stats = [
-    { label: "Notes Created", value: 0 },
-    { label: "Quizzes Created", value: 0 },
-    { label: "Quizzes Attempted", value: 0 },
-    { label: "Average Score", value: "0%" },
-    { label: "Current Streak", value: 1 },
-  ];
 
-  const handlePhotoChange = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onloadend = () => setPreviewPhoto(reader.result);
-    reader.readAsDataURL(file);
-  };
+  if (isLoading) return <UserProfileSkeleton />;
+
 
   return (
+    
     <div className="min-h-screen py-6 px-4 sm:py-8 sm:px-6 lg:px-8">
-      <div className="max-w-5xl mx-auto">
-        {/* Main Profile Card */}
-        <div className="bg-gray-900 rounded-3xl border border-gray-800 overflow-hidden">
-          {/* Top Section */}
+      <div className="max-w-4xl mx-auto">
+        
+        <div className="bg-background/30 backdrop-blur-md   rounded-xl border shadow-lg border-gray-300  dark:border-gray-800 overflow-hidden">
+          
           <div className="p-6 sm:p-8 lg:p-10">
             <div className="flex flex-col items-center sm:flex-row sm:items-start gap-6 lg:gap-8">
-              {/* Avatar */}
+              
               <div className="relative group shrink-0">
-                {previewPhoto || authData?.photo || photo ? (
+                {authData?.photo || photo ? (
                   <img
-                    src={previewPhoto || authData?.photo || photo}
+                    src={authData?.photo || photo}
                     alt={displayName}
-                    className="w-28 h-28 sm:w-32 sm:h-32 rounded-full object-cover border-4 border-gray-800"
+                    className="w-28 h-28 sm:w-32 sm:h-32 rounded-full object-cover border-4 dark:border-gray-500 border-gray-800"
                   />
                 ) : (
                   <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-full bg-cyan-500 flex items-center justify-center text-4xl sm:text-5xl font-bold text-white border-4 border-gray-800">
@@ -53,46 +40,44 @@ export default function UserProfile() {
                   </div>
                 )}
 
-                <label className="absolute inset-0 rounded-full cursor-pointer">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handlePhotoChange}
-                    className="hidden"
-                  />
-                </label>
+                <label className="absolute inset-0 rounded-full cursor-pointer"></label>
               </div>
 
-              {/* User Info & Edit Button */}
+              
               <div className="flex-1 text-center sm:text-left w-full">
                 <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                   <div className="max-w-2xl">
-                    <h1 className="text-2xl sm:text-3xl font-semibold text-white mb-1">
+                    <h1 className="text-2xl sm:text-3xl font-semibold text-black/80 dark:text-white mb-1">
                       {displayName}
                     </h1>
 
-                    {/* Bio */}
+                   
                     {userBio && (
-                      <p className="text-gray-300 text-base mb-6 leading-relaxed">
+
+                      <p className="dark:text-gray-600 text-gray-900  mb-6 leading-relaxed">
                         {userBio}
                       </p>
                     )}
 
                     {/* Email & Join Date */}
                     <div className="space-y-3 text-left">
-                      <div className="flex items-center gap-3 text-gray-400">
-                        <Mail className="w-5 h-5 flex-shrink-0" />
-                        <span className="text-base break-all">{email}</span>
+                      <div className="flex items-center gap-3 text-gray-700  dark:text-gray-500">
+                        <Mail className="w-5 text-gray-950 dark:text-white h-5 flex-shrink-0" />
+                        <span className="text-sm break-all">{email}</span>
                       </div>
-                      
                     </div>
                   </div>
 
-                  
-                  <button className="flex items-center gap-2 px-4 py-1 bg-gray-800/80 hover:bg-gray-700 text-white text-sm font-medium rounded-sm transition-all duration-200  active:scale-95  h-12  justify-center">
-                    <Edit3 className="w-4 h-4" />
-                    Edit Profile
-                  </button>
+                  <Link to="/dashboard/edit-profile"
+                    className="flex cursor-pointer backdrop-blur-3xl items-center justify-center gap-2 px-4 py-1 h-10 
+                               border dark:border-gray-700 border-gray-400 hover:bg-gray-300 dark:hover:bg-gray-900 text-gray-800 dark:text-white 
+                                text-sm font-medium rounded-sm 
+                                transition-all duration-200 active:scale-95 
+                                whitespace-nowrap"
+                  >
+                    <Edit3 className="w-3 h-3 text- flex-shrink-0" />
+                    <span>Edit Profile</span>
+                  </Link>
                 </div>
               </div>
             </div>

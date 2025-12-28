@@ -13,6 +13,7 @@ export const useUserProfile = () => {
     staleTime: 5 * 60 * 1000,
     retry: false,
     enabled: is_Authenticated,
+    refetchOnMount: "always",
     
     onSuccess: (value) => {
       setUser(value)  

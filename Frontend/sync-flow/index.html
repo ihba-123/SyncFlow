@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="dark"> 
+<html lang="en"  > 
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="syncflow.png" />
@@ -10,6 +10,27 @@
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Syncflow</title>
+
+    <!-- This script prevents dark/light mode flash on refresh -->
+    <script>
+      (function () {
+        try {
+          // Check if user has saved preference
+          const savedTheme = localStorage.getItem('theme');
+
+          if (
+            savedTheme === 'dark' ||
+            (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)
+          ) {
+            document.documentElement.classList.add('dark');
+          } else {
+            document.documentElement.classList.remove('dark');
+          }
+        } catch (e) {
+          // Ignore errors (e.g., localStorage blocked)
+        }
+      })();
+    </script>
   </head>
   <body className="font-sans antialiased">
     <div id="root"></div>

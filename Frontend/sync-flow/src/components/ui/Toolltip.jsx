@@ -23,7 +23,7 @@ function TooltipContent({ sideOffset = 6, className, ...props }) {
         sideOffset={sideOffset}
         className={`
           z-50 rounded-md px-3 py-1.5 text-xs
-          bg-gray-950 text-white
+          bg-primary text-white
           shadow-lg
           data-[state=open]:animate-in
           data-[state=closed]:animate-out
@@ -34,7 +34,7 @@ function TooltipContent({ sideOffset = 6, className, ...props }) {
         {...props}
       >
         {props.children}
-        <TooltipPrimitive.Arrow className="fill-gray-950 dark:fill-gray-800" />
+        <TooltipPrimitive.Arrow className="fill-primary dark:fill-gray-800" />
       </TooltipPrimitive.Content>
     </TooltipPrimitive.Portal>
   )

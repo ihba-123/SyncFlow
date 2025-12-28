@@ -24,6 +24,7 @@ export const useAuth = () => {
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
     refetchInterval: false,
+    refetchOnMount: "always",
   });
   
   return {

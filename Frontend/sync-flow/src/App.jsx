@@ -10,10 +10,12 @@ import { useUserProfile } from "./hooks/UserProfile";
 import UserProfileEdit from "./features/profile/UserProfile";
 import { useEffect } from "react";
 import useTheme from "./hooks/useTheme";
-import {EditProfile }from "./features/profile/EditProfile";
+import { EditProfile } from "./features/profile/EditProfile";
+import ProgressBar from "./components/ui/ProgressBar";
 const App = () => {
-useTheme();
- useUserProfile();
+  <ProgressBar />;
+  useTheme();
+  useUserProfile();
   return (
     <div>
       <ToastContainer
@@ -26,7 +28,7 @@ useTheme();
         pauseOnFocusLoss
         draggable
         pauseOnHover
-      />  
+      />
       <Routes>
         <Route element={<PublicRoute />}>
           <Route path="/" element={<LandingPageRoute />} />
@@ -36,7 +38,7 @@ useTheme();
 
         <Route path="*" element={<div>404 Not Found</div>} />
 
-        <Route  element={<ProtectedRoute />}>
+        <Route element={<ProtectedRoute />}>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/dashboard/edit-profile" element={<EditProfile />} />
           <Route path="/dashboard/profile" element={<UserProfileEdit />} />

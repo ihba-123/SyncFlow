@@ -1,9 +1,8 @@
-import { Search, Moon, Sun, Menu, TvMinimal, X } from "lucide-react";
+import { Moon, Sun, Menu, TvMinimal, Plus, X } from "lucide-react";
 import { useState } from "react";
-import { Button } from "../ui/Button";
 import { cn } from "../../utils/utils";
 import useTheme from "../../hooks/useTheme";
-
+import SearchUi from "../ui/SearchUi";
 export function ProtectedNavbar({ isExpanded, setIsExpanded, isMobile }) {
   const { theme, setTheme } = useTheme();
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -11,8 +10,8 @@ export function ProtectedNavbar({ isExpanded, setIsExpanded, isMobile }) {
   const toggleMobileMenu = () => setIsExpanded((prev) => !prev);
 
   const handleSelect = (mode) => {
-    setTheme(mode); // set theme: dark, light, system
-    setDropdownOpen(false); // auto-close dropdown
+    setTheme(mode);
+    setDropdownOpen(false);
   };
 
   const renderIcon = () => {
@@ -44,7 +43,7 @@ export function ProtectedNavbar({ isExpanded, setIsExpanded, isMobile }) {
   return (
     <header
       className={cn(
-        "fixed top-0 right-0 h-16    backdrop-blur-lg border bg-background border-black/20 dark:border-white/10 border-l-0 transition-all duration-300 z-50",
+        "fixed top-0 right-0 h-16   bg-card/10 backdrop-blur-sm border  border-black/20 dark:border-white/10 border-l-0 transition-all duration-300 z-50",
         !isMobile && (isExpanded ? "left-64" : "left-16"),
         isMobile && "left-0 w-full"
       )}
@@ -53,7 +52,7 @@ export function ProtectedNavbar({ isExpanded, setIsExpanded, isMobile }) {
         {/* Left: Hamburger + Logo */}
         <div className="flex items-center gap-4">
           {isMobile && (
-            <Button
+            <button
               variant="ghost"
               size="icon"
               onClick={toggleMobileMenu}
@@ -64,11 +63,10 @@ export function ProtectedNavbar({ isExpanded, setIsExpanded, isMobile }) {
               ) : (
                 <Menu className="w-5 text-black dark:text-white h-5" />
               )}
-            </Button>
+            </button>
           )}
 
           <div className="flex items-center gap-3">
-           
             <span className="font-extrabold font-sans  text-black dark:text-foreground hidden sm:block">
               SyncFlow
             </span>
@@ -77,36 +75,69 @@ export function ProtectedNavbar({ isExpanded, setIsExpanded, isMobile }) {
 
         {/* Right Icons */}
         <div className="flex items-center gap-4 relative">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="hover:bg-accent/10 text-black/60 hover:text-black dark:text-white/60 dark:hover:text-white hidden sm:flex"
-          >
-            <Search className="w-5 h-5" />
-          </Button>
-
           {/* Theme Dropdown */}
-          <div className="relative">
-            <Button
+          <div className="relative flex gap-4.5 items-center justify-center">
+            {/* search  */}
+            <div className="  ">
+              <SearchUi />
+            </div>
+            <div>
+              <button
+                className="
+    /* Layout & Alignment */
+    flex items-center justify-center gap-1 
+    transition-all duration-200 cursor-pointer
+    
+    /* Responsive Sizing */
+    /* Mobile: smaller padding and text */
+    px-2 py-2.5 text-[10px] 
+    /* Tablet (sm): medium padding and text */
+    sm:px-3 sm:py-2 sm:text-[11px] 
+    /* Desktop (md+): standard padding and text */
+    md:px-4 md:py-2 md:text-[12px] 
+    
+    /* UI Styling */
+    rounded-sm font-semibold
+    bg-blue-700 dark:bg-primary 
+    text-white
+    hover:bg-blue-800 dark:hover:bg-primary/70 
+    shadow-lg shadow-black/50 dark:shadow-blue-950/50
+    hover:scale-105 active:scale-95
+    whitespace-nowrap
+  "
+              >
+                {/* Icon scales slightly with screen size */}
+                <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-[17px] md:h-[17px] shrink-0" />
+
+                <span>New Project</span>
+              </button>
+            </div>
+
+            <button
               variant="ghost"
               size="icon"
-              className="border dark:hover:text-white hover:bg-white/5 border-black/30 text-black/80 hover:text-black dark:text-white/80 dark:border-white/10 flex items-center gap-2 px-5 h-10 w-24 py-1"
+              className="border dark:hover:text-white hover:bg-white/5 border-primary
+              text-black/80 hover:text-black justify-center rounded cursor-pointer dark:text-white/80 dark:border-primary flex items-center gap-2 px-5 h-9 w-24 py-2"
               onClick={() => setDropdownOpen((prev) => !prev)}
             >
-              <span className="text-sm font-normal">{renderIcon()}</span>
-              <span className="text-sm font-normal">{renderName()}</span>
-            </Button>
+              <span className="text-xl font-normal dark:text-[#66B2FF]">
+                {renderIcon()}
+              </span>
+              <span className="text-[15px] font-normal dark:text-[#66B2FF]">
+                {renderName()}
+              </span>
+            </button>
 
             {dropdownOpen && (
-              <div className="absolute  border right-4 mt-4 w-32 text-black dark:text-white bg-gray-200 dark:bg-gray-900 rounded-sm border-black/10 dark:border-white/10 shadow-lg z-50">
+              <div className="absolute dark:text-[#66B2FF] border right-4 mt-50 w-32   bg-gray-200 dark:bg-gray-900 rounded-sm text-[13px]  border-black/10 dark:border-white/10 shadow-lg z-50">
                 <button
                   className="flex items-center gap-2 text-sm w-full px-4 py-2 hover:bg-accent/20"
                   onClick={() => handleSelect("dark")}
                 >
-                  <Moon  className="w-5  h-7" /> Dark
+                  <Moon className="w-5  h-7" /> Dark
                 </button>
                 <div className="py-1">
-                  <div className="h-px bg-gradient-to-r  text-sm from-transparent via-gray-800 dark:via-indigo-400/30 to-transparent" />
+                  <div className="h-px bg-gradient-to-r   text-sm from-transparent via-gray-800 dark:via-indigo-400/30 to-transparent" />
                 </div>
                 <button
                   className="flex items-center gap-2 w-full  text-sm px-4 py-2 hover:bg-accent/20"

@@ -62,19 +62,15 @@ export function Sidebar({ isExpanded, setIsExpanded, isMobile }) {
     <aside
       className={cn(
         "fixed left-0 top-0 h-full glass-card border-r border-black/20 dark:border-white/10 z-50",
-        "flex flex-col", // better structure
-        // Desktop: smooth width transition
+        "flex flex-col",
         !isMobile && "transition-[width] duration-500 ease-in-out",
-        // Mobile: instant or translate-based only
         isMobile && "transition-transform duration-300 ease-in-out",
-        // Width control
-        isExpanded ? "w-64" : "w-16", // use consistent w-64 instead of w-54
-        // Mobile: hide when closed using translate
+        isExpanded ? "w-64" : "w-16",
         isMobile && !isExpanded && "-translate-x-full",
         isMobile && isExpanded && "translate-x-0"
       )}
     >
-      <div className="relative flex flex-col h-full bg-[var(--background)] p-3 overflow-hidden">
+      <div className="relative flex flex-col h-full bg-background/40 p-3 overflow-hidden">
         {/* Logo & Toggle */}
         <div className="relative flex items-center justify-between h-14 mb-6">
           <div
@@ -127,9 +123,9 @@ export function Sidebar({ isExpanded, setIsExpanded, isMobile }) {
                     onClick={handleNavClick}
                     className={cn(
                       "group flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-300",
-                      "hover:bg-indigo-500/20 hover:border-indigo-400/30 hover:shadow-lg hover:shadow-indigo-500/10",
+                      "hover:bg-[#66b3ff86] dark:hover:bg-indigo-500/25 hover:border-primary hover:shadow-lg hover:shadow-indigo-500/10",
                       isActive(item.to)
-                        ? "bg-indigo-500/25 border border-indigo-400/40 text-indigo-300 shadow-md shadow-indigo-500/20"
+                        ? "bg-[#66b3ff9a] not-first:dark:bg-indigo-500/25 border border-indigo-400/40 text-indigo-300 shadow-md shadow-indigo-500/20"
                         : "text-gray-300",
                       isExpanded ? "justify-start" : "justify-center"
                     )}
@@ -181,9 +177,9 @@ export function Sidebar({ isExpanded, setIsExpanded, isMobile }) {
                     onClick={handleNavClick}
                     className={cn(
                       "group flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-300",
-                      "hover:bg-indigo-500/20 hover:border-indigo-400/30 hover:shadow-lg hover:shadow-indigo-500/10",
+                      "hover:bg-[#66b3ff9a] dark:hover:bg-indigo-500/25 hover:border-indigo-400/30 hover:shadow-lg hover:shadow-indigo-500/10",
                       isActive(item.to)
-                        ? "bg-indigo-500/25 border border-indigo-400/40 text-indigo-300 shadow-md shadow-indigo-500/20"
+                        ? "bg-[#66b3ff9a] not-first:dark:bg-indigo-500/25 border border-indigo-400/40 text-indigo-300 shadow-md shadow-indigo-500/20"
                         : "text-gray-300",
                       isExpanded ? "justify-start" : "justify-center"
                     )}
@@ -244,7 +240,7 @@ export function Sidebar({ isExpanded, setIsExpanded, isMobile }) {
                     </AvatarFallback>
                   </Avatar>
                   {is_online && (
-                    <span className="absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full bg-green-500 border-2 border-background ring-2 ring-background" />
+                    <span className="absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full bg-green-500 border-2 border-white dark:border-background ring-2 ring-background" />
                   )}
                 </div>
 
@@ -267,7 +263,7 @@ export function Sidebar({ isExpanded, setIsExpanded, isMobile }) {
               sideOffset={12}
               className="w-44 h-auto z-100 p-3 bg-background/95 backdrop-blur-md rounded-2xl border border-black/20 dark:border-white/10 shadow-2xl"
             >
-              <div className="space-y-1"> 
+              <div className="space-y-1">
                 <button
                   onClick={handleEditProfileClick}
                   className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-800 dark:text-gray-200 hover:text-gray-600 cursor-pointer rounded-lg transition-colors"
