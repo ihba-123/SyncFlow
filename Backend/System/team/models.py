@@ -4,8 +4,7 @@ from chatapp.models import ChatRoom
 import uuid
 import hashlib
 from django.utils import timezone
-    
-
+from .utils.custom_queryset import ProjectQuerySet
 
 # ===============================
 # Project Model
@@ -18,6 +17,9 @@ class Project(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     chat_room = models.ForeignKey(ChatRoom, on_delete=models.SET_NULL, null=True, blank=True)
+    # image = CloudinaryField('image', blank=True, null=True, resource_type='image')
+    is_deleted = models.BooleanField(default=False)
+    objects = ProjectQuerySet.as_manager()
 
     def save(self, *args, **kwargs):
         if not self.chat_room and not self.is_solo:
@@ -116,6 +118,7 @@ class ActivityLog(models.Model):
     action = models.CharField(max_length=50, choices=ACTION_CHOICES)
     details = models.TextField(blank=True, null=True)   
     created_at = models.DateTimeField(auto_now_add=True)
+
 
     class Meta:
         indexes = [

@@ -32,7 +32,7 @@ class InviteView(APIView):
         user_id = serializer.validated_data.get("user_id")
         invited_email = serializer.validated_data.get("invited_email")
 
-        # Resolve user_id to email if provided
+
         if user_id:
             try:
                 invited_user = User.objects.get(id=user_id)
@@ -65,7 +65,6 @@ class InviteView(APIView):
                 invited_email=invited_email
             )
         except ValidationError as exc:
-            # Handle DRF ValidationError
             if hasattr(exc, 'message_dict'):
                 return Response(exc.message_dict, status=400)
             elif hasattr(exc, 'messages'):

@@ -82,42 +82,14 @@ export function ProtectedNavbar({ isExpanded, setIsExpanded, isMobile }) {
               <SearchUi />
             </div>
             <div>
-              <button
-                className="
-    /* Layout & Alignment */
-    flex items-center justify-center gap-1 
-    transition-all duration-200 cursor-pointer
-    
-    /* Responsive Sizing */
-    /* Mobile: smaller padding and text */
-    px-2 py-2.5 text-[10px] 
-    /* Tablet (sm): medium padding and text */
-    sm:px-3 sm:py-2 sm:text-[11px] 
-    /* Desktop (md+): standard padding and text */
-    md:px-4 md:py-2 md:text-[12px] 
-    
-    /* UI Styling */
-    rounded-sm font-semibold
-    bg-blue-700 dark:bg-primary 
-    text-white
-    hover:bg-blue-800 dark:hover:bg-primary/70 
-    shadow-lg shadow-black/50 dark:shadow-blue-950/50
-    hover:scale-105 active:scale-95
-    whitespace-nowrap
-  "
-              >
-                {/* Icon scales slightly with screen size */}
-                <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-[17px] md:h-[17px] shrink-0" />
-
-                <span>New Project</span>
-              </button>
+             
             </div>
 
             <button
               variant="ghost"
               size="icon"
               className="border dark:hover:text-white hover:bg-white/5 border-primary
-              text-black/80 hover:text-black justify-center rounded cursor-pointer dark:text-white/80 dark:border-primary flex items-center gap-2 px-5 h-9 w-24 py-2"
+              text-black/80 hover:text-black justify-center rounded-sm cursor-pointer dark:text-white/80 dark:border-primary flex items-center gap-2 px-5 h-9 w-24 py-2"
               onClick={() => setDropdownOpen((prev) => !prev)}
             >
               <span className="text-xl font-normal dark:text-[#66B2FF]">

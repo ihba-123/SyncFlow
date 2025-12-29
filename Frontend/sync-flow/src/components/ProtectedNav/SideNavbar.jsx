@@ -3,7 +3,7 @@ import {
   LayoutDashboard,
   Users,
   Settings,
-  FileText,
+  Folder,
   MessageSquare,
   Bell,
   ChevronLeft,
@@ -32,10 +32,9 @@ export function Sidebar({ isExpanded, setIsExpanded, isMobile }) {
   const [open, setOpen] = useState(false);
 
   const navItems = [
-    { icon: Home, label: "Home", to: "/home" },
     { icon: LayoutDashboard, label: "Dashboard", to: "/dashboard" },
     { icon: Users, label: "Team", to: "/team" },
-    { icon: FileText, label: "Documents", to: "/documents" },
+    { icon: Folder, label: "Projects", to: "/projects" },
     { icon: MessageSquare, label: "Messages", to: "/messages" },
   ];
 

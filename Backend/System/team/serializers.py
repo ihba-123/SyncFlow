@@ -12,6 +12,7 @@ class ProjectListSerializer(serializers.Serializer):
   created_at = serializers.DateTimeField(read_only=True)
   is_solo = serializers.BooleanField(read_only=True)
   chat_room = serializers.CharField(read_only=True, allow_null=True)
+  updated_at = serializers.DateTimeField(read_only=True)
 
 
 class ProjectDetailSerializer(serializers.Serializer):

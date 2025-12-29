@@ -4,7 +4,7 @@ from rest_framework import permissions
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
-from ..services.project_services import project_create , get_user_project , get_project_detail
+from ..services.project_services import project_create , get_user_project , get_project_detail , project_update , project_soft_delete , project_restore
 from rest_framework import throttling
 from rest_framework.exceptions import ValidationError,PermissionDenied
 import logging
@@ -59,6 +59,58 @@ class ProjectCreateView(APIView):
             status=status.HTTP_201_CREATED,
         )
 
+
+#Project Update View
+class ProjectUpdateView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def patch(self , request , project_id: int):
+        try:
+            project = project_update(
+                user=request.user,
+                project_id=project_id,
+                data=request.data,
+            )
+        except ValidationError as exc:
+            logger.warning(f"Project update failed: {str(exc)}")
+            return Response(
+                {"error": str(exc)}, status=status.HTTP_400_BAD_REQUEST
+            )
+        except PermissionDenied as exc:
+            logger.warning(f"Project update failed: {str(exc)}")
+            return Response(
+                {"error": str(exc)}, status=status.HTTP_403_FORBIDDEN
+            )
+        except Exception:
+            logger.error("Unexpected error while updating project", exc_info=True, stack_info=True)
+            return Response(
+                {"error": "Unexpected error while updating project"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+        serializer = ProjectDetailSerializer(project)
+        return Response({"message": "Project updated successfully", "project": serializer.data}, status=status.HTTP_200_OK)
+            
+
+class ProjectSoftDeleteView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def delete(self, request, project_id: int):
+        project = project_soft_delete(user=request.user, project_id=project_id)
+        serializer = ProjectDetailSerializer(project)
+        return Response({"message": "Project deleted successfully", "project": serializer.data}, status=status.HTTP_200_OK)
+
+class ProjectRestoreView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, project_id: int):
+        project = project_restore(user=request.user, project_id=project_id)
+        serializer = ProjectDetailSerializer(project)
+        return Response({"project": serializer.data}, status=status.HTTP_200_OK)
+
+
+
+
 #Project List View
 class ListProjectsView(APIView):
     permission_classes = [permissions.IsAuthenticated]
@@ -73,6 +125,8 @@ class ListProjectsView(APIView):
         )
         return Response({"projects": serializer.data}, status=status.HTTP_200_OK)
     
+
+
 
 #Project Detail View
 class ProjectDetailView(APIView):
