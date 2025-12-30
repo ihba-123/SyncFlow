@@ -1,6 +1,15 @@
 import { Plus, FolderOpen, Clock, TrendingUp, Globe, Smartphone, Check, MessageSquare } from "lucide-react"
+import {  useNavigate } from "react-router-dom"
+
 
 export default function Dashboard() {
+const navigate = useNavigate();
+const handleClick = () => {
+  setTimeout(() => {
+    navigate("/dashboard/create-project");
+  }, 500);
+}
+
   return (
     <div className="min-h-screen w-full bg-[#f6f7f8] dark:bg-[#101a22] text-slate-900 dark:text-white transition-colors duration-200">
       <main className="max-w-7xl mx-auto p-6 md:p-10 flex flex-col gap-8">
@@ -15,7 +24,7 @@ export default function Dashboard() {
             </p>
           </div>
           <div className="flex justify-start md:justify-end">
-            <button className="flex items-center gap-2 bg-[#1392ec] hover:bg-[#1392ec]/90 text-white px-4 py-2 md:px-5 md:py-2.5 rounded-lg font-semibold shadow-lg shadow-[#1392ec]/20 transition-all active:scale-95 cursor-pointer whitespace-nowrap text-sm md:text-base">
+            <button onClick={handleClick} className="flex items-center gap-2 bg-[#1392ec] hover:bg-[#1392ec]/90 text-white px-4 py-2 md:px-5 md:py-2.5 rounded-lg font-semibold shadow-lg shadow-[#1392ec]/20 transition-all active:scale-95 cursor-pointer whitespace-nowrap text-sm md:text-base">
               <Plus className="w-4 h-4 md:w-5 md:h-5" />
               <span>Create Project</span>
             </button>

@@ -12,6 +12,9 @@ import { useEffect } from "react";
 import useTheme from "./hooks/useTheme";
 import { EditProfile } from "./features/profile/EditProfile";
 import ProgressBar from "./components/ui/ProgressBar";
+import WelcomePage from "./pages/dashboard/WelcomePage";
+import Project from "./pages/dashboard/Project";
+import { CreateProject } from "./pages/dashboard/CreateProject";
 const App = () => {
   <ProgressBar />;
   useTheme();
@@ -42,6 +45,9 @@ const App = () => {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/dashboard/edit-profile" element={<EditProfile />} />
           <Route path="/dashboard/profile" element={<UserProfileEdit />} />
+          <Route path="/dashboard/project" element={<Project/>} />
+          <Route path="/dashboard/create-project" element={<CreateProject/>} />
+          <Route path="/welcome/" element={<WelcomePage />} />
         </Route>
       </Routes>
     </div>

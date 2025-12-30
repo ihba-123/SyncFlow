@@ -31,3 +31,8 @@ export const userProfile = async() => {
   const res = await api.get("chat-profile/")
   return res.data
 }
+
+export const onBoard = async() => {
+  const res = await api.post("onboard/")
+  return res.data
+}

@@ -7,6 +7,7 @@ from chatapp.models import Profile
 def login_services(user):
   profile, created = Profile.objects.get_or_create(user=user)
   profile.is_online = True
+  
   profile.save()
 
   #  Generate tokens
@@ -16,6 +17,7 @@ def login_services(user):
   return{
       'refresh':str(refresh),
       'access': str(access),
+      'has_completed_onboarding': user.has_completed_onboarding,
       'user': UserProfileSerializer(user).data  # include is_online in serializer
   }
   

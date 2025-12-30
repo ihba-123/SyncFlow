@@ -26,11 +26,12 @@ class UserLoginView(APIView):
         try:
             user = serializer.validated_data['user']
 
-            data =  login_services(user)
+            data =  login_services(user)    
 
             response = Response({
                 "access": data['access'],
                 "refresh": data['refresh'],
+                "onboarding_completed": data['has_completed_onboarding'],
                 "user": data['user']
             }, status=status.HTTP_200_OK)
             set_refresh_cookie(response, data['refresh'])

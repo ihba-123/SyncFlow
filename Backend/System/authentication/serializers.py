@@ -68,5 +68,5 @@ class loginSerializer(serializers.Serializer):
 class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ("id", "email", "name" )
+        fields = ("id", "email", "name" ,"has_completed_onboarding")
         read_only_fields = ("id",)

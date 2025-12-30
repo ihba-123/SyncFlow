@@ -34,7 +34,7 @@ export function Sidebar({ isExpanded, setIsExpanded, isMobile }) {
   const navItems = [
     { icon: LayoutDashboard, label: "Dashboard", to: "/dashboard" },
     { icon: Users, label: "Team", to: "/team" },
-    { icon: Folder, label: "Projects", to: "/projects" },
+    { icon: Folder, label: "Projects", to: "/dashboard/project" },
     { icon: MessageSquare, label: "Messages", to: "/messages" },
   ];
 
@@ -163,10 +163,11 @@ export function Sidebar({ isExpanded, setIsExpanded, isMobile }) {
             </TooltipProvider>
           ))}
 
-          <div className="py-4">
-            <div className="h-px bg-gradient-to-r from-transparent via-gray-800 dark:via-indigo-400/30 to-transparent" />
-          </div>
+            <div className="mt-14 ">
+                          <div className="h-px bg-gradient-to-r from-transparent via-gray-800 dark:via-indigo-400/30 to-transparent" />
+            </div>
 
+              
           {bottomItems.map((item) => (
             <TooltipProvider key={item.label}>
               <Tooltip delayDuration={200}>
