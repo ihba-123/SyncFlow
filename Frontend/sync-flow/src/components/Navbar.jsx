@@ -45,7 +45,7 @@ export function Navbar() {
 
   return (
     <>
-      {/* NAVBAR */}
+      
       <nav
         className={`fixed top-0 font-serif left-0 right-0 z-50 transition-all duration-300 ${
           isSticky ? "glass-light py-3" : "bg-transparent py-6"

@@ -25,13 +25,20 @@ export default function Hero() {
   };
 
   return (
-    <section id="Hero" className="relativez min-h-screen flex items-center justify-center pt-30 pb-12 px-4 sm:px-6 lg:px-8 overflow-hidden">
-      <div className="absolute top-0 right-0 w-96 h-96 gradient-blur opacity-30 -z-10"></div>
-      <div className="absolute bottom-0 left-0 w-80 h-80 gradient-blur opacity-20 -z-10 delay-1000"></div>
-      <div className="absolute inset-0 bg-gradient-to-b from-secondary/5 via-transparent to-accent/5 -z-10"></div>
+    <section
+      id="Hero"
+      className="relative min-h-screen flex items-center justify-center pt-30 pb-12 px-4 sm:px-6 lg:px-8 overflow-hidden"
+      style={{
+        background: "linear-gradient(135deg, #dbeafe 0%, #e6d9ff 45%, #f5f3ff 100%)",
+      }}
+    >
+      {/* Enhanced soft blur accents for more visible depth */}
+      <div className="absolute top-0 right-0 w-96 h-96 bg-purple-400 rounded-full filter blur-3xl opacity-30 -z-10"></div>
+      <div className="absolute bottom-0 left-0 w-80 h-80 bg-blue-400 rounded-full filter blur-3xl opacity-25 -z-10"></div>
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-indigo-300 rounded-full filter blur-3xl opacity-15 -z-10"></div>
 
       <motion.div
-        className="max-w-4xl mx-auto text-center"
+        className="max-w-4xl mx-auto text-center z-10"
         variants={containerVariants}
         initial="hidden"
         animate="visible"
@@ -47,18 +54,17 @@ export default function Hero() {
         </motion.div>
 
         <motion.h1
-          className="text-4xl sm:text-5xl text-gray-800  lg:text-6xl font-bold text-balance mb-6 leading-tight"
+          className="text-4xl sm:text-5xl lg:text-6xl font-bold text-balance mb-6 leading-tight text-gray-800"
           variants={itemVariants}
         >
           Organize, Collaborate, and{" "}
-          <span className="bg-gradient-to-r from-gray-500  via-gray-700
-           to-gray-700 bg-clip-text text-transparent">
+          <span className="bg-gradient-to-r from-gray-600 via-gray-800 to-gray-900 bg-clip-text text-transparent">
             Deliver Faster
           </span>
         </motion.h1>
 
         <motion.p
-          className="text-sm sm:text-xl text-gray-800  text-balance mb-8 max-w-2xl mx-auto leading-relaxed"
+          className="text-sm sm:text-xl text-gray-700 text-balance mb-8 max-w-2xl mx-auto leading-relaxed"
           variants={itemVariants}
         >
           SyncFlow is the modern project management platform that brings clarity
@@ -71,54 +77,54 @@ export default function Hero() {
           variants={itemVariants}
         >
           <Button
-            size="lg"
+            size="large"
             variant="contained"
             sx={{
-                    borderColor: "white",
-                    backgroundColor: "black",
-                    color: "white",
-                    "&:hover": {
-                      borderColor: "gray",
-                    },
-                  }}
+              backgroundColor: "#000000",
+              color: "#ffffff",
+              "&:hover": {
+                backgroundColor: "#1a1a1a",
+              },
+            }}
           >
             Get Started Free
             <ArrowRight size={18} className="ml-2" />
           </Button>
           <Button
-            size="lg"
+            size="large"
             variant="outlined"
             sx={{
-                    borderColor: "gray",
-                    color: "black",
-                    "&:hover": {
-                      borderColor: "gray",
-                    },
-                  }}
+              borderColor: "#374151",
+              color: "#000000",
+              "&:hover": {
+                borderColor: "#1f2937",
+                backgroundColor: "#f3f4f6",
+              },
+            }}
           >
             Watch Demo
           </Button>
         </motion.div>
 
         <motion.div
-          className="relative mx-auto mt-12 max-w-3xl  "
+          className="relative mx-auto mt-12 max-w-3xl"
           variants={itemVariants}
         >
           <div className="glass-light rounded-2xl p-8 flex justify-center items-center sm:p-12">
-            <div className="bg-gradient-to-br from-primary/20 via-secondary/10 to-accent/20 rounded-xl w-86 lg:w-full h-68 sm:h-64 lg:h-90 flex items-center justify-center">
+            <div className="bg-gradient-to-br from-blue-100 via-purple-50 to-indigo-50 rounded-xl w-full max-w-2xl h-68 sm:h-64 lg:h-96 flex items-center justify-center shadow-inner">
               <motion.div
                 className="text-center"
                 animate={{ y: [0, -10, 0] }}
-                transition={{ duration: 4, repeat: Infinity }}
+                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
               >
-                <div className="inline-block mb-4 ">
-                  <Zap size={48} className="text-accent/60 mx-auto" />
+                <div className="inline-block mb-4">
+                  <Zap size={48} className="text-purple-500 mx-auto" />
                 </div>
-                <p className="text-foreground/50">Dashboard Preview</p>
+                <p className="text-gray-600">Dashboard Preview</p>
               </motion.div>
             </div>
           </div>
-          <div className="absolute -bottom-4 left-0 right-0 h-32 bg-gradient-to-t from-background via-background/50 to-transparent -z-10 blur-2xl"></div>
+          <div className="absolute -bottom-4 left-0 right-0 h-32 bg-gradient-to-t from-white via-white/60 to-transparent -z-10 blur-2xl"></div>
         </motion.div>
       </motion.div>
     </section>

@@ -52,9 +52,17 @@ export function Features() {
   return (
     <section
       id="features"
-      className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-transparent via-secondary/5 to-transparent scroll-smooth"
+      className="relative py-20 px-4 sm:px-6 lg:px-8 overflow-hidden scroll-smooth"
+      style={{
+        background: "linear-gradient(135deg, #dbeafe 0%, #e6d9ff 45%, #f5f3ff 100%)",
+      }}
     >
-      <div className="max-w-7xl mx-auto">
+      {/* Matching blurred accent circles from Hero */}
+      <div className="absolute top-0 right-0 w-96 h-96 bg-purple-400 rounded-full filter blur-3xl opacity-30 -z-10"></div>
+      <div className="absolute bottom-0 left-0 w-80 h-80 bg-blue-400 rounded-full filter blur-3xl opacity-25 -z-10"></div>
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-indigo-300 rounded-full filter blur-3xl opacity-15 -z-10"></div>
+
+      <div className="max-w-7xl mx-auto relative z-10">
         {/* Section Header */}
         <motion.div
           className="text-center mb-16"
@@ -66,7 +74,7 @@ export function Features() {
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 text-gray-800">
             Powerful Features for Modern Teams
           </h2>
-          <p className="text-lg text-gray-800  text-balance max-w-2xl mx-auto">
+          <p className="text-lg text-gray-600 text-balance max-w-2xl mx-auto">
             Everything you need to manage projects efficiently and keep your team synchronized.
           </p>
         </motion.div>
@@ -88,13 +96,13 @@ export function Features() {
                 variants={itemVariants}
                 whileHover={{ scale: 1.02 }}
               >
-                <div className="w-12 h-12 rounded-lg  flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                <div className="w-12 h-12 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
                   <Icon size={24} className="text-black font-extrabold" />
                 </div>
-                <h3 className="text-xl text-gray-800  font-semibold mb-3 ">
+                <h3 className="text-xl text-gray-800 font-semibold mb-3">
                   {feature.title}
                 </h3>
-                <p className="text-gray-800  leading-relaxed">
+                <p className="text-gray-600 leading-relaxed">
                   {feature.description}
                 </p>
               </motion.div>

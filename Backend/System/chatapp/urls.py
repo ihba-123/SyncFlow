@@ -10,6 +10,7 @@ from .view.profile_update import ProfileUpdateView
 from .view.profile_views import ProfileAPIView
 from .view.user_status_view import AllUsersStatusView
 from .view.user_search_view import UserSearchView
+from .view.Profile_delete import ProfileDeleteView
 urlpatterns = [
     path('chatrooms/create/', ChatRoomCreateView.as_view(), name='chatroom-create'),
     path('message-list/<int:room_id>/', MessageListView.as_view(), name='message-list'),
@@ -20,6 +21,7 @@ urlpatterns = [
     path('chat-profile/', UserDetailView.as_view(), name='profile-current'), 
     path('chat-profile/<int:user_id>/', ProfileAPIView.as_view(), name='profile-detail'),  # any user's profile
     path('chat-profile/update/', ProfileUpdateView.as_view(), name='profile-update'),
+    path('chat-profile/delete/', ProfileDeleteView.as_view(), name='profile-delete'),
     path('users/all-status/', AllUsersStatusView.as_view(), name='all-user-status'),  
     path('user-search/', UserSearchView.as_view(), name='user-search'),
 ]

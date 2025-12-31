@@ -8,7 +8,6 @@ export function HowItWorks() {
       description:
         "Set up your first project and invite team members to collaborate in seconds.",
     },
-    
     {
       number: "02",
       title: "Organize Tasks",
@@ -47,9 +46,17 @@ export function HowItWorks() {
   return (
     <section
       id="how-it-works"
-      className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-accent/5 via-transparent to-primary/5"
+      className="relative py-20 px-4 sm:px-6 lg:px-8 overflow-hidden"
+      style={{
+        background: "linear-gradient(135deg, #dbeafe 0%, #e6d9ff 45%, #f5f3ff 100%)",
+      }}
     >
-      <div className="max-w-7xl mx-auto ">
+      {/* Matching blurred accent circles from Hero */}
+      <div className="absolute top-0 right-0 w-96 h-96 bg-purple-400 rounded-full filter blur-3xl opacity-30 -z-10"></div>
+      <div className="absolute bottom-0 left-0 w-80 h-80 bg-blue-400 rounded-full filter blur-3xl opacity-25 -z-10"></div>
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-indigo-300 rounded-full filter blur-3xl opacity-15 -z-10"></div>
+
+      <div className="max-w-7xl mx-auto relative z-10">
         {/* Section Header */}
         <motion.div
           className="text-center mb-16"
@@ -58,11 +65,11 @@ export function HowItWorks() {
           transition={{ duration: 0.6 }}
           viewport={{ once: true }}
         >
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 text-gray-700">
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 text-gray-800">
             Simple Workflow, Powerful Results
           </h2>
-          <p className="text-lg text-gray-800  text-balance max-w-2xl mx-auto">
-            Get started in minutes and see the difference TaskFlow makes in your
+          <p className="text-lg text-gray-600 text-balance max-w-2xl mx-auto">
+            Get started in minutes and see the difference SyncFlow makes in your
             team's productivity.
           </p>
         </motion.div>
@@ -87,10 +94,10 @@ export function HowItWorks() {
                       {/* Left side content */}
                       <div className="flex-1 text-right">
                         <div className="glass-light rounded-xl p-6 text-right">
-                          <h3 className="text-xl font-semibold mb-2 text-gray-950 ">
+                          <h3 className="text-xl font-semibold mb-2 text-gray-800">
                             {step.title}
                           </h3>
-                          <p className="text-gray-800 ">{step.description}</p>
+                          <p className="text-gray-600">{step.description}</p>
                         </div>
                       </div>
 
@@ -121,10 +128,10 @@ export function HowItWorks() {
 
                       <div className="flex-1">
                         <div className="glass-light rounded-xl p-6">
-                          <h3 className="text-xl font-semibold mb-2 text-gray-950">
+                          <h3 className="text-xl font-semibold mb-2 text-gray-800">
                             {step.title}
                           </h3>
-                          <p className="text-gray-800">{step.description}</p>
+                          <p className="text-gray-600">{step.description}</p>
                         </div>
                       </div>
                     </>
@@ -151,15 +158,15 @@ export function HowItWorks() {
                     {step.number}
                   </div>
                   {index < steps.length - 1 && (
-                    <div className="w-1 h-12 bg-gradient-to-b  from-gray-400 to-gray-900 mt-2"></div>
+                    <div className="w-1 h-12 bg-gradient-to-b from-gray-400 to-gray-900 mt-2"></div>
                   )}
                 </div>
 
                 <div className="glass-light rounded-xl p-4 flex-1 pb-6">
-                  <h3 className="text-lg font-semibold mb-2 text-foreground">
+                  <h3 className="text-lg font-semibold mb-2 text-gray-800">
                     {step.title}
                   </h3>
-                  <p className="text-foreground/70 text-sm">{step.description}</p>
+                  <p className="text-gray-600 text-sm">{step.description}</p>
                 </div>
               </motion.div>
             ))}

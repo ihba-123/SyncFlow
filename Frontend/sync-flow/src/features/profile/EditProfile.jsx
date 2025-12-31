@@ -38,12 +38,12 @@ const InputField = ({
   );
 };
 
-// Reusable Avatar
+
 const ProfileAvatar = ({ src, onChange, disabled }) => (
   <div className="relative group">
     <div className="w-32 h-32 rounded-full bg-white/30 dark:bg-gray-800/30 backdrop-blur-md border-4 border-white/40 dark:border-gray-700/60 flex items-center justify-center overflow-hidden shadow-xl">
       {src ? (
-        <img src={src} alt="Profile" className="w-full h-full object-cover" />
+        <img src={src} alt="Profile" className="w-full  h-full object-cover" />
       ) : (
         <User className="w-16 h-16 text-gray-500 dark:text-gray-400" />
       )}
