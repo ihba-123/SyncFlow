@@ -32,7 +32,13 @@ export const userProfile = async() => {
   return res.data
 }
 
-export const onBoard = async() => {
-  const res = await api.post("onboard/")
-  return res.data
+
+export const deleteProfile = async() => {
+  const res = await api.patch("chat-profile/delete/")
+    return res.photo;
 }
+
+// export const onBoard = async() => {
+//   const res = await api.post("onboard/")
+//   return res.data
+// }

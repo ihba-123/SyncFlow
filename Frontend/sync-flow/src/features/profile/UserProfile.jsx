@@ -32,7 +32,7 @@ export default function UserProfile() {
                   <img
                     src={authData?.photo || photo}
                     alt={displayName}
-                    className="w-28 h-28 sm:w-32 sm:h-32 rounded-full object-cover border-4 dark:border-gray-500 border-gray-800"
+                    className="w-28 h-28 sm:w-32 sm:h-32 rounded-full  object-cover border-4 dark:border-gray-500 border-white/10"
                   />
                 ) : (
                   <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-full bg-cyan-500 flex items-center justify-center text-4xl sm:text-5xl font-bold text-white border-4 border-gray-800">

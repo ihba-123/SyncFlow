@@ -27,6 +27,7 @@ import { useState } from "react";
 export function Sidebar({ isExpanded, setIsExpanded, isMobile }) {
   const { data } = useAuth();
   const { name, photo, is_online } = useUserProfile();
+  console.log( is_online);
   const navigate = useNavigate();
   const location = useLocation();
   const [open, setOpen] = useState(false);
