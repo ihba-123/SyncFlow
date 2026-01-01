@@ -126,18 +126,55 @@ class UseInviteView(APIView):
           )
 
 
+
 class ListInvitesView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, project_id: int):
         project = get_object_or_404(Project, id=project_id)
-        from ..models import ProjectMember
-        if not ProjectMember.objects.filter(project=project, user=request.user, role='admin').exists():
+
+        # Admin check
+        if not ProjectMember.objects.filter(
+            project=project,
+            user=request.user,
+            role="admin",
+        ).exists():
             return Response(
                 {"error": "Only admins can view invites"},
                 status=status.HTTP_403_FORBIDDEN,
             )
+       
+        invites = project.invites.all().order_by("-created_at")
+        invite_serializer = InviteDetailSerializer(invites, many=True)
 
-        invites = project.invites.all().order_by('-created_at')
-        serializer = InviteDetailSerializer(invites, many=True)
-        return Response({"invites": serializer.data}, status=status.HTTP_200_OK)
+        # Members
+        members = project.members.select_related("user").order_by("-joined_at")
+        from chatapp.models import Profile
+        user_ids = [m.user.id for m in members]
+        profiles = Profile.objects.filter(user_id__in=user_ids).in_bulk(
+            field_name="user_id"
+        )
+
+        joined_members = []
+
+        for member in members:
+            user = member.user
+            profile = profiles.get(user.id)
+
+            joined_members.append(
+                {
+                    "id": user.id,
+                    "email": user.email,
+                    "name": user.get_display_name(), 
+                    "role": member.get_role_display(),
+                    "is_online": profile.is_online if profile else False,
+                    "joined_at": member.joined_at,
+                }
+            )
+
+        return Response(
+            {
+                "invites": invite_serializer.data,
+                "joined_members": joined_members,
+            }
+        )

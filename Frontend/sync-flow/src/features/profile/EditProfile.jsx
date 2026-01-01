@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { updateProfile } from "../../api/profile";
-import { deleteProfile } from "../../api/auth"; // Assuming this deletes the photo or profile
+import { deleteProfile } from "../../api/auth";
 import { useAuth } from "../../hooks/Auth";
 import { useUserProfile } from "../../hooks/UserProfile";
 import { User, Camera, Trash2 } from "lucide-react";
@@ -39,7 +39,7 @@ const InputField = ({
   );
 };
 
-const ProfileAvatar = ({ src, onChange, disabled }) => (
+const ProfileAvatar = ({ src, onChange, disabled, inputId }) => (
   <div className="relative group">
     <div className="w-32 h-32 rounded-full bg-white/30 dark:bg-gray-800/30 backdrop-blur-md border-4 border-white/60 dark:border-gray-700/60 flex items-center justify-center overflow-hidden shadow-xl">
       {src ? (
@@ -48,16 +48,22 @@ const ProfileAvatar = ({ src, onChange, disabled }) => (
         <User className="w-16 h-16 text-gray-500 dark:text-gray-400" />
       )}
     </div>
-    <label className="absolute inset-0 rounded-full bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center cursor-pointer">
+    {/* Fixed: label properly associated with input via htmlFor */}
+    <label
+      htmlFor={inputId}
+      className="absolute inset-0 rounded-full bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center cursor-pointer"
+    >
       <Camera className="w-8 h-8 text-white" />
-      <input
-        type="file"
-        accept="image/*"
-        onChange={onChange}
-        disabled={disabled}
-        className="hidden"
-      />
     </label>
+    {/* Input moved outside label, hidden, but linked via id */}
+    <input
+      id={inputId}
+      type="file"
+      accept="image/*"
+      onChange={onChange}
+      disabled={disabled}
+      className="hidden"
+    />
   </div>
 );
 
@@ -72,10 +78,6 @@ export const EditProfile = () => {
   const { name, photo, bio, isLoading: profileLoading } = useUserProfile();
   const queryClient = useQueryClient();
 
-
-
-
-  // DELETE PROFILE PHOTO mutation
   const deleteMutation = useMutation({
     mutationFn: deleteProfile,
     onSuccess: () => {
@@ -86,10 +88,6 @@ export const EditProfile = () => {
     onError: () => toast.error("Failed to delete profile picture."),
   });
 
- 
-
-
-  // UPDATE PROFILE mutation 
   const updateMutation = useMutation({
     mutationFn: updateProfile,
     onSuccess: (data) => {
@@ -141,14 +139,20 @@ export const EditProfile = () => {
     setNewPhoto(null);
   };
 
-  const isSaving = updateMutation.isPending; 
+  const isSaving = updateMutation.isPending;
 
-   const hasCustomPhoto = previewPhoto && 
-  !previewPhoto.includes("profile_hjkzpu") && 
-  previewPhoto !== "" ;
-
+  const hasCustomPhoto =
+    previewPhoto &&
+    !previewPhoto.includes("profile_hjkzpu") &&
+    previewPhoto !== "";
 
   const isDeleting = deleteMutation.isPending;
+
+  // Unique IDs to avoid conflicts when component is rendered multiple times
+  const sidebarInputId = "profile-photo-input-sidebar";
+  const mainInputId = "profile-photo-input-main";
+  const mobileInputId = "profile-photo-input-mobile";
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-gray-100 to-gray-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 transition-all">
       <ProgressBar apiLoading={isSaving || isDeleting} />
@@ -162,6 +166,7 @@ export const EditProfile = () => {
                 src={previewPhoto}
                 onChange={handlePhotoChange}
                 disabled={isSaving}
+                inputId={sidebarInputId}
               />
               <p className="mt-5 text-xl font-semibold text-gray-900 dark:text-white">
                 {newName || "Your Name"}
@@ -186,6 +191,7 @@ export const EditProfile = () => {
                 src={previewPhoto}
                 onChange={handlePhotoChange}
                 disabled={isSaving}
+                inputId={mobileInputId}
               />
               <p className="mt-5 text-2xl font-semibold text-gray-900 dark:text-white">
                 {newName || "Your Name"}
@@ -205,11 +211,14 @@ export const EditProfile = () => {
                     src={previewPhoto}
                     onChange={handlePhotoChange}
                     disabled={isSaving}
+                    inputId={mainInputId}
                   />
-                  {hasCustomPhoto && (<Trash2 
-                    onClick={() => setIsDeleteConfirmOpen(true)}
-                    className="text-red-500 cursor-pointer -mt-12 sm:mt-24 w-6 h-6 md:w-6 md:h-7 sm:w-7 sm:h-7 sm:-ml-15  ml-18 z-50 hover:scale-110 transition"
-                  />)}
+                  {hasCustomPhoto && (
+                    <Trash2
+                      onClick={() => setIsDeleteConfirmOpen(true)}
+                      className="text-red-500 cursor-pointer -mt-12 sm:mt-24 w-6 h-6 md:w-6 md:h-7 sm:w-7 sm:h-7 sm:-ml-15 ml-18 z-50 hover:scale-110 transition"
+                    />
+                  )}
                   <div className="text-center sm:text-left text-sm text-gray-600 dark:text-gray-400">
                     <p className="font-medium">Click avatar to upload new photo</p>
                     <p className="mt-1">PNG, JPG • Max 10MB</p>
@@ -303,7 +312,7 @@ export const EditProfile = () => {
             </div>
           </div>
         </div>
-      ): null}
+      ) : null}
     </div>
   );
 };

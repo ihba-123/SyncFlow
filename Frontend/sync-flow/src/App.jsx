@@ -8,13 +8,12 @@ import ProtectedRoute from "./routes/ProtectedRoute";
 import PublicRoute from "./routes/PublicRoute";
 import { useUserProfile } from "./hooks/UserProfile";
 import UserProfileEdit from "./features/profile/UserProfile";
-import { useEffect } from "react";
 import useTheme from "./hooks/useTheme";
 import { EditProfile } from "./features/profile/EditProfile";
 import ProgressBar from "./components/ui/ProgressBar";
 import WelcomePage from "./pages/dashboard/WelcomePage";
 import Project from "./pages/dashboard/Project";
-import { CreateProject } from "./pages/dashboard/CreateProject";
+import { CreateProject } from "./features/project/CreateProject";
 const App = () => {
   <ProgressBar />;
   useTheme();

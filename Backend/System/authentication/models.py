@@ -52,7 +52,15 @@ class User(AbstractBaseUser):
 
     def has_module_perms(self, app_label):
         return True
+    
+    def get_display_name(self):
+        if self.name:
+            return self.name.strip()
+
+        local_part = self.email.split("@")[0]
+        return local_part.replace(".", " ").replace("_", " ").title()
 
     @property
     def is_staff(self):
         return self.is_admin
+    

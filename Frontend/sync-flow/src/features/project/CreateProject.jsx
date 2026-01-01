@@ -2,6 +2,7 @@ import { useState } from "react";
 import { User, Users, CheckCircle2, ChevronRight } from "lucide-react";
 import { Button } from "@mui/material";
 import { cn } from "../../utils/utils";
+import { useMutation } from "@tanstack/react-query";
 
 export function CreateProject() {
   const [projectType, setProjectType] = useState("solo");

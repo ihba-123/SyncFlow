@@ -8,13 +8,13 @@ from datetime import timedelta
 import hashlib
 
 
-def is_admin(project: Project, user) -> bool:
+def is_admin(project: Project, user: User) -> bool:
     return ProjectMember.objects.filter(project=project, user=user, role='admin').exists()
 
 
 def is_invite(
     project: Project,
-    created_by,
+    created_by: User,
     role: str,
     expires_days: int = 3,
     invited_email: str = None
@@ -23,23 +23,20 @@ def is_invite(
     if not is_admin(project, created_by):
         raise PermissionDenied("You are not an admin of this project.")
 
-    # Validate role
-    valid_roles = dict(Invite._meta.get_field('role').choices).keys()
+    valid_roles = {choice[0] for choice in Invite._meta.get_field('role').choices}
     if role not in valid_roles:
         raise ValidationError("Invalid role selected.")
 
-    # Prevent self-invite (whether by email or resolved user_id)
     if invited_email and invited_email.lower() == created_by.email.lower():
         raise ValidationError("You cannot invite yourself.")
 
-    # If specific email provided (targeted invite), check if user already in project
     if invited_email:
         try:
             target_user = User.objects.get(email__iexact=invited_email)
             if ProjectMember.objects.filter(project=project, user=target_user).exists():
                 raise ValidationError("This user is already a member of the project.")
         except User.DoesNotExist:
-            pass  # Unregistered email → open invite, allowed
+            pass  # Open invite for unregistered user
 
     with transaction.atomic():
         invite = Invite.objects.create(
@@ -47,7 +44,7 @@ def is_invite(
             created_by=created_by,
             role=role,
             expires_at=timezone.now() + timedelta(days=expires_days),
-            invited_email=invited_email,  # Can be None for open invites
+            invited_email=invited_email,
         )
 
         ActivityLog.objects.create(
@@ -61,7 +58,7 @@ def is_invite(
         return invite_url, invite.plain_token
 
 
-def use_invite(plain_token: str, user) -> Project:
+def use_invite(plain_token: str, user: User) -> Project:
     hashed = hashlib.sha256(plain_token.encode()).hexdigest()
 
     try:
