@@ -7,6 +7,8 @@ from rest_framework import status
 from ..services.project_services import project_create , get_user_project , get_project_detail , project_update , project_soft_delete , project_restore
 from rest_framework import throttling
 from rest_framework.exceptions import ValidationError,PermissionDenied
+from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.pagination import PageNumberPagination
 import logging
 
 
@@ -17,52 +19,58 @@ class ProjectThrottling(throttling.UserRateThrottle):
   rate = "200/hour"
 
 
-
 class ProjectCreateView(APIView):
-  permission_classes= [permissions.IsAuthenticated]
-  throttle_classes = [ProjectThrottling]
+    permission_classes = [permissions.IsAuthenticated]
+    throttle_classes = [ProjectThrottling]
+    parser_classes = [MultiPartParser, FormParser]
 
-  def post(self , request):
-    serializer = CreateProjectSerializer(data=request.data)
-    if not serializer.is_valid():
-      logger.warning(f"Project creation failed: {serializer.errors}")
-      return Response(serializer.errors , status=status.HTTP_400_BAD_REQUEST)
-    
-    try:
-      if serializer.is_valid():
-        print("Valid data:", serializer.validated_data) 
-        project = project_create(
+    def post(self, request):
+        serializer = CreateProjectSerializer(data=request.data)
+
+        if not serializer.is_valid():
+            logger.warning(f"Project creation failed: {serializer.errors}")
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            project = project_create(
                 name=serializer.validated_data["name"],
-                description=serializer.validated_data["description"],
+                description=serializer.validated_data.get("description", ""),
                 created_by=request.user,
-                is_solo=serializer.validated_data["is_solo"],
+                is_solo=serializer.validated_data.get("is_solo", True),
+                image=serializer.validated_data.get("image"),
             )
-    except ValidationError as exc:
+
+        except ValidationError as exc:
             logger.warning(f"Project creation failed: {str(exc)}")
             return Response(
-                {"error": str(exc)}, status=status.HTTP_400_BAD_REQUEST
+                {"error": str(exc)},
+                status=status.HTTP_400_BAD_REQUEST,
             )
-    except Exception:
-            logger.error("Unexpected error while creating project")
+
+        except Exception as exc:
+            logger.exception("Unexpected error while creating project")
             return Response(
                 {"error": "Unexpected error while creating project"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
-    return Response(
+        return Response(
             {
                 "message": "Project created successfully",
                 "project_id": project.id,
                 "project_name": project.name,
                 "is_solo": project.is_solo,
+                "image": project.image.url if project.image else None,
             },
             status=status.HTTP_201_CREATED,
         )
 
 
+
 #Project Update View
 class ProjectUpdateView(APIView):
     permission_classes = [permissions.IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]
 
     def patch(self , request , project_id: int):
         try:
@@ -70,6 +78,7 @@ class ProjectUpdateView(APIView):
                 user=request.user,
                 project_id=project_id,
                 data=request.data,
+                file=request.FILES,
             )
         except ValidationError as exc:
             logger.warning(f"Project update failed: {str(exc)}")
@@ -109,22 +118,33 @@ class ProjectRestoreView(APIView):
         return Response({"project": serializer.data}, status=status.HTTP_200_OK)
 
 
+class ProjectListPagination(PageNumberPagination):
+    page_size = 10  
+    page_size_query_param = "page_size"  # allow frontend to change page size
+    max_page_size = 50  
 
 
-#Project List View
+#Project List View          
 class ListProjectsView(APIView):
     permission_classes = [permissions.IsAuthenticated]
-    throttle_classes = [ProjectThrottling]
+    pagination_class = ProjectListPagination
 
     def get(self, request):
         projects = get_user_project(request.user)
-        serializer = ProjectListSerializer(
-            projects,
-            many=True,
-            context={"request": request},
-        )
-        return Response({"projects": serializer.data}, status=status.HTTP_200_OK)
-    
+        
+        paginator = self.pagination_class()
+        page = paginator.paginate_queryset(projects, request)
+        
+        if page is not None:
+            serializer = ProjectListSerializer(
+                page,
+                many=True,
+                context={"request": request},
+            )
+            return paginator.get_paginated_response(serializer.data)
+
+        serializer = ProjectListSerializer(projects, many=True, context={"request": request})
+        return Response(serializer.data)
 
 
 

@@ -5,6 +5,7 @@ import uuid
 import hashlib
 from django.utils import timezone
 from .utils.custom_queryset import ProjectQuerySet
+from cloudinary.models import CloudinaryField
 
 # ===============================
 # Project Model
@@ -17,7 +18,7 @@ class Project(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     chat_room = models.ForeignKey(ChatRoom, on_delete=models.SET_NULL, null=True, blank=True)
-    # image = CloudinaryField('image', blank=True, null=True, resource_type='image')
+    image = CloudinaryField('image', blank=True, null=True, resource_type='image')
     is_deleted = models.BooleanField(default=False)
     objects = ProjectQuerySet.as_manager()
 
@@ -74,9 +75,8 @@ class Invite(models.Model):
 
 
 
-# ===============================
+
 # Project Member
-# ===============================
 class ProjectMember(models.Model):
     ROLE_CHOICES = (
         ('admin', 'Admin'),

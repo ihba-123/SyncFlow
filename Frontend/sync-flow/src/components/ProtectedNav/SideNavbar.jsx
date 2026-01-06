@@ -23,16 +23,16 @@ import { useUserProfile } from "../../hooks/UserProfile";
 import Logout from "../../features/auth/Logout";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { useProject } from "../../hooks/useProject";
 
 export function Sidebar({ isExpanded, setIsExpanded, isMobile }) {
   const { data } = useAuth();
-  const { name, photo, is_online } = useUserProfile();
-  console.log( is_online);
+  const { name, photo, is_online } = useUserProfile();  
   const navigate = useNavigate();
   const location = useLocation();
   const [open, setOpen] = useState(false);
-
-  const navItems = [
+  const {is_solo} = useProject();
+  const navItems = [  
     { icon: LayoutDashboard, label: "Dashboard", to: "/dashboard" },
     { icon: Users, label: "Team", to: "/team" },
     { icon: Folder, label: "Projects", to: "/dashboard/project" },
@@ -43,6 +43,11 @@ export function Sidebar({ isExpanded, setIsExpanded, isMobile }) {
     { icon: Bell, label: "Notifications", to: "/notifications" },
     { icon: Settings, label: "Settings", to: "/settings" },
   ];
+
+ const filteredNavItems = navItems.filter(
+  (item) => !(is_solo && item.label === "Team")
+);
+
 
   const handleNavClick = () => {
     if (isMobile) {
@@ -114,7 +119,7 @@ export function Sidebar({ isExpanded, setIsExpanded, isMobile }) {
 
         {/* Navigation */}
         <nav className="flex-1 space-y-1">
-          {navItems.map((item) => (
+          {filteredNavItems.map((item) => (
             <TooltipProvider key={item.label}>
               <Tooltip delayDuration={200}>
                 <TooltipTrigger asChild>

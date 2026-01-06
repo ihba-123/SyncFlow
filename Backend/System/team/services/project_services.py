@@ -5,7 +5,7 @@ from chatapp.models import ChatRoom
 from rest_framework.exceptions import ValidationError , PermissionDenied
 from django.shortcuts import get_object_or_404
 from ..serializers import CreateProjectSerializer
-def project_create(name:str, description:str ,created_by ,is_solo:bool=True )->Project:
+def project_create(name:str, description:str ,created_by ,is_solo:bool=True , image=None )->Project:
 
   if not name:
     raise ValidationError("Name of the project must be define")
@@ -18,7 +18,6 @@ def project_create(name:str, description:str ,created_by ,is_solo:bool=True )->P
       is_group=True,      
       admin=created_by      
        )
-      chat_room.participants.add(created_by)
     
     project = Project.objects.active().create(
       name=name,
@@ -26,6 +25,7 @@ def project_create(name:str, description:str ,created_by ,is_solo:bool=True )->P
       is_solo=is_solo,
       created_by=created_by,
       chat_room=chat_room,
+      image=image,
     )
 
     ProjectMember.objects.create(
@@ -47,7 +47,7 @@ def project_create(name:str, description:str ,created_by ,is_solo:bool=True )->P
 
 
 
-def project_update(*,user, project_id:int , data:dict )->Project:
+def project_update(*,user, project_id:int , data:dict , file=None )->Project:
 
     project = get_object_or_404(Project.objects.active(),id=project_id)
 
@@ -70,9 +70,13 @@ def project_update(*,user, project_id:int , data:dict )->Project:
       serializer = CreateProjectSerializer(data=data)
       serializer.is_valid(raise_exception=True)
 
+         
       # Manually assign validated fields
       project.name = serializer.validated_data['name']
       project.description = serializer.validated_data['description']
+
+      if file and 'image' in file:
+         project.image = file['image']
       project.save()
 
 
@@ -80,7 +84,7 @@ def project_update(*,user, project_id:int , data:dict )->Project:
       project=project,
       user=user,
       action="project_updated",
-      details=f"Project '{project.name}' updated",
+      details=f"Project '{project.name}' updated and image updated {file}",
     )
 
     return project
@@ -147,11 +151,20 @@ def project_restore(*, user, project_id: int) -> Project:
 
 
 # User Project 
-from typing import List
-def get_user_project(user)->List[Project]:
-  return list(
-    Project.objects.active().filter(members__user=user).select_related("chat_room").distinct() 
-  )
+from django.db.models import Subquery
+
+def get_user_project(user):
+    project_ids = ProjectMember.objects.filter(
+        user=user
+    ).values("project_id")
+
+    return (
+        Project.objects.active()
+        .filter(id__in=Subquery(project_ids))
+        .select_related("chat_room")
+        .order_by("-id")  
+    )
+
 
 
 
