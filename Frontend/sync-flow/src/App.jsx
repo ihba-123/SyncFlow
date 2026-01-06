@@ -14,6 +14,7 @@ import ProgressBar from "./components/ui/ProgressBar";
 import WelcomePage from "./pages/dashboard/WelcomePage";
 import Project from "./pages/dashboard/Project";
 import { CreateProject } from "./features/project/CreateProject";
+import { SoloProject } from "./features/project/SoloProject";
 const App = () => {
   <ProgressBar />;
   useTheme();
@@ -46,6 +47,7 @@ const App = () => {
           <Route path="/dashboard/profile" element={<UserProfileEdit />} />
           <Route path="/dashboard/project" element={<Project/>} />
           <Route path="/dashboard/create-project" element={<CreateProject/>} />
+          <Route path="/dashboard/solo-project" element={<SoloProject/>} />
           <Route path="/welcome/" element={<WelcomePage />} />
         </Route>
       </Routes>

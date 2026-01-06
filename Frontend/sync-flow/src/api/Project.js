@@ -12,7 +12,7 @@ export const createProject = async (formData) => {
     
 
   
-
+    
 export const projectList = async (page=1) => {
   const data = await api.get(`projects/list/?page=${page}`)
   return data;

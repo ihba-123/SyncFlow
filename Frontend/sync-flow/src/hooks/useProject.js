@@ -19,5 +19,5 @@ export const useProject = () => {
     },
   });
 
-  return { mutate: mutation.mutate, isLoading: mutation.isLoading, project, is_solo };
+  return { mutate: mutation.mutate, isPending: mutation.isPending, project, is_solo };
 };
