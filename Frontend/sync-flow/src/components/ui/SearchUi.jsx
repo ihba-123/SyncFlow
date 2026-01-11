@@ -1,60 +1,134 @@
-import { useState, useEffect } from "react"
-import { createPortal } from "react-dom" 
-import { Search, X } from "lucide-react"
+import { useState, useEffect, useMemo } from "react";
+import { createPortal } from "react-dom";
+import { useNavigate } from "react-router-dom";
+import { Search, User, ClipboardList, FolderOpen } from "lucide-react"; // ← Added icons for types
+import debounce from "lodash.debounce";
+import { useQuery } from "@tanstack/react-query";
+import { globalSearch } from "../../api/search";
 
 export default function SearchUI() {
-  const [open, setOpen] = useState(false)
-  const [mounted, setMounted] = useState(false)
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const [debouncedQuery, setDebouncedQuery] = useState("");
+  const navigate = useNavigate();
 
-  // open the search bar using ctrl+k
+  // Debounce setup
+  const debouncedSetQuery = useMemo(
+    () =>
+      debounce((value) => {
+        const trimmed = value.trim();
+        setDebouncedQuery(trimmed);
+      }, 250),
+    []
+  );
+
   useEffect(() => {
-    setMounted(true)
-    const down = (e) => {
+    return () => {
+      debouncedSetQuery.cancel();
+    };
+  }, [debouncedSetQuery]);
+
+  const handleInputChange = (e) => {
+    const value = e.target.value;
+    setQuery(value);
+    debouncedSetQuery(value);
+  };
+
+  // TanStack Query
+  const {
+    data: rawData,
+    isLoading,
+    isError,
+    error,
+  } = useQuery({
+    queryKey: ["globalSearch", debouncedQuery],
+    queryFn: () => globalSearch({ q: debouncedQuery }),
+    enabled: debouncedQuery.length >= 1,
+    staleTime: 2 * 60 * 1000,
+    gcTime: 5 * 60 * 1000,
+    retry: 1,
+  });
+
+  // Combine all results with types
+  const searchResults = [
+    ...(rawData?.projects?.map(item => ({ ...item, type: "project" })) || []),
+    ...(rawData?.tasks?.map(item => ({ ...item, type: "task" })) || []),
+    ...(rawData?.members?.map(item => ({ ...item, type: "member" })) || []),
+
+  ];
+  console.log("Search Results:", searchResults);  
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e) => {
       if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
-        e.preventDefault()
-        setOpen((prev) => !prev)
+        e.preventDefault();
+        setOpen((prev) => !prev);
       }
-    }
-    document.addEventListener("keydown", down)
-    return () => document.removeEventListener("keydown", down)
-  }, [])
+      if (e.key === "Escape" && open) {
+        e.preventDefault();
+        setOpen(false);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [open]);
 
-
-// close the search bar using esc 
-useEffect(() => {
-  setMounted(true)
-
-  const down = (e) => {
-    if (e.key === "Escape") {
-      e.preventDefault()
-      setOpen(false)
-    }
-  }
-
-  document.addEventListener("keydown", down)
-  return () => document.removeEventListener("keydown", down)
-}, [])
-
-  // Prevent scrolling when search is open
+  // Prevent body scroll
   useEffect(() => {
     if (open) {
-      document.body.style.overflow = "hidden"
+      document.body.style.overflow = "hidden";
     } else {
-      document.body.style.overflow = "unset"
+      document.body.style.overflow = "";
     }
-  }, [open])
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [open]);
+
+  // Dynamic icon based on type
+  const getIcon = (type) => {
+    switch (type) {
+      case "project":
+        return <FolderOpen size={16} className="text-blue-600 dark:text-blue-400" />;
+      case "task":
+        return <ClipboardList size={16} className="text-green-600 dark:text-green-400" />;
+      case "member":
+        return <User size={16} className="text-purple-600 dark:text-purple-400" />;
+      default:
+        return <Search size={16} className="text-gray-600 dark:text-gray-400" />;
+    }
+  };
+
+  // Dynamic navigation based on type
+  const handleClick = (item) => {
+    setOpen(false);
+    switch (item.type) {
+      case "project":
+        navigate(`/projects/${item.id}`);
+        break;
+      case "task":
+        navigate(`/tasks/${item.id}`);
+        break;
+      case "member":
+        navigate(`/users/${item.id}`); 
+        break;
+  
+      default:
+        console.log("Unknown type:", item.type);
+    }
+  };
 
   const searchModal = (
     <div className="fixed inset-0 z-[99999] flex items-start justify-center pt-[15vh] px-4">
-      
+      {/* Backdrop */}
       <div
         onClick={() => setOpen(false)}
         className="fixed inset-0 dark:bg-black/20 bg-[#66b3ff0d] backdrop-blur-[5px] saturate-150 animate-in fade-in duration-300"
-      ></div>
+      />
 
-      
-      <div
-        className="
+      {/* Modal */}
+      <div className="
           relative z-[100000] w-full max-w-2xl
           rounded-2xl
           bg-[#ffffff00]
@@ -65,71 +139,111 @@ useEffect(() => {
           flex flex-col
           overflow-hidden
           animate-in fade-in zoom-in-95 slide-in-from-top-4 duration-300 ease-out
-        "
-      >
-        <div className="flex items-center  gap-4 px-6 py-5 border-b dark:border-white/10 border-black/10">
-          <Search size={22} className="dark:text-white/60 text-primary shrink-0" />
+        ">
+
+        {/* Search Input */}
+        <div className="flex items-center gap-3 px-5 py-4 border-b border-zinc-200 dark:border-zinc-700">
+          <Search size={20} className="text-blue-600 dark:text-blue-400" />
           <input
             autoFocus
             type="search"
-            placeholder="What are you looking for?"
-            className="w-full bg-transparent text-lg dark:text-white/90 text-black/80 placeholder:text-white/30 focus:outline-none"
+            value={query}
+            onChange={handleInputChange}
+            placeholder="Search projects, tasks, people..."
+            className="flex-1 bg-transparent text-lg outline-none dark:text-white placeholder:text-zinc-500 dark:placeholder:text-zinc-400"
           />
-          <button
-            onClick={() => setOpen(false)}
-            className="p-2 rounded-full  cursor-pointer   transition-colors"
-          >
-            <p className=" text-[13px] rounded dark:text-gray-500 text-[#66b3ffb6]  font-bold border px-2  ">esc</p>
-          </button>
+          <kbd onClick={() => setOpen(false)} className="hidden cursor-pointer sm:block px-2.5 py-1 text-xs border rounded bg-zinc-100 dark:bg-zinc-800 border-zinc-300 dark:border-zinc-600 text-zinc-500 dark:text-zinc-400">
+            esc
+          </kbd>
         </div>
 
-        <div className="p-4 max-h-[60vh] overflow-y-auto">
-          <div className="px-2 py-3">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-gray-700 dark:text-white px-3 mb-2">
-              Recent Searches
-            </p>
-            <div className="space-y-1">
-              {["Glassmorphism patterns", "Next.js 15 routing", "Tailwind v4 theme"].map((item) => (
-                <div key={item} className="flex items-center gap-3 px-3  py-2.5 rounded-xl hover:bg-gray-200 dark:hover:bg-white/5 cursor-pointer transition-colors group">
-                  <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center border border-primary dark:border-white/10">
-                    <Search size={14} className="text-primary  dark:text-white/40" />
-                  </div>
-                  <span className="text-sm dark:text-white/70 dark:group-hover:text-white/90 group-hover:text-black/50">{item}</span>
-                </div>
-              ))}
+        {/* Results Area */}
+        <div className="max-h-[60vh] overflow-y-auto p-3">
+          {isLoading && debouncedQuery && (
+            <div className="py-10 text-center text-zinc-500">Searching...</div>
+          )}
+
+          {isError && (
+            <div className="py-10 text-center text-red-500">
+              {error?.message || "Failed to load results"}
             </div>
-          </div>
+          )}
+
+          {!isLoading && !isError && debouncedQuery && searchResults.length === 0 && (
+            <div className="py-10 text-center text-zinc-500">
+              No results found for "{debouncedQuery}"
+            </div>
+          )}
+
+          {searchResults.length > 0 && (
+            <ul className="space-y-1">
+              {searchResults.map((item) => (
+                <li
+                  key={`${item.type}-${item.id}`}
+                  className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800/70 cursor-pointer transition group"
+                  onClick={() => handleClick(item)}
+                >
+                  <div className="w-9 h-9 rounded-md bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center flex-shrink-0">
+                    {getIcon(item.type)}
+                  </div>
+                  
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-medium text-zinc-900 flex gap-1 items-center dark:text-zinc-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                      {item.name || item.title || "Unnamed"}
+                      <div className="text-xs text-black/60 bg-transparent inline px-2 py-1 rounded-lg backdrop-white/10 dark:text-zinc-400 mt-0.5 line-clamp-1">
+                        {item.is_solo !== undefined ? (item.is_solo ? "(Solo Project)" : "(Team Project)") : item.project_name ? `Project: ${item.project_name}` : ""}
+                      </div>
+                    </div>
+                    
+                    {item.description && (
+                      <div className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5 line-clamp-1">
+                        {item.description} 
+                      </div>
+                    )}
+                    <div className="text-xs text-zinc-400 dark:text-zinc-500 mt-0.5 capitalize">
+                      {item.type}
+                    </div>
+                    
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       </div>
     </div>
-  )
+  );
 
   return (
     <>
-      {/* Desktop Button */}
-      <div className="hidden sm:block z-40 w-full max-w-md">
+      {/* Desktop trigger */}
+      <div className="hidden sm:block w-full max-w-md">
         <button
           onClick={() => setOpen(true)}
-          className="group flex items-center gap-3 w-full px-4 py-2 rounded-lg backdrop-blur-md bg-[#66b3ff11] border border-gray-400 dark:border-white/10 hover:bg-white/10 transition-all cursor-pointer"
+          className="w-full flex items-center gap-3 px-4 py-1.5 rounded-lg border bg-white/70 dark:bg-gray-900/70 backdrop-blur-md border-zinc-300 dark:border-zinc-700 hover:border-zinc-400 dark:hover:border-zinc-600 transition-all"
         >
-          <Search size={16} strokeWidth={3} className="text-primary" />
-          <span className="text-sm text-gray-600 flex-1 text-left">Search...</span>
-          <span className="text-[10px] px-1.5 py-0.5 rounded font-bold border dark:border-gray-600 border-gray-400 text-primary">ctrl+k</span>
+          <Search size={16} className="text-blue-600 dark:text-blue-400" />
+          <span className="flex-1 text-left text-sm text-zinc-600 dark:text-zinc-300">
+             Search...
+          </span>
+          <kbd className="text-xs px-2 py-1 rounded border bg-zinc-100 dark:bg-zinc-800 border-zinc-300 dark:border-zinc-600">
+            Ctrl + K
+          </kbd>
         </button>
       </div>
 
-      {/* Mobile Button */}
-      <div className="sm:hidden z-40">
+      {/* Mobile trigger */}
+      <div className="sm:hidden">
         <button
           onClick={() => setOpen(true)}
-          className="p-3 rounded-full bg-[#66b3ff2d] dark:bg-white/5 backdrop-blur-xl border border-white/20"
+          className="p-3 rounded-full bg-blue-50 dark:bg-blue-950/50 border border-blue-200 dark:border-blue-800"
+          aria-label="Open global search"
         >
-          <Search   size={18} className="text-[#66B2FF]" />
+          <Search size={18} className="text-blue-600 dark:text-blue-400" />
         </button>
       </div>
 
-     
-      {open && mounted && createPortal(searchModal, document.body)}
+      {open && createPortal(searchModal, document.body)}
     </>
-  )
+  );
 }

@@ -20,7 +20,7 @@ class UserManager(BaseUserManager.from_queryset(UserQuerySet)):
         extra_fields.setdefault('is_active', True)
         return self.create_user(email, name, password, **extra_fields)
 
-# 2️User model
+# User model
 class User(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(max_length=255, unique=True)
     name = models.CharField(max_length=200)

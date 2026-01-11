@@ -49,6 +49,10 @@ const App = () => {
           <Route path="/dashboard/create-project" element={<CreateProject/>} />
           <Route path="/dashboard/solo-project" element={<SoloProject/>} />
           <Route path="/welcome/" element={<WelcomePage />} />
+
+          <Route path="/projects/:id" element={<Project />} />
+          {/* <Route path="/tasks/:id" element={<TaskDetail />} /> */}
+          <Route path="/users/:id" element={<UserProfileEdit />} />
         </Route>
       </Routes>
     </div>

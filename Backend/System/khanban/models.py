@@ -7,8 +7,8 @@ from cloudinary.models import CloudinaryField
 from decimal import Decimal
 from django.contrib.postgres.indexes import GinIndex
 from .utils.managers import TaskQuerySet
+
 # Task (Kanban)
-# ===============================
 class Task(models.Model):
     STATUS_CHOICES = (
         ('todo', 'To Do'),
