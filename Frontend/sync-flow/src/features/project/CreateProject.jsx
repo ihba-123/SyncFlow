@@ -66,7 +66,7 @@ export function CreateProject() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-8 transition-colors duration-500 bg-slate-50 dark:bg-[#020617] relative overflow-hidden">
+    <div className="min-h-screen flex items-center justify-center px-4 py-8 transition-colors duration-500 bg-slate-50 dark:bg-[#03011073] relative overflow-hidden">
       {/* Background Decor */}
       <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-500/10 dark:bg-blue-500/5 blur-[120px] rounded-full" />
 
@@ -129,7 +129,7 @@ export function CreateProject() {
               <input
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Asset Name..."
+                placeholder="Project Name..."
                 className="w-full h-14 pl-12 pr-4 rounded-2xl bg-slate-50 dark:bg-[#020617] text-slate-900 dark:text-white border border-slate-200 dark:border-white/10 focus:border-blue-500 focus:bg-white dark:focus:bg-black focus:ring-4 focus:ring-blue-500/10 outline-none transition-all font-bold placeholder:text-slate-400 dark:placeholder:text-slate-700"
               />
             </div>
@@ -159,7 +159,7 @@ export function CreateProject() {
           {/* Description */}
           <div className="space-y-2">
             <label className="text-[11px] font-black text-slate-700 dark:text-slate-300 uppercase tracking-[0.2em] ml-1">
-              Documentation <span className="text-red-500">*</span>
+              Descriptions <span className="text-red-500">*</span>
             </label>
             <textarea
               value={description}
@@ -185,11 +185,11 @@ export function CreateProject() {
             {isPending ? (
               <div className="flex items-center gap-2">
                 <Loader2 className="h-5 w-5 animate-spin" />
-                <span>Synchronizing...</span>
+                <span>Creating...</span>
               </div>
             ) : (
               <div className="flex items-center gap-2">
-                <span>Deploy {is_solo === false ? 'Team' : 'Solo'} Project</span>
+                <span>Create {is_solo === false ? 'Team' : 'Solo'} Project</span>
                 <ArrowRight size={18} />
               </div>
             )}

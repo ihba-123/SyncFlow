@@ -1,4 +1,3 @@
-# serializers.py
 from rest_framework import serializers
 from .models import Task, TaskComment, TaskAttachment
 
@@ -13,3 +12,5 @@ class TaskSerializer(serializers.ModelSerializer):
         if value is not None and value < 0:
             raise serializers.ValidationError("Order cannot be negative.")
         return value
+    
+

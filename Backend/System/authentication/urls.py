@@ -5,12 +5,13 @@ from .view.user_logout_views import UserLogoutView
 from .view.user_profile_views import UserProfileView
 from .view.token_views import RefreshTokenView
 from .utils.onboard import OnboardView
+
 urlpatterns = [
     path('register/', UserRegistrationView.as_view(), name='register' ),
     path('refresh-token/', RefreshTokenView.as_view(), name='refresh-token'),
     path('login/', UserLoginView.as_view(), name='login'),
     path('profile/', UserProfileView.as_view(), name='profile'),
     path('logout/', UserLogoutView.as_view(), name='logout'),
-    path('onboard/', OnboardView.as_view(), name='onboard'),
-
+    # path('onboard/', OnboardView.as_view(), name='onboard'),
 ]
+

@@ -13,6 +13,7 @@ urlpatterns = [
     path('api/', include('chatapp.urls')),
     path('api/', include('team.urls')),
     path('api/', include('khanban.urls')),
+    path('api/', include('search.urls')),
 
 
 # Swagger / API Documentation URLs

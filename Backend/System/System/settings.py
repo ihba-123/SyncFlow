@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     'chatapp',
     'team',
     'khanban',
+    'search',
 ]
 
 MIDDLEWARE = [

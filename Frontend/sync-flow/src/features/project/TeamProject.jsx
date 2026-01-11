@@ -8,7 +8,7 @@ import { useProject } from "../../hooks/useProject";
 
 export function TeamProject({ onClose }) {
   const queryClient = useQueryClient();
-  const [is_solo] = useState(false); // HARDCODED FALSE FOR TEAM
+  const [is_solo] = useState(false); 
   const [description, setDescription] = useState("");
   const [name, setName] = useState("");
   const [image, setImage] = useState(null);
@@ -53,28 +53,28 @@ export function TeamProject({ onClose }) {
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-md animate-in fade-in" onClick={onClose} />
       
-      <div className="relative w-full max-w-xl max-h-[85vh] flex flex-col bg-white dark:bg-[#060b18] rounded-3xl shadow-2xl overflow-hidden border border-emerald-500/20 animate-in zoom-in-95">
+      <div className="relative w-full max-w-xl max-h-[85vh] flex flex-col bg-white dark:bg-[#060b18] rounded-3xl shadow-2xl overflow-hidden border border-emerald-900/20 animate-in zoom-in-95">
         <ProgressBar apiLoading={isLoading} className="absolute top-0 left-0 w-full z-50" />
         
-        <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center shrink-0">
+        <div className="p-6 border-b border-slate-400 dark:border-slate-800 flex justify-between items-center shrink-0">
           <div>
             <nav className="flex items-center gap-2 text-[10px] uppercase font-bold text-emerald-500 mb-1">
               <span>Network</span>
               <ChevronRight size={10} />
               <span>Collective Entry</span>
             </nav>
-            <h1 className="text-xl font-black text-slate-900 dark:text-white uppercase">Initialize Team Workspace</h1>
+            <h1 className="text-xl font-black text-slate-900  dark:text-white uppercase">Initialize Team Workspace</h1>
           </div>
           <button onClick={onClose} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors"><X size={20} className="text-slate-400" /></button>
         </div>
 
         <form className="flex-1 overflow-y-auto p-6 space-y-5 custom-scrollbar">
           <div className="space-y-1.5">
-            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Workspace Name</label>
+            <label className="text-[10px] font-black text-slate-800 uppercase tracking-widest">Workspace Name</label>
             <input
               onChange={(e) => setName(e.target.value)}
               value={name}
-              className="w-full h-11 px-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-sm outline-none focus:border-emerald-500 transition-all"
+              className="w-full h-11 px-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-400 dark:border-slate-700 text-sm outline-none focus:border-emerald-500 transition-all"
               placeholder="Enter team project name..."
             />
           </div>
@@ -85,11 +85,11 @@ export function TeamProject({ onClose }) {
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Visual Identity</label>
+            <label className="text-[10px] font-black text-slate-800 uppercase tracking-widest">Visual Identity</label>
             {!imagePreview ? (
-              <label htmlFor="team-image-input" className="flex flex-col items-center justify-center w-full h-28 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl cursor-pointer hover:bg-emerald-50/50 dark:hover:bg-emerald-500/5 transition-all">
-                <Upload size={20} className="text-slate-400 mb-1" />
-                <span className="text-[10px] font-bold text-slate-500">UPLOAD_BRANDING</span>
+              <label htmlFor="team-image-input" className="flex flex-col items-center justify-center w-full h-28 border-2 border-dashed border-slate-500 dark:border-slate-800 rounded-2xl cursor-pointer hover:bg-emerald-50/50 dark:hover:bg-emerald-500/5 transition-all">
+                <Upload size={20} className="text-slate-800 mb-1" />
+                <span className="text-[10px] font-bold text-slate-600">UPLOAD_BRANDING</span>
                 <input id="team-image-input" type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
               </label>
             ) : (
@@ -101,7 +101,7 @@ export function TeamProject({ onClose }) {
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Objective</label>
+            <label className="text-[10px] font-black text-slate-800 uppercase tracking-widest">Objective</label>
             <textarea
               className="w-full min-h-[90px] p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-sm outline-none focus:border-emerald-500 resize-none"
               placeholder="Collective goals..."

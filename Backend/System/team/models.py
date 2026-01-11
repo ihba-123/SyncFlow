@@ -6,6 +6,7 @@ import hashlib
 from django.utils import timezone
 from .utils.custom_queryset import ProjectQuerySet
 from cloudinary.models import CloudinaryField
+from django.contrib.postgres.indexes import GinIndex
 
 # ===============================
 # Project Model
@@ -31,13 +32,15 @@ class Project(models.Model):
 
     class Meta:
         indexes = [ 
-            models.Index(fields=['created_by'])
+            models.Index(fields=['created_by']),
+            GinIndex(fields=['name'], opclasses=['gin_trgm_ops'], name='project_name_trgm_idx'),
+            GinIndex(fields=['description'], opclasses=['gin_trgm_ops'], name='project_desc_trgm_idx'),
         ]
 
     def __str__(self):
         return self.name
     
-# ===============================
+
 # Invite Model
 # ===============================
 class Invite(models.Model):
@@ -101,7 +104,6 @@ class ProjectMember(models.Model):
 
 
 
-# =============================== 
 # Activity Log
 # ===============================
 class ActivityLog(models.Model):

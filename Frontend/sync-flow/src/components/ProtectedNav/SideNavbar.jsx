@@ -76,7 +76,7 @@ export function Sidebar({ isExpanded, setIsExpanded, isMobile }) {
       )}
     >
       <div className="relative flex flex-col h-full bg-background/40 p-3 overflow-hidden">
-        {/* Logo & Toggle */}
+        
         <div className="relative flex items-center justify-between h-14 mb-6">
           <div
             className={cn(
@@ -117,8 +117,8 @@ export function Sidebar({ isExpanded, setIsExpanded, isMobile }) {
           )}
         </div>
 
-        {/* Navigation */}
-        <nav className="flex-1 space-y-1">
+        
+        <nav className="flex-1 space-y-2">
           {filteredNavItems.map((item) => (
             <TooltipProvider key={item.label}>
               <Tooltip delayDuration={200}>

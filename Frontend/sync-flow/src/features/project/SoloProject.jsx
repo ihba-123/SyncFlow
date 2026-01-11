@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { User, ChevronRight, Upload, X } from "lucide-react";
 import { Button } from "@mui/material";
-import { useQueryClient } from "@tanstack/react-query"; // Import for cache invalidation
+import { useQueryClient } from "@tanstack/react-query"; 
 import ProgressBar from "../../components/ui/ProgressBar";
 import { toast } from "react-toastify";
 import { useProject } from "../../hooks/useProject";
@@ -43,9 +43,8 @@ export function SoloProject({ onClose }) {
 
     mutate(formData, {
       onSuccess: () => {
-        // This clears the cache and triggers an auto-refresh in Project.jsx
         queryClient.invalidateQueries({ queryKey: ["projects"] });
-        toast.success("Project synchronized successfully");
+        toast.success("Solo project created successfully");
         onClose();
       },
       onError: (err) => {
@@ -80,24 +79,24 @@ export function SoloProject({ onClose }) {
 
         <form className="flex-1 overflow-y-auto p-6 space-y-5 custom-scrollbar">
           <div className="space-y-1.5">
-            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Asset Name</label>
+            <label className="text-[10px] font-black text-slate-800 uppercase tracking-widest">Asset Name</label>
             <input
               onChange={(e) => setName(e.target.value)}
               value={name}
-              className="w-full h-11 px-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-sm outline-none focus:border-blue-500 transition-all"
+              className="w-full h-11 px-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-400 dark:border-slate-700 text-sm outline-none focus:border-blue-500 transition-all"
               placeholder="Enter name..."
             />
           </div>
 
           <div className="flex items-center gap-3 p-3 rounded-xl bg-blue-500/5 border border-blue-500/10">
             <User size={16} className="text-blue-500" />
-            <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-tight">Private encrypted workspace</span>
+            <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-tight">Private  workspace</span>
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Visual Data</label>
+            <label className="text-[10px] font-black text-slate-800 uppercase tracking-widest">Visual Data</label>
             {!imagePreview ? (
-              <label htmlFor="project-image-input" className="flex flex-col items-center justify-center w-full h-28 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl cursor-pointer hover:bg-blue-50/50 dark:hover:bg-blue-500/5 transition-all">
+              <label htmlFor="project-image-input" className="flex flex-col items-center justify-center w-full h-28 border-2 border-dashed border-slate-500 dark:border-slate-800 rounded-2xl cursor-pointer hover:bg-blue-50/50 dark:hover:bg-blue-500/5 transition-all">
                 <Upload size={20} className="text-slate-400 mb-1" />
                 <span className="text-[10px] font-bold text-slate-500">UPLOAD_IMG</span>
                 <input id="project-image-input" type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
@@ -113,9 +112,9 @@ export function SoloProject({ onClose }) {
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Description</label>
+            <label className="text-[10px] font-black text-slate-800 uppercase tracking-widest">Description</label>
             <textarea
-              className="w-full min-h-[90px] p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-sm outline-none focus:border-blue-500 resize-none"
+              className="w-full min-h-[90px] p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-400 dark:border-slate-700 text-sm outline-none focus:border-blue-500 resize-none"
               placeholder="Asset objective..."
               value={description}
               onChange={(e) => setDescription(e.target.value)}

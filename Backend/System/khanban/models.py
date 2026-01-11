@@ -5,8 +5,8 @@ from django.utils import timezone
 from django.core.exceptions import ValidationError
 from cloudinary.models import CloudinaryField
 from decimal import Decimal
-
-
+from django.contrib.postgres.indexes import GinIndex
+from .utils.managers import TaskQuerySet
 # Task (Kanban)
 # ===============================
 class Task(models.Model):
@@ -32,11 +32,15 @@ class Task(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     order = models.DecimalField(max_digits=20, decimal_places=10, default=0 , db_index=True)
     tags = models.CharField(max_length=255, blank=True, null=True)
+    objects = TaskQuerySet.as_manager()
 
     class Meta:
         indexes = [
             models.Index(fields=['project','status']),
             models.Index(fields=['assigned_to']),
+            GinIndex(fields=['title'], opclasses=['gin_trgm_ops'], name='task_title_trgm_idx'),
+            GinIndex(fields=['description'], opclasses=['gin_trgm_ops'], name='task_desc_trgm_idx'),
+            GinIndex(fields=['tags'], opclasses=['gin_trgm_ops'], name='task_tags_trgm_idx'),
         ]
 
     def clean(self):
