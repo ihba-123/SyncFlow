@@ -7,8 +7,9 @@ from team.views.project_views import (
     ProjectSoftDeleteView,
     ProjectRestoreView,
     ProjectUpdateView,
+    
 )
-from team.views.remove_view import LeaveProjectView , RemoveMemberView
+from team.views.remove_view import LeaveProjectView , RemoveMemberView , ProjectPermanentDeleteView
 from team.views.invite_views import InviteView , UseInviteView , ListInvitesView
 from rest_framework.routers import DefaultRouter
 from team.views.activity_log import ActivityLogView as ActivityLogViewSet
@@ -25,6 +26,7 @@ urlpatterns = [
     path("projects/create/", ProjectCreateView.as_view(), name="project-create"),
     path("projects/<int:project_id>/update/", ProjectUpdateView.as_view(), name="project-update"),
     path("projects/<int:project_id>/delete/", ProjectSoftDeleteView.as_view(), name="project-soft-delete"),
+    path("projects/<int:project_id>/permanent-delete/", ProjectPermanentDeleteView.as_view(), name="project-permanent-delete"),
     path("projects/<int:project_id>/restore/", ProjectRestoreView.as_view(), name="project-restore"),
     path("projects/list/", ListProjectsView.as_view(), name="project-list"),
     path("projects/<int:project_id>/", ProjectDetailView.as_view(), name="project-detail"),

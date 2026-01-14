@@ -6,7 +6,7 @@ from rest_framework import status
 from rest_framework.throttling import UserRateThrottle
 from django.shortcuts import get_object_or_404
 from rest_framework.exceptions import ValidationError ,  PermissionDenied
-from ..services.invite_service import is_invite , use_invite
+from ..services.invite_service import is_invite , use_invite , project_write_permission
 from ..models import Project , ProjectMember
 from authentication.models import User
 import logging
@@ -23,6 +23,8 @@ class InviteView(APIView):
     def post(self, request, project_id: int):
         project = get_object_or_404(Project, id=project_id)
         serializer = UserInviteSerializer(data=request.data)
+
+        project_write_permission(project, request.user)
 
         if not serializer.is_valid():
             logger.warning(f"Invite creation failed: {serializer.errors}")
@@ -51,7 +53,7 @@ class InviteView(APIView):
         # Check current user is admin of project
         if not ProjectMember.objects.filter(project=project, user=request.user, role="admin").exists():
             return Response({"detail": "You do not have permission to create invites"}, status=403)
-
+ 
         # Prevent inviting to a solo project
         if project.is_solo:
             return Response({"detail": "You cannot invite to a solo project"}, status=400)
@@ -94,6 +96,7 @@ class UseInviteView(APIView):
 
   def post(self , request):
     serializer = UseInviteSerializer(data=request.data)
+    project_write_permission(project, request.user)
     if not serializer.is_valid():
       logger.warning(f"Invite creation failed: {serializer.errors}")
       return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

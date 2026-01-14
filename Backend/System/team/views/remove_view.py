@@ -3,8 +3,9 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from authentication.models import User
 from django.shortcuts import get_object_or_404
-from ..services.remove_services import remove_member
+from ..services.remove_services import remove_member , project_delete
 from ..models import Project
+from ..services.invite_service import project_write_permission 
 import logging
 
 logger = logging.getLogger(__name__)
@@ -36,3 +37,18 @@ class RemoveMemberView(APIView):
         except Exception as e:
             logger.error(f"Error removing member: {str(e)}")
             return Response({"detail": "An error occurred while removing the member."}, status=500)
+
+
+# Project Permanent Delete
+class ProjectPermanentDeleteView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, project_id: int):
+        try:
+            project = get_object_or_404(Project, id=project_id)
+            project_delete(project, request.user)
+            logger.info(f"Project {project.name} permanently deleted by {request.user.email}")
+            return Response({"detail": "Project permanently deleted successfully."})
+        except Exception as e:
+            logger.error(f"Error deleting project: {str(e)}")
+            return Response({"detail": "An error occurred while deleting the project."}, status=500)

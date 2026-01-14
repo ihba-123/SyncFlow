@@ -9,6 +9,7 @@ from rest_framework import throttling
 from rest_framework.exceptions import ValidationError,PermissionDenied
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.pagination import PageNumberPagination
+from ..services.invite_service import project_write_permission
 import logging
 
 
@@ -80,6 +81,7 @@ class ProjectUpdateView(APIView):
                 data=request.data,
                 file=request.FILES,
             )
+            project_write_permission(project, request.user)
         except ValidationError as exc:
             logger.warning(f"Project update failed: {str(exc)}")
             return Response(
@@ -106,6 +108,7 @@ class ProjectSoftDeleteView(APIView):
 
     def delete(self, request, project_id: int):
         project = project_soft_delete(user=request.user, project_id=project_id)
+        project_write_permission(project, request.user)
         serializer = ProjectDetailSerializer(project)
         return Response({"message": "Project deleted successfully", "project": serializer.data}, status=status.HTTP_200_OK)
 
@@ -114,6 +117,7 @@ class ProjectRestoreView(APIView):
 
     def post(self, request, project_id: int):
         project = project_restore(user=request.user, project_id=project_id)
+        project_write_permission(project, request.user)
         serializer = ProjectDetailSerializer(project)
         return Response({"project": serializer.data}, status=status.HTTP_200_OK)
 

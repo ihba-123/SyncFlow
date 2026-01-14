@@ -2,6 +2,12 @@ from typing import Tuple
 from team.models import Project, Invite, ProjectMember, ActivityLog
 from authentication.models import User
 from django.core.exceptions import ValidationError, PermissionDenied
+from django.db import transaction
+from ..services.invite_service import project_write_permission
+from ..models import ActivityLog
+import logging
+
+logger = logging.getLogger(__name__)
 
 def is_admin(project: Project, user) -> bool:
     return ProjectMember.objects.filter(project=project, user=user, role='admin').exists()
@@ -48,3 +54,35 @@ def remove_member(project: Project, acting_user: User, target_user: User) -> Non
         action='member_removed',
         details=f"{acting_user.email} removed {target_user.email}"
     )
+
+
+def project_delete(project, user):
+    activitylog = ActivityLog.objects.select_for_update().filter(project=project)
+    with transaction.atomic():
+        if project.is_solo:
+            owner = project.members.first().user
+            if owner != user:
+                logger.warning(f"User {user.email} attempted to delete solo project {project.name} owned by {owner.email}")
+                raise PermissionDenied("Only the owner can delete their solo project.")
+            
+            
+            activitylog.delete()
+            project.delete()
+            logger.info(f"Solo project {project.name} deleted by owner {owner.email}")
+            return
+
+       
+        project_write_permission(project, user)  
+
+        
+        activitylog.delete()
+        project.members.all().delete()
+        project.invites.all().delete()
+        if project.chat_room:
+            project.chat_room.messages.all().delete()
+            project.chat_room.delete()
+
+        project.delete()
+        logger.info(f"Team project {project.name} deleted by admin {user.email}")
+
+
