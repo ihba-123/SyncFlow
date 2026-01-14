@@ -96,7 +96,8 @@ class UseInviteView(APIView):
 
   def post(self , request):
     serializer = UseInviteSerializer(data=request.data)
-    project_write_permission(project, request.user)
+    
+    # project_write_permission(project, request.user)
     if not serializer.is_valid():
       logger.warning(f"Invite creation failed: {serializer.errors}")
       return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -136,6 +137,9 @@ class ListInvitesView(APIView):
     def get(self, request, project_id: int):
         project = get_object_or_404(Project, id=project_id)
 
+        # Ensure requester is a project member
+        get_object_or_404(ProjectMember, project=project, user=request.user)
+
         # Admin check
         if not ProjectMember.objects.filter(
             project=project,
@@ -146,32 +150,43 @@ class ListInvitesView(APIView):
                 {"error": "Only admins can view invites"},
                 status=status.HTTP_403_FORBIDDEN,
             )
-       
+
+        # Invites
         invites = project.invites.all().order_by("-created_at")
         invite_serializer = InviteDetailSerializer(invites, many=True)
 
         # Members
         members = project.members.select_related("user").order_by("-joined_at")
+
         from chatapp.models import Profile
-        user_ids = [m.user.id for m in members]
+        user_ids = [m.user_id for m in members]
         profiles = Profile.objects.filter(user_id__in=user_ids).in_bulk(
             field_name="user_id"
         )
 
         joined_members = []
+        
 
-        for member in members:
-            user = member.user
+        for project_member in members:
+            user = project_member.user
             profile = profiles.get(user.id)
+
+
+            if profile and getattr(profile, "display_name", None):
+                display_name = profile.display_name
+            elif getattr(user, "name", None) and user.name != user.email:
+                display_name = user.name
+            else:
+                display_name = user.email.split("@")[0]
 
             joined_members.append(
                 {
                     "id": user.id,
                     "email": user.email,
-                    "name": user.get_display_name(), 
-                    "role": member.get_role_display(),
+                    "name": display_name,
+                    "role": project_member.get_role_display(),
                     "is_online": profile.is_online if profile else False,
-                    "joined_at": member.joined_at,
+                    "joined_at": project_member.joined_at,
                 }
             )
 

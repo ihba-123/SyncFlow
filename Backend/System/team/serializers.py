@@ -52,51 +52,60 @@ class UseInviteSerializer(serializers.Serializer):
 
 
 class InviteDetailSerializer(serializers.ModelSerializer):
-    project = serializers.CharField(source='project.name', read_only=True)
-    invited_email = serializers.EmailField(read_only=True, allow_null=True)
+    # project = serializers.CharField(source='project.name', read_only=True)
+    # invited_email = serializers.EmailField(read_only=True, allow_null=True)
+    # photo = serializers.SerializerMethodField()
+    # joined_user_email = serializers.SerializerMethodField()
+    # joined_user_name = serializers.SerializerMethodField()  # ← Fixed here
 
-    joined_user_email = serializers.SerializerMethodField()
-    joined_user_name = serializers.SerializerMethodField()  # ← Fixed here
-
-    created_by_email = serializers.SerializerMethodField()
-    creator_is_online = serializers.SerializerMethodField()
-
+    # created_by_email = serializers.SerializerMethodField()
+    # creator_is_online = serializers.SerializerMethodField()
     class Meta:
         model = Invite
-        fields = [
-            'id', 'project', 'invited_email', 'plain_token', 'expires_at',
-            'joined_user_email', 'joined_user_name', 'creator_is_online',
-            'is_used', 'created_by_email', 'created_at', 'role',
-        ]
+        fields = "__all__"
+    
 
-    def get_joined_user_email(self, obj):
-        member = obj.members_joined.first()
-        return member.user.email if member else None
+    #Photo of the user who is invited
+    # def get_photo(self, obj):
+    #     member = obj.members_joined.first()
+    #     if member:
+    #         from chatapp.models import Profile
+    #         try:
+    #             profile = Profile.objects.get(user=member.user)
+    #             return profile.photo.url if profile.photo else None
+    #         except Profile.DoesNotExist:
+    #             return None
+    #     return None
 
-    def get_joined_user_name(self, obj):
-      member = obj.members_joined.first()
-      if not member:
-        return None
 
-      user = member.user
+    # def get_joined_user_email(self, obj):
+    #     member = obj.members_joined.first()
+    #     return member.user.email if member else None
 
-    # Use actual name field
-      if user.name:
-        return user.name.strip()
+    # def get_joined_user_name(self, obj):
+    #   member = obj.members_joined.first()
+    #   if not member:
+    #     return None
 
-    # Fallback to cleaned email
-      local_part = user.email.split("@")[0]
-      return local_part.replace(".", " ").replace("_", " ").title()
+    #   user = member.user
 
-    def get_created_by_email(self, obj):
-        return obj.created_by.email if obj.created_by else None
+    # # Use actual name field
+    #   if user.name:
+    #     return user.name.strip()
 
-    def get_creator_is_online(self, obj):
-        from chatapp.models import Profile
-        try:
-            return Profile.objects.get(user=obj.created_by).is_online
-        except Profile.DoesNotExist:
-            return False
+    # # Fallback to cleaned email
+    #   local_part = user.email.split("@")[0]
+    #   return local_part.replace(".", " ").replace("_", " ").title()
+
+    # def get_created_by_email(self, obj):
+    #     return obj.created_by.email if obj.created_by else None
+
+    # def get_creator_is_online(self, obj):
+    #     from chatapp.models import Profile
+    #     try:
+    #         return Profile.objects.get(user=obj.created_by).is_online
+    #     except Profile.DoesNotExist:
+    #         return False
 
 
 class ActivityLogSerializer(serializers.ModelSerializer):
