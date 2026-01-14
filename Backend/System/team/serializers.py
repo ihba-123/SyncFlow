@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Invite , Project 
+from .models import Invite , Project  , ActivityLog
 class CreateProjectSerializer(serializers.Serializer):
   name = serializers.CharField(max_length=100)
   description = serializers.CharField(max_length=1000,allow_blank=True, default='', required=False)
@@ -97,3 +97,28 @@ class InviteDetailSerializer(serializers.ModelSerializer):
             return Profile.objects.get(user=obj.created_by).is_online
         except Profile.DoesNotExist:
             return False
+
+
+class ActivityLogSerializer(serializers.ModelSerializer):
+    user_name = serializers.CharField(source='user.username', read_only=True)
+    user_image = serializers.SerializerMethodField()  
+    project_name = serializers.CharField(source='project.name', read_only=True)
+    action_display = serializers.CharField(source='get_action_display', read_only=True)
+    is_solo = serializers.SerializerMethodField()
+    class Meta:
+        model = ActivityLog
+        fields = [
+            'id', 'user', 'user_name', 'user_image', 'project', 'project_name', 
+            'action', 'action_display', 'details', 'timestamp' ,'is_solo'
+        ]
+    
+    def get_is_solo(self, obj):
+        return obj.project.is_solo
+
+    def get_user_image(self, obj):
+        if hasattr(obj.user, 'profile') and obj.user.profile.photo:
+            return obj.user.profile.photo.url
+        return None
+
+         
+

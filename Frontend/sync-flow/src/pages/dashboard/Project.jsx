@@ -3,14 +3,28 @@ import { User, Users2, Plus, Calendar, Image as ImageIcon, ArrowRight } from "lu
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { projectList } from "../../api/Project";
 import { useProjectStore } from "../../stores/ProjectType";
-import ProjectSkeleton from "../../components/skeleton/ProjectSkeleton"; // Path to the file above
+import ProjectSkeleton from "../../components/skeleton/ProjectSkeleton";
 import { SoloProject } from "../../features/project/SoloProject";
 import { TeamProject } from "../../features/project/TeamProject";
+import { useNavigate } from "react-router-dom";
 
 const Project = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [viewMode, setViewMode] = useState(() => localStorage.getItem("projectViewMode") || "solo");
-  const { setIsSolo } = useProjectStore();
+  const { is_solo, setIsSolo } = useProjectStore();
+  
+  // Initialize viewMode from store
+  const [viewMode, setViewMode] = useState(is_solo ? "solo" : "team");
+
+  // Update store whenever viewMode changes
+  useEffect(() => {
+    setIsSolo(viewMode === "solo");
+    localStorage.setItem("projectViewMode", viewMode);
+  }, [viewMode, setIsSolo]);
+
+  // Update viewMode if global store changes (like from search)
+  useEffect(() => {
+    setViewMode(is_solo ? "solo" : "team");
+  }, [is_solo]);
 
   const { data: projects, fetchNextPage, hasNextPage, isFetchingNextPage, status } = useInfiniteQuery({
     queryKey: ["projects"], 
@@ -22,11 +36,6 @@ const Project = () => {
     select: (data) => data.pages.flatMap((page) => page.data.results),
     staleTime: 5 * 60 * 1000,
   });
-
-  useEffect(() => {
-    setIsSolo(viewMode === "solo");
-    localStorage.setItem("projectViewMode", viewMode);
-  }, [viewMode, setIsSolo]);
 
   const soloProjects = projects?.filter((p) => p.is_solo) || [];
   const teamProjects = projects?.filter((p) => !p.is_solo) || [];
@@ -41,70 +50,99 @@ const Project = () => {
     return () => observer.disconnect();
   }, [loadMoreRef.current, hasNextPage, fetchNextPage]);
 
-  return (
-    <div className="relative min-h-screen bg-slate-50 dark:bg-[#020617] text-slate-900 dark:text-white font-sans transition-colors duration-500 overflow-x-hidden">
-      
-      {isModalOpen && viewMode === "solo" && <SoloProject onClose={() => setIsModalOpen(false)}  /> }
-      {isModalOpen && viewMode === "team" && <TeamProject onClose={() => setIsModalOpen(false)} /> }
+  const navigate = useNavigate();
 
+  const projectDetail = (e) => {
+    const card = e.target.closest(".group.cursor-pointer");
+    if (card) {
+      const projectName = card.querySelector("h3")?.textContent;
+      const project = projects?.find((p) => p.name === projectName);
+      if (project) navigate(`/projects/${project.id}`);
+    } 
+  };
+
+  return (
+    <div
+      onClick={projectDetail}
+      className="relative min-h-screen bg-slate-50 dark:bg-[#020617] text-slate-900 dark:text-white font-sans transition-colors duration-500 overflow-x-hidden"
+    >
+      {/* Modals */}
+      {isModalOpen && viewMode === "solo" && <SoloProject onClose={() => setIsModalOpen(false)} />}
+      {isModalOpen && viewMode === "team" && <TeamProject onClose={() => setIsModalOpen(false)} />}
+
+      {/* Background blur */}
       <div className="fixed inset-0 pointer-events-none">
         <div className={`absolute -top-20 -right-20 w-80 h-80 rounded-full blur-[100px] opacity-20 transition-colors duration-1000 ${viewMode === 'solo' ? 'bg-blue-400' : 'bg-purple-400'}`} />
       </div>
 
       <main className="relative z-10 mx-auto max-w-5xl px-5 py-8 md:py-16">
+        {/* Header */}
         <header className="flex flex-col gap-6 -mt-7 mb-10">
           <div className="text-center sm:text-left">
             <h1 className="text-2xl md:text-3xl font-black tracking-tight uppercase">
               {viewMode === "solo" ? "Personal Projects" : "Team Workspace"}
-            </h1> 
+            </h1>
             <p className="text-[10px] text-blue-500 font-black uppercase tracking-widest mt-1">Status: Operational</p>
           </div>
 
+          {/* ViewMode Toggle */}
           <div className="w-full sm:w-[320px] p-1.5 bg-slate-200/50 dark:bg-white/5 backdrop-blur-xl border border-slate-300 dark:border-white/10 rounded-2xl flex">
-            <button onClick={() => setViewMode("solo")} className={`cursor-pointer flex-1 flex items-center justify-center space-x-2 py-2.5 rounded-xl text-xs font-black transition-all ${viewMode === "solo" ? "bg-white dark:bg-blue-600 shadow-blue-500/20 text-blue-600 dark:text-white shadow-md ring-1 ring-slate-200 dark:ring-blue-400/50" : "text-slate-500 dark:text-slate-400"}`}>
+            <button
+              onClick={() => setViewMode("solo")}
+              className={`cursor-pointer flex-1 flex items-center justify-center space-x-2 py-2.5 rounded-xl text-xs font-black transition-all ${
+                viewMode === "solo"
+                  ? "bg-white dark:bg-blue-600 shadow-blue-500/20 text-blue-600 dark:text-white shadow-md ring-1 ring-slate-200 dark:ring-blue-400/50"
+                  : "text-slate-500 dark:text-slate-400"
+              }`}
+            >
               <User size={14} /><span>SOLO</span>
             </button>
-            <button onClick={() => setViewMode("team")} className={`flex-1 cursor-pointer  flex items-center justify-center space-x-2 py-2.5 rounded-xl text-xs font-black transition-all ${viewMode === "team" ? "bg-white dark:bg-purple-700 text-blue-600  dark:text-white shadow-md ring-1 ring-slate-200 dark:ring-purple-400/50 shadow-purple-400/20 " : "text-slate-500 dark:text-slate-400"}`}>
+            <button
+              onClick={() => setViewMode("team")}
+              className={`flex-1 cursor-pointer flex items-center justify-center space-x-2 py-2.5 rounded-xl text-xs font-black transition-all ${
+                viewMode === "team"
+                  ? "bg-white dark:bg-purple-700 text-blue-600 dark:text-white shadow-md ring-1 ring-slate-200 dark:ring-purple-400/50 shadow-purple-400/20"
+                  : "text-slate-500 dark:text-slate-400"
+              }`}
+            >
               <Users2 size={14} /><span>TEAM</span>
             </button>
           </div>
-        </header> 
+        </header>
 
+        {/* Projects Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          
           {status !== "loading" && (
             <AddCard onClick={() => setIsModalOpen(true)} label={viewMode === "solo" ? "NEW_PERSONAL" : "NEW_COLLAB"} />
-          )}      
-
+          )}
 
           {status === "loading" ? (
-             <ProjectSkeleton count={6} />
+            <ProjectSkeleton count={6} />
           ) : (
             <>
               {(viewMode === "solo" ? soloProjects : teamProjects).map((project) => (
                 <GlassCard key={project.id} project={project} />
               ))}
-              
-             
               {isFetchingNextPage && <ProjectSkeleton count={3} />}
             </>
           )}
         </div>
-        
+
         <div ref={loadMoreRef} className="h-20" />
       </main>
     </div>
   );
 };
 
+// GlassCard component
 const GlassCard = ({ project }) => (
-  <div className="group bg-white/90 dark:bg-white/[0.03] backdrop-blur-lg border border-black/30 dark:border-white/10 rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:border-blue-500 hover:shadow-2xl hover:shadow-blue-500/10 flex flex-col h-[350px]">
+  <div className="group cursor-pointer bg-white/90 dark:bg-white/[0.03] backdrop-blur-lg border border-black/30 dark:border-white/10 rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:border-blue-500 hover:shadow-2xl hover:shadow-blue-500/10 flex flex-col h-[350px]">
     <div className="relative w-full h-[175px] bg-slate-100 dark:bg-slate-900 border-b border-slate-100 dark:border-white/5 flex items-center justify-center overflow-hidden">
       {project.image ? (
-        <img 
-          src={project.image} 
-          alt={project.name} 
-          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
+        <img
+          src={project.image}
+          alt={project.name}
+          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
         />
       ) : (
         <ImageIcon size={32} className="text-slate-300 dark:text-slate-700" />
@@ -130,6 +168,7 @@ const GlassCard = ({ project }) => (
   </div>
 );
 
+// AddCard component
 const AddCard = ({ label, onClick }) => (
   <div onClick={onClick} className="group border-2 border-dashed border-black/40 dark:border-white/10 rounded-2xl flex flex-col items-center justify-center p-6 min-h-[350px] bg-white/30 dark:bg-transparent hover:border-blue-500 hover:bg-white dark:hover:bg-blue-500/5 transition-all cursor-pointer">
     <div className="w-12 h-12 rounded-xl bg-slate-100 dark:bg-white/5 flex items-center justify-center mb-4 text-slate-400 group-hover:bg-blue-600 group-hover:text-white transition-all duration-300">

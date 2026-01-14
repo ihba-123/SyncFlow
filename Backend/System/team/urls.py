@@ -1,5 +1,5 @@
 # team/urls.py
-from django.urls import path
+from django.urls import path , include
 from team.views.project_views import (
     ProjectCreateView,
     ListProjectsView,
@@ -10,10 +10,18 @@ from team.views.project_views import (
 )
 from team.views.remove_view import LeaveProjectView , RemoveMemberView
 from team.views.invite_views import InviteView , UseInviteView , ListInvitesView
+from rest_framework.routers import DefaultRouter
+from team.views.activity_log import ActivityLogView as ActivityLogViewSet
+
+
+# Dynamic router to register viewsets
+router = DefaultRouter()
+router.register(r"activity-logs", ActivityLogViewSet, basename="activity-log")
 
 
 
 urlpatterns = [
+    path("", include(router.urls)),
     path("projects/create/", ProjectCreateView.as_view(), name="project-create"),
     path("projects/<int:project_id>/update/", ProjectUpdateView.as_view(), name="project-update"),
     path("projects/<int:project_id>/delete/", ProjectSoftDeleteView.as_view(), name="project-soft-delete"),

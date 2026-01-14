@@ -8,6 +8,11 @@ export const useProject = () => {
   const project = useProjectStore((state) => state.project);
   const is_solo = useProjectStore((state) => state.is_solo);
 
+    
+  const setProjectMeta = (projectData) => {
+    setProject(projectData); 
+  };
+
   const mutation = useMutation({
     mutationFn: createProject,
     onSuccess: (data) => {
@@ -19,5 +24,5 @@ export const useProject = () => {
     },
   });
 
-  return { mutate: mutation.mutate, isPending: mutation.isPending, project, is_solo };
+  return { mutate: mutation.mutate, isPending: mutation.isPending, project, is_solo , setProjectMeta};
 };

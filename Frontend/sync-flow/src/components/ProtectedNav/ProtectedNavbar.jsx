@@ -2,7 +2,7 @@ import { Moon, Sun, Menu, TvMinimal, Plus, X } from "lucide-react";
 import { useState } from "react";
 import { cn } from "../../utils/utils";
 import useTheme from "../../hooks/useTheme";
-import SearchUi from "../ui/SearchUi";
+import SearchUI from "../../features/search/SearchUI";
 export function ProtectedNavbar({ isExpanded, setIsExpanded, isMobile }) {
   const { theme, setTheme } = useTheme();
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -79,7 +79,7 @@ export function ProtectedNavbar({ isExpanded, setIsExpanded, isMobile }) {
           <div className="relative flex gap-4.5 items-center justify-center">
             {/* search  */}
             <div className="  ">
-              <SearchUi />
+              <SearchUI />
             </div>
             <div>
              

@@ -119,7 +119,7 @@ class ProjectRestoreView(APIView):
 
 
 class ProjectListPagination(PageNumberPagination):
-    page_size = 10  
+    page_size = 5  
     page_size_query_param = "page_size"  # allow frontend to change page size
     max_page_size = 50  
 

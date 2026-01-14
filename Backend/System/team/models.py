@@ -8,7 +8,7 @@ from .utils.custom_queryset import ProjectQuerySet
 from cloudinary.models import CloudinaryField
 from django.contrib.postgres.indexes import GinIndex
 
-# ===============================
+
 # Project Model
 # ===============================
 class Project(models.Model):
@@ -120,7 +120,7 @@ class ActivityLog(models.Model):
     action = models.CharField(max_length=50, choices=ACTION_CHOICES)
     details = models.TextField(blank=True, null=True)   
     created_at = models.DateTimeField(auto_now_add=True)
-
+    timestamp = models.DateTimeField(auto_now=True)
 
     class Meta:
         indexes = [
