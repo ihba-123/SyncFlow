@@ -8,7 +8,7 @@ export function ProtectedNavbar({ isExpanded, setIsExpanded, isMobile }) {
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
   const toggleMobileMenu = () => setIsExpanded((prev) => !prev);
-
+  
   const handleSelect = (mode) => {
     setTheme(mode);
     setDropdownOpen(false);

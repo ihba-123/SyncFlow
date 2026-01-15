@@ -9,8 +9,6 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "../ui/Avatar";
-import { Popover, PopoverContent, PopoverTrigger } from "../ui/Popover";
 import {
   Tooltip,
   TooltipContent,
@@ -18,21 +16,16 @@ import {
   TooltipTrigger,
 } from "../../components/ui/Toolltip";
 import { cn } from "../../utils/utils";
-import { useAuth } from "../../hooks/Auth";
-import { useUserProfile } from "../../hooks/UserProfile";
-import Logout from "../../features/auth/Logout";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useState } from "react";
 import { useProject } from "../../hooks/useProject";
+import Avatars from "./Avatar";
 
 export function Sidebar({ isExpanded, setIsExpanded, isMobile }) {
-  const { data } = useAuth();
-  const { name, photo, is_online } = useUserProfile();  
-  const navigate = useNavigate();
   const location = useLocation();
   const [open, setOpen] = useState(false);
-  const {is_solo} = useProject();
-  const navItems = [  
+  const { is_solo } = useProject();
+  const navItems = [
     { icon: LayoutDashboard, label: "Dashboard", to: "/dashboard" },
     { icon: Users, label: "Team", to: "/team" },
     { icon: Folder, label: "Projects", to: "/dashboard/project" },
@@ -44,21 +37,14 @@ export function Sidebar({ isExpanded, setIsExpanded, isMobile }) {
     { icon: Settings, label: "Settings", to: "/settings" },
   ];
 
- const filteredNavItems = navItems.filter(
-  (item) => !(is_solo && item.label === "Team")
-);
-
+  const filteredNavItems = navItems.filter(
+    (item) => !(is_solo && item.label === "Team")
+  );
 
   const handleNavClick = () => {
     if (isMobile) {
       setIsExpanded(false);
     }
-  };
-
-  const handleEditProfileClick = () => {
-    setOpen(false);
-    if (isMobile) setIsExpanded(false);
-    navigate("/dashboard/profile");
   };
 
   const isActive = (path) => location.pathname.startsWith(path);
@@ -76,7 +62,6 @@ export function Sidebar({ isExpanded, setIsExpanded, isMobile }) {
       )}
     >
       <div className="relative flex flex-col h-full bg-background/40 p-3 overflow-hidden">
-        
         <div className="relative flex items-center justify-between h-14 mb-6">
           <div
             className={cn(
@@ -104,7 +89,7 @@ export function Sidebar({ isExpanded, setIsExpanded, isMobile }) {
             <button
               onClick={() => setIsExpanded(!isExpanded)}
               className={cn(
-                "absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full border border-gray-500/70 dark:border-indigo-400/30",
+                "absolute  -right-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full border border-gray-500/70 dark:border-indigo-400/30",
                 "bg-background/80 backdrop-blur-sm flex items-center justify-center hover:bg-indigo-500/20 transition-all duration-300 z-10"
               )}
             >
@@ -117,7 +102,6 @@ export function Sidebar({ isExpanded, setIsExpanded, isMobile }) {
           )}
         </div>
 
-        
         <nav className="flex-1 space-y-2">
           {filteredNavItems.map((item) => (
             <TooltipProvider key={item.label}>
@@ -137,7 +121,7 @@ export function Sidebar({ isExpanded, setIsExpanded, isMobile }) {
                   >
                     <item.icon
                       className={cn(
-                        "w-5 h-5 flex-shrink-0 transition-colors",
+                        "w-5 h-4 flex-shrink-0 transition-colors",
                         isActive(item.to)
                           ? "text-black/80 dark:text-indigo-300"
                           : "text-gray-800 dark:text-gray-400 group-hover:text-indigo-900 dark:group-hover:text-indigo-300"
@@ -169,11 +153,10 @@ export function Sidebar({ isExpanded, setIsExpanded, isMobile }) {
             </TooltipProvider>
           ))}
 
-            <div className="mt-14 ">
-                          <div className="h-px bg-gradient-to-r from-transparent via-gray-800 dark:via-indigo-400/30 to-transparent" />
-            </div>
+          <div className="mt-10 ">
+            <div className="h-px bg-gradient-to-r from-transparent via-gray-800 dark:via-indigo-400/30 to-transparent" />
+          </div>
 
-              
           {bottomItems.map((item) => (
             <TooltipProvider key={item.label}>
               <Tooltip delayDuration={200}>
@@ -192,7 +175,7 @@ export function Sidebar({ isExpanded, setIsExpanded, isMobile }) {
                   >
                     <item.icon
                       className={cn(
-                        "w-5 h-5 flex-shrink-0 transition-colors",
+                        "w-4 h-4 flex-shrink-0 transition-colors",
                         isActive(item.to)
                           ? "text-black/80 dark:text-indigo-300"
                           : "text-gray-800 dark:text-gray-400 group-hover:text-indigo-900 dark:group-hover:text-indigo-300"
@@ -225,68 +208,13 @@ export function Sidebar({ isExpanded, setIsExpanded, isMobile }) {
           ))}
         </nav>
 
-        {/* User Profile Popover */}
-        <div className="pt-4 z-100">
-          <div className="py-4">
-            <div className="h-px bg-gradient-to-r from-transparent via-gray-800 dark:via-indigo-400/30 to-transparent" />
-          </div>
-          <Popover open={open} onOpenChange={setOpen}>
-            <PopoverTrigger asChild>
-              <button
-                className={cn(
-                  "group flex items-center gap-3 w-full px-4 py-3 rounded-2xl transition-all duration-300",
-                  isExpanded ? "justify-start" : "justify-center"
-                )}
-              >
-                <div className="relative">
-                  <Avatar className="w-10 h-10 border-2 border-indigo-400/40">
-                    <AvatarImage src={photo} />
-                    <AvatarFallback className="bg-indigo-500/20 text-indigo-300 text-sm font-medium">
-                      {name?.[0]?.toUpperCase() || "U"}
-                    </AvatarFallback>
-                  </Avatar>
-                  {is_online && (
-                    <span className="absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full bg-green-500 border-2 border-white dark:border-background ring-2 ring-background" />
-                  )}
-                </div>
-
-                {isExpanded && (
-                  <div className="text-left flex-1">
-                    <p className="text-sm font-extrabold text-black/80 dark:text-gray-400 truncate">
-                      {name || "User"}
-                    </p>
-                    <p className="text-xs text-black/80 font-bold dark:text-gray-400 truncate">
-                      {data?.email}
-                    </p>
-                  </div>
-                )}
-              </button>
-            </PopoverTrigger>
-
-            <PopoverContent
-              side="top"
-              align={isExpanded ? "start" : "center"}
-              sideOffset={12}
-              className="w-44 h-auto z-100 p-3 bg-background/95 backdrop-blur-md rounded-2xl border border-black/20 dark:border-white/10 shadow-2xl"
-            >
-              <div className="space-y-1">
-                <button
-                  onClick={handleEditProfileClick}
-                  className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-800 dark:text-gray-200 hover:text-gray-600 cursor-pointer rounded-lg transition-colors"
-                >
-                  <Users className="w-4 h-4" />
-                  Profile
-                </button>
-
-                <div>
-                  <div className="h-px bg-gradient-to-r from-transparent via-gray-800 dark:via-indigo-400/30 to-transparent" />
-                </div>
-
-                <Logout onLogout={() => setOpen(false)} />
-              </div>
-            </PopoverContent>
-          </Popover>
-        </div>
+        <Avatars
+          isExpanded={isExpanded}
+          setIsExpanded={setIsExpanded}
+          isMobile={isMobile}
+          open={open}
+          setOpen={setOpen}
+        />
       </div>
     </aside>
   );
