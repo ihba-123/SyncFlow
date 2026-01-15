@@ -19,13 +19,13 @@ export default function UserProfile() {
 
   return (
     
-    <div className="min-h-screen py-6 px-4 sm:py-8 sm:px-6 lg:px-8">
+    <div className="min-h-screen  py-6 px-4 sm:py-8 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
         
         <div className="bg-background/30 backdrop-blur-md   rounded-xl border shadow-lg border-gray-300  dark:border-gray-800 overflow-hidden">
           
-          <div className="p-6 sm:p-8 lg:p-10">
-            <div className="flex flex-col items-center sm:flex-row sm:items-start gap-6 lg:gap-8">
+          <div className="p-4  sm:p-8 lg:p-10">
+            <div className="flex flex-col items-center sm:flex-row sm:items-start gap-3.5 lg:gap-8">
               
               <div className="relative group shrink-0">
                 {authData?.photo || photo ? (
@@ -60,8 +60,8 @@ export default function UserProfile() {
                     )}
 
                     {/* Email & Join Date */}
-                    <div className="space-y-3 text-left">
-                      <div className="flex items-center gap-3 text-gray-700  dark:text-gray-500">
+                    <div className="space-y-3  text-left">
+                      <div className="flex justify-center sm:justify-start items-center gap-3 text-gray-700  dark:text-gray-500">
                         <Mail className="w-5 text-gray-950 dark:text-white h-5 flex-shrink-0" />
                         <span className="text-sm break-all">{email}</span>
                       </div>

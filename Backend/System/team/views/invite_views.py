@@ -179,11 +179,15 @@ class ListInvitesView(APIView):
             else:
                 display_name = user.email.split("@")[0]
 
+
+
+
             joined_members.append(
                 {
                     "id": user.id,
                     "email": user.email,
                     "name": display_name,
+                    "photo": profile.photo.url if profile.photo else None,
                     "role": project_member.get_role_display(),
                     "is_online": profile.is_online if profile else False,
                     "joined_at": project_member.joined_at,

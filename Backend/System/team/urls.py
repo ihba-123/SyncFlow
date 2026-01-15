@@ -32,7 +32,7 @@ urlpatterns = [
     path("projects/<int:project_id>/", ProjectDetailView.as_view(), name="project-detail"),
     path("projects/<int:project_id>/invite/", InviteView.as_view(), name="project-invite"),
     path("join-invite/", UseInviteView.as_view(), name="project-use-invite"),
-    path("projects/<int:project_id>/invites/list/", ListInvitesView.as_view(), name="project-invites"),
+    path("projects/<int:project_id>/invites/list/", ListInvitesView.as_view(), name="project-invites-list"),
     path('projects/<int:project_id>/leave/', LeaveProjectView.as_view(), name='project-leave'),
     path('projects/<int:project_id>/remove/<int:user_id>/', RemoveMemberView.as_view(), name='project-remove-member'),
 ]
