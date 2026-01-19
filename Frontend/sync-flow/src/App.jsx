@@ -16,6 +16,7 @@ import Project from "./pages/dashboard/Project";
 import { CreateProject } from "./features/project/CreateProject";
 import { SoloProject } from "./features/project/SoloProject";
 import ProjectDetail from "./features/project/ProjectDetail";
+import TeamList from "./features/team/TeamList";
 const App = () => {
   <ProgressBar />;
   useTheme();
@@ -53,6 +54,7 @@ const App = () => {
 
           <Route path="/projects/:id" element={<ProjectDetail />} />
           {/* <Route path="/tasks/:id" element={<TaskDetail />} /> */}
+          <Route path="/teams/:project_id/Projectmembers" element={<TeamList />} />
           <Route path="/users/:id" element={<UserProfileEdit />} />
         </Route>
       </Routes>

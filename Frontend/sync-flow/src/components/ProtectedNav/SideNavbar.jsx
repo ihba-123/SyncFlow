@@ -24,10 +24,10 @@ import Avatars from "./Avatar";
 export function Sidebar({ isExpanded, setIsExpanded, isMobile }) {
   const location = useLocation();
   const [open, setOpen] = useState(false);
-  const { is_solo } = useProject();
+  const { is_solo, project } = useProject();
   const navItems = [
     { icon: LayoutDashboard, label: "Dashboard", to: "/dashboard" },
-    { icon: Users, label: "Team", to: "/team" },
+    { icon: Users, label: "Team", to: `/teams/${project?.id}/Projectmembers` },
     { icon: Folder, label: "Projects", to: "/dashboard/project" },
     { icon: MessageSquare, label: "Messages", to: "/messages" },
   ];
@@ -38,7 +38,7 @@ export function Sidebar({ isExpanded, setIsExpanded, isMobile }) {
   ];
 
   const filteredNavItems = navItems.filter(
-    (item) => !(is_solo && item.label === "Team")
+    (item) => !(is_solo && item.label === "Team"),
   );
 
   const handleNavClick = () => {
@@ -58,7 +58,7 @@ export function Sidebar({ isExpanded, setIsExpanded, isMobile }) {
         isMobile && "transition-transform duration-300 ease-in-out",
         isExpanded ? "w-64" : "w-16",
         isMobile && !isExpanded && "-translate-x-full",
-        isMobile && isExpanded && "translate-x-0"
+        isMobile && isExpanded && "translate-x-0",
       )}
     >
       <div className="relative flex flex-col h-full bg-background/40 p-3 overflow-hidden">
@@ -66,7 +66,7 @@ export function Sidebar({ isExpanded, setIsExpanded, isMobile }) {
           <div
             className={cn(
               "flex items-center",
-              isExpanded ? "justify-start" : "justify-center w-full"
+              isExpanded ? "justify-start" : "justify-center w-full",
             )}
           >
             {isExpanded ? (
@@ -90,7 +90,7 @@ export function Sidebar({ isExpanded, setIsExpanded, isMobile }) {
               onClick={() => setIsExpanded(!isExpanded)}
               className={cn(
                 "absolute  -right-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full border border-gray-500/70 dark:border-indigo-400/30",
-                "bg-background/80 backdrop-blur-sm flex items-center justify-center hover:bg-indigo-500/20 transition-all duration-300 z-10"
+                "bg-background/80 backdrop-blur-sm flex items-center justify-center hover:bg-indigo-500/20 transition-all duration-300 z-10",
               )}
             >
               {isExpanded ? (
@@ -116,15 +116,15 @@ export function Sidebar({ isExpanded, setIsExpanded, isMobile }) {
                       isActive(item.to)
                         ? "bg-[#66b3ff9a] not-first:dark:bg-indigo-500/25 border border-indigo-400/40 text-indigo-300 shadow-md shadow-indigo-500/20"
                         : "text-gray-300",
-                      isExpanded ? "justify-start" : "justify-center"
+                      isExpanded ? "justify-start" : "justify-center",
                     )}
                   >
                     <item.icon
                       className={cn(
-                        "w-5 h-4 flex-shrink-0 transition-colors",
+                        "w-5 h-[18px] flex-shrink-0 transition-colors",
                         isActive(item.to)
                           ? "text-black/80 dark:text-indigo-300"
-                          : "text-gray-800 dark:text-gray-400 group-hover:text-indigo-900 dark:group-hover:text-indigo-300"
+                          : "text-gray-800 dark:text-gray-400 group-hover:text-indigo-900 dark:group-hover:text-indigo-300",
                       )}
                     />
                     {isExpanded && (
@@ -133,7 +133,7 @@ export function Sidebar({ isExpanded, setIsExpanded, isMobile }) {
                           "text-sm font-medium transition-colors",
                           isActive(item.to)
                             ? "text-black/80 dark:text-indigo-200"
-                            : "text-gray-800 dark:text-gray-200 group-hover:text-indigo-900 dark:group-hover:text-indigo-200"
+                            : "text-gray-800 dark:text-gray-200 group-hover:text-indigo-900 dark:group-hover:text-indigo-200",
                         )}
                       >
                         {item.label}
@@ -170,15 +170,15 @@ export function Sidebar({ isExpanded, setIsExpanded, isMobile }) {
                       isActive(item.to)
                         ? "bg-[#66b3ff9a] not-first:dark:bg-indigo-500/25 border border-indigo-400/40 text-indigo-300 shadow-md shadow-indigo-500/20"
                         : "text-gray-300",
-                      isExpanded ? "justify-start" : "justify-center"
+                      isExpanded ? "justify-start" : "justify-center",
                     )}
                   >
                     <item.icon
                       className={cn(
-                        "w-4 h-4 flex-shrink-0 transition-colors",
+                        "w-5 h-[18px] flex-shrink-0 transition-colors",
                         isActive(item.to)
                           ? "text-black/80 dark:text-indigo-300"
-                          : "text-gray-800 dark:text-gray-400 group-hover:text-indigo-900 dark:group-hover:text-indigo-300"
+                          : "text-gray-800 dark:text-gray-400 group-hover:text-indigo-900 dark:group-hover:text-indigo-300",
                       )}
                     />
                     {isExpanded && (
@@ -187,7 +187,7 @@ export function Sidebar({ isExpanded, setIsExpanded, isMobile }) {
                           "text-sm font-medium transition-colors",
                           isActive(item.to)
                             ? "text-black/80 dark:text-indigo-200"
-                            : "text-gray-800 dark:text-gray-200 group-hover:text-indigo-900 dark:group-hover:text-indigo-200"
+                            : "text-gray-800 dark:text-gray-200 group-hover:text-indigo-900 dark:group-hover:text-indigo-200",
                         )}
                       >
                         {item.label}

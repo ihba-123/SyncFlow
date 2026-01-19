@@ -48,14 +48,13 @@ const ProfileAvatar = ({ src, onChange, disabled, inputId }) => (
         <User className="w-16 h-16 text-gray-500 dark:text-gray-400" />
       )}
     </div>
-    {/* Fixed: label properly associated with input via htmlFor */}
+    
     <label
       htmlFor={inputId}
       className="absolute inset-0 rounded-full bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center cursor-pointer"
     >
       <Camera className="w-8 h-8 text-white" />
     </label>
-    {/* Input moved outside label, hidden, but linked via id */}
     <input
       id={inputId}
       type="file"

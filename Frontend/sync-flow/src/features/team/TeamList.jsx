@@ -1,0 +1,217 @@
+import React from "react";
+import { FiCopy, FiUserPlus, FiMoreVertical } from "react-icons/fi";
+import {useTeamList} from "./TeamListLogic";
+import {TeamViewSkeleton} from "../../components/skeleton/ProjectMemberSkeleton"
+import { useParams } from "react-router-dom";
+const TeamView = () => {
+  const{project_id} = useParams();
+  const { data, isLoading, isError } = useTeamList(project_id);
+  const invites = data ? data.invites : [];
+  const joined_members = data ? data.joined_members : [];
+
+  const formatShortDate = (iso) => {
+    const d = new Date(iso);
+    return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  };
+
+
+  if (isLoading) {
+  return (
+    <TeamViewSkeleton
+      membersLength={joined_members?.length || 3}
+      invitesLength={invites?.length || 2}
+    />
+  );
+} 
+
+if (isError) {
+  return (
+    <div className="min-h-screen flex items-center justify-center  px-4">
+      <div className="max-w-md w-full bg-white border border-red-300 dark:bg-white/[0.05] dark:border-gray-600 rounded-2xl shadow-md p-6 text-center">
+        <h2 className="text-xl font-semibold text-red-600 dark:text-red-400 mb-2">
+          Oops!
+        </h2>
+        <p className="text-sm text-slate-700 dark:text-slate-300">
+          Something went wrong while loading team members.
+        </p>
+        <button
+          className="mt-4 px-4 py-2 rounded-lg bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-800 transition"
+          onClick={() => window.location.reload()}
+        >
+          Retry
+        </button>
+      </div>
+    </div>
+  );
+}
+
+
+  return (
+    <div className="min-h-screen -mt-5 bg-slate-50 text-slate-900 dark:bg-[#0a0c14] dark:text-slate-100">
+      <div className="fixed inset-0 pointer-events-none hidden dark:block">
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-950/30 via-transparent to-indigo-950/20" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_15%_20%,rgba(59,130,246,0.08)_0%,transparent_40%)]" />
+      </div>
+
+      <div className="relative mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+        <div className="mb-7 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <h1
+            className="text-4xl sm:text-3xl md:text-4xl font-semibold tracking-tight
+            bg-gradient-to-r from-blue-600 to-indigo-600
+            dark:from-blue-100 dark:to-indigo-200
+            bg-clip-text text-transparent"
+          >
+            Team & Invites
+          </h1>
+
+          <button
+            className="flex items-center cursor-pointer justify-center gap-2 w-6/12 sm:w-auto rounded-xl
+            bg-gradient-to-r from-indigo-600 to-blue-600 scale-3d
+            px-5 py-2.5 text-sm sm:text-base font-medium text-white
+            shadow-lg hover:scale-[1.02] transition"
+          >
+            <FiUserPlus size={16} />
+            Invite member
+          </button>
+        </div>
+
+        <div className="mb-14">
+          <h2 className="mb-4 text-lg sm:text-xl font-medium text-slate-700 dark:text-slate-200">
+            Active Members ·{" "}
+            <span className="text-slate-400">{joined_members.length}</span>
+          </h2>
+
+          <div className="space-y-4">
+            {joined_members.map((member) => (
+              <div
+                key={member.id}
+                className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-5
+                  rounded-2xl bg-white border border-slate-300
+                  shadow-sm hover:shadow-md transition
+                  dark:bg-white/[0.03] dark:border-white/5 dark:hover:shadow-blue-900/10 p-4 sm:p-5"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="relative">
+                    <div className="h-12 w-12 sm:h-14 sm:w-14 overflow-hidden rounded-full ring-1 ring-slate-300 dark:ring-white/10">
+                      <img
+                        src={member.photo}
+                        alt={member.name}
+                        className="h-full w-full object-cover"
+                      />
+                    </div>
+                    {member.is_online && (
+                      <span
+                        className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full
+                        bg-emerald-500 border-2 border-white dark:border-[#0a0c14]"
+                      />
+                    )}
+                  </div>
+
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="font-medium truncate">
+                        {member.name}
+                      </span>
+                      <span
+                        className="text-xs uppercase px-2 py-0.5 rounded-full
+                        bg-blue-100 text-blue-700
+                        dark:bg-blue-950/60 dark:text-blue-300"
+                      >
+                        {member.role}
+                      </span>
+                    </div>
+                    <div className="text-sm text-slate-500 dark:text-slate-400 truncate">
+                      {member.email}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex sm:ml-auto items-center justify-between sm:justify-end gap-4">
+                  <div className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 text-right">
+                    <div className="uppercase">Joined</div>
+                    <div className="font-medium text-slate-700 dark:text-slate-300">
+                      {formatShortDate(member.joined_at)}
+                    </div>
+                  </div>
+
+                  <button
+                    className="p-2 rounded-lg text-slate-500
+                    hover:bg-slate-100 shadow-sm
+                    dark:hover:bg-white/5 transition"
+                  >
+                    <FiMoreVertical size={18} />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        
+        <div>
+          <h2 className="mb-4 text-lg sm:text-xl font-medium text-slate-700 dark:text-slate-200">
+            Invitations & Links ·{" "}
+            <span className="text-slate-400">{invites.length}</span>
+          </h2>
+
+          <div className="space-y-4">
+            {invites.map((invite) => (
+              <div
+                key={invite.id}
+                className="rounded-2xl bg-white border border-slate-300
+                  shadow-sm hover:shadow-md transition
+                  dark:bg-white/[0.04] dark:border-white/6 p-4 sm:p-6"
+              >
+                <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                  <div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="font-medium">
+                        {invite.invited_email || "Open invite link"}
+                      </span>
+                      <span
+                        className="text-xs uppercase px-2 py-0.5 rounded-full
+                        bg-blue-100 text-blue-700
+                        dark:bg-blue-950/60 dark:text-blue-300"
+                      >
+                        {invite.role}
+                      </span>
+                    </div>
+
+                    <div className="mt-2 text-xs text-slate-500 dark:text-slate-400 flex flex-wrap gap-4">
+                      <span>Created: {formatShortDate(invite.created_at)}</span>
+                      <span>Expires: {formatShortDate(invite.expires_at)}</span>
+                    </div>
+                  </div>
+
+                  {!invite.is_used && (
+                    <div className="flex flex-wrap items-center gap-3">
+                      <div
+                        className="px-4 py-2 text-sm font-mono rounded-lg
+                        bg-slate-100 border border-slate-300 shadow-inner
+                        dark:bg-black/40 dark:border-white/10 dark:text-slate-300"
+                      >
+                        {invite.plain_token.slice(0, 8)}…
+                        {invite.plain_token.slice(-6)}
+                      </div>
+
+                      <button
+                        className="p-2.5 rounded-lg
+                        bg-blue-100 text-blue-700 shadow-sm
+                        hover:bg-blue-200 transition
+                        dark:bg-blue-900/40 dark:text-blue-300"
+                      >
+                        <FiCopy size={18} />
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default TeamView;

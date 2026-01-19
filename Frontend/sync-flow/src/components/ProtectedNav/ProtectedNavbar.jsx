@@ -43,7 +43,7 @@ export function ProtectedNavbar({ isExpanded, setIsExpanded, isMobile }) {
   return (
     <header
       className={cn(
-        "fixed top-0 right-0 h-16   bg-card/10 backdrop-blur-sm border  border-black/20 dark:border-white/10 border-l-0 transition-all duration-300 z-50",
+        "fixed top-0 right-0 h-14   bg-card/10 backdrop-blur-sm border  border-black/20 dark:border-white/10 border-l-0 transition-all duration-300 z-50",
         !isMobile && (isExpanded ? "left-64" : "left-16"),
         isMobile && "left-0 w-full"
       )}
@@ -73,12 +73,12 @@ export function ProtectedNavbar({ isExpanded, setIsExpanded, isMobile }) {
           </div>
         </div>
 
-        {/* Right Icons */}
+       
         <div className="flex items-center gap-4 relative">
-          {/* Theme Dropdown */}
+        
           <div className="relative flex gap-4.5 items-center justify-center">
-            {/* search  */}
-            <div className="  ">
+           
+            <div>
               <SearchUI />
             </div>
             <div>

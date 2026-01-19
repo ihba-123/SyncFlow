@@ -54,7 +54,7 @@ export default function SearchUI() {
         className="fixed inset-0 dark:bg-black/20 bg-[#66b3ff0d] backdrop-blur-[5px] saturate-150 animate-in fade-in duration-300"
       />
 
-      {/* Modal */}
+ 
       <div
         className="
           relative z-[100000] w-full max-w-2xl
@@ -214,7 +214,7 @@ export default function SearchUI() {
           <span className="flex-1 text-left text-sm text-zinc-600 dark:text-zinc-300">
             Search...
           </span>
-          <kbd className="text-xs px-2 py-1 rounded border bg-zinc-100 dark:bg-zinc-800 border-zinc-300 dark:border-zinc-600">
+          <kbd className="text-[10px] px-1.5 py-1 rounded border bg-zinc-100 dark:bg-zinc-800 border-zinc-300 dark:border-zinc-600">
             Ctrl + K
           </kbd>
         </button>

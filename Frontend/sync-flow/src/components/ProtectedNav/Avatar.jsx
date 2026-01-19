@@ -13,9 +13,6 @@ const Avatars = ({ isExpanded, setIsExpanded, isMobile }) => {
   const { name, photo, is_online } = useUserProfile();
   const { data } = useAuth();
   const navigate = useNavigate();
-  console.log(name, photo, is_online);
-  console.log(data.email);
-
   const handleEditProfileClick = () => {
     setOpen(false);
     if (isMobile) setIsExpanded(false);

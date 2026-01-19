@@ -1,6 +1,5 @@
+
 import api from "./axios_inteceptor";
-
-
 export const createProject = async (formData) => {
   const { data } = await api.post("projects/create/", formData,{
     headers: {
@@ -16,4 +15,11 @@ export const createProject = async (formData) => {
 export const projectList = async (page=1) => {
   const data = await api.get(`projects/list/?page=${page}`)
   return data;
+}
+
+
+
+export const getProjectMembers = async (project_id=154) => {
+  const res = await api.get(`projects/${project_id}/invites/list/`);
+  return res.data;
 }
