@@ -12,7 +12,6 @@ export const useAuth = () => {
     queryFn: getProfile,
     onSuccess: (data) => {
       setUser(data);
-      console.log(data);
     },
     onError: (err) => {
       if (err.response?.status !== 401) {

@@ -1,12 +1,12 @@
 import React from "react";
 
 export const TeamViewSkeleton = ({ membersLength = 3, invitesLength = 2 }) => {
-  // membersLength and invitesLength can be dynamic
+
   const memberSkeletons = Array.from({ length: membersLength });
   const inviteSkeletons = Array.from({ length: invitesLength });
 
   return (
-    <div className="min-h-screen -mt-5 bg-slate-50 text-slate-900 dark:bg-[#0a0c14] dark:text-slate-100">
+    <div className="min-h-screen -mt-5 bg-slate-50 text-slate-900 dark:bg-[#050c285f] dark:text-slate-100">
       <div className="relative mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         {/* Header Skeleton */}
         <div className="mb-7 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">

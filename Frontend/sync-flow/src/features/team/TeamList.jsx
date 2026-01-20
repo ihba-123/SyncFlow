@@ -1,13 +1,35 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { FiCopy, FiUserPlus, FiMoreVertical } from "react-icons/fi";
-import {useTeamList} from "./TeamListLogic";
-import {TeamViewSkeleton} from "../../components/skeleton/ProjectMemberSkeleton"
+import { useTeamList } from "./TeamListLogic";
+import { TeamViewSkeleton } from "../../components/skeleton/ProjectMemberSkeleton";
 import { useParams } from "react-router-dom";
+import { useAuth } from "../../hooks/Auth";
+import { useProjectRoleStore } from "../../stores/ProjectRoleStore";
+
 const TeamView = () => {
-  const{project_id} = useParams();
+  const { project_id } = useParams();
   const { data, isLoading, isError } = useTeamList(project_id);
+  const { setRole, isAdmin } = useProjectRoleStore();
+  const { data: authData } = useAuth();
+  console.log(isAdmin);
+
   const invites = data ? data.invites : [];
   const joined_members = data ? data.joined_members : [];
+
+  //Admin role logic
+  useEffect(() => {
+    if (!joined_members.length || !authData?.id) return;
+
+    const myRole = joined_members.find(
+      (member) => member.id === authData.id,
+    )?.role;
+
+    if (myRole) {
+      setRole(myRole);
+    }
+  }, [joined_members, authData, setRole]);
+
+
 
   const formatShortDate = (iso) => {
     const d = new Date(iso);
@@ -15,35 +37,37 @@ const TeamView = () => {
   };
 
 
-  if (isLoading) {
-  return (
-    <TeamViewSkeleton
-      membersLength={joined_members?.length || 3}
-      invitesLength={invites?.length || 2}
-    />
-  );
-} 
 
-if (isError) {
-  return (
-    <div className="min-h-screen flex items-center justify-center  px-4">
-      <div className="max-w-md w-full bg-white border border-red-300 dark:bg-white/[0.05] dark:border-gray-600 rounded-2xl shadow-md p-6 text-center">
-        <h2 className="text-xl font-semibold text-red-600 dark:text-red-400 mb-2">
-          Oops!
-        </h2>
-        <p className="text-sm text-slate-700 dark:text-slate-300">
-          Something went wrong while loading team members.
-        </p>
-        <button
-          className="mt-4 px-4 py-2 rounded-lg bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-800 transition"
-          onClick={() => window.location.reload()}
-        >
-          Retry
-        </button>
+  if (isLoading) {
+    return (
+      <TeamViewSkeleton
+        membersLength={joined_members?.length || 3}
+        invitesLength={invites?.length || 2}
+      />
+    );
+  }
+
+
+  if (isError) {
+    return (
+      <div className="min-h-screen flex items-center justify-center  px-4">
+        <div className="max-w-md w-full bg-white border border-red-300 dark:bg-white/[0.05] dark:border-gray-600 rounded-2xl shadow-md p-6 text-center">
+          <h2 className="text-xl font-semibold text-red-600 dark:text-red-400 mb-2">
+            Oops!
+          </h2>
+          <p className="text-sm text-slate-700 dark:text-slate-300">
+            Something went wrong while loading team members.
+          </p>
+          <button
+            className="mt-4 px-4 py-2 rounded-lg bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-800 transition"
+            onClick={() => window.location.reload()}
+          >
+            Retry
+          </button>
+        </div>
       </div>
-    </div>
-  );
-}
+    );
+  }
 
 
   return (
@@ -54,25 +78,29 @@ if (isError) {
       </div>
 
       <div className="relative mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
-        <div className="mb-7 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mb-7  rounded-full text-gray-300 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="hover:underline decoration-dotted underline-offset-8 text-blue-600 dark:text-blue-300">
           <h1
-            className="text-4xl sm:text-3xl md:text-4xl font-semibold tracking-tight
-            bg-gradient-to-r from-blue-600 to-indigo-600
-            dark:from-blue-100 dark:to-indigo-200
+            className=" text-5xl font-extrabold sm:text-3xl md:text-4xl  tracking-tight
+            bg-gradient-to-r from-blue-600 to-gray-600
+            dark:from-blue-100 dark:to-indigo-200 
             bg-clip-text text-transparent"
-          >
-            Team & Invites
+            >
+            Team {isAdmin && "& Invites"}
           </h1>
+            </div>
 
-          <button
-            className="flex items-center cursor-pointer justify-center gap-2 w-6/12 sm:w-auto rounded-xl
+          {isAdmin ? (
+            <button
+              className="flex items-center cursor-pointer justify-center gap-2 w-6/12 sm:w-auto rounded-xl
             bg-gradient-to-r from-indigo-600 to-blue-600 scale-3d
             px-5 py-2.5 text-sm sm:text-base font-medium text-white
             shadow-lg hover:scale-[1.02] transition"
-          >
-            <FiUserPlus size={16} />
-            Invite member
-          </button>
+            >
+              <FiUserPlus size={16} />
+              Invite member
+            </button>
+          ) : null}
         </div>
 
         <div className="mb-14">
@@ -147,68 +175,73 @@ if (isError) {
           </div>
         </div>
 
-        
-        <div>
-          <h2 className="mb-4 text-lg sm:text-xl font-medium text-slate-700 dark:text-slate-200">
-            Invitations & Links ·{" "}
-            <span className="text-slate-400">{invites.length}</span>
-          </h2>
+        {isAdmin ? (
+          <div>
+            <h2 className="mb-4 text-lg sm:text-xl font-medium text-slate-700 dark:text-slate-200">
+              Invitations & Links ·{" "}
+              <span className="text-slate-400">{invites.length}</span>
+            </h2>
 
-          <div className="space-y-4">
-            {invites.map((invite) => (
-              <div
-                key={invite.id}
-                className="rounded-2xl bg-white border border-slate-300
+            <div className="space-y-4">
+              {invites.map((invite) => (
+                <div
+                  key={invite.id}
+                  className="rounded-2xl bg-white border border-slate-300
                   shadow-sm hover:shadow-md transition
                   dark:bg-white/[0.04] dark:border-white/6 p-4 sm:p-6"
-              >
-                <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                  <div>
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="font-medium">
-                        {invite.invited_email || "Open invite link"}
-                      </span>
-                      <span
-                        className="text-xs uppercase px-2 py-0.5 rounded-full
+                >
+                  <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                    <div>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="font-medium">
+                          {invite.invited_email || "Open invite link"}
+                        </span>
+                        <span
+                          className="text-xs uppercase px-2 py-0.5 rounded-full
                         bg-blue-100 text-blue-700
                         dark:bg-blue-950/60 dark:text-blue-300"
-                      >
-                        {invite.role}
-                      </span>
-                    </div>
-
-                    <div className="mt-2 text-xs text-slate-500 dark:text-slate-400 flex flex-wrap gap-4">
-                      <span>Created: {formatShortDate(invite.created_at)}</span>
-                      <span>Expires: {formatShortDate(invite.expires_at)}</span>
-                    </div>
-                  </div>
-
-                  {!invite.is_used && (
-                    <div className="flex flex-wrap items-center gap-3">
-                      <div
-                        className="px-4 py-2 text-sm font-mono rounded-lg
-                        bg-slate-100 border border-slate-300 shadow-inner
-                        dark:bg-black/40 dark:border-white/10 dark:text-slate-300"
-                      >
-                        {invite.plain_token.slice(0, 8)}…
-                        {invite.plain_token.slice(-6)}
+                        >
+                          {invite.role}
+                        </span>
                       </div>
 
-                      <button
-                        className="p-2.5 rounded-lg
+                      <div className="mt-2 text-xs text-slate-500 dark:text-slate-400 flex flex-wrap gap-4">
+                        <span>
+                          Created: {formatShortDate(invite.created_at)}
+                        </span>
+                        <span>
+                          Expires: {formatShortDate(invite.expires_at)}
+                        </span>
+                      </div>
+                    </div>
+
+                    {!invite.is_used && (
+                      <div className="flex flex-wrap items-center gap-3">
+                        <div
+                          className="px-4 py-2 text-sm font-mono rounded-lg
+                        bg-slate-100 border border-slate-300 shadow-inner
+                        dark:bg-black/40 dark:border-white/10 dark:text-slate-300"
+                        >
+                          {invite.plain_token.slice(0, 8)}…
+                          {invite.plain_token.slice(-6)}
+                        </div>
+
+                        <button
+                          className="p-2.5 rounded-lg
                         bg-blue-100 text-blue-700 shadow-sm
                         hover:bg-blue-200 transition
                         dark:bg-blue-900/40 dark:text-blue-300"
-                      >
-                        <FiCopy size={18} />
-                      </button>
-                    </div>
-                  )}
+                        >
+                          <FiCopy size={18} />
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
+        ) : null}
       </div>
     </div>
   );
