@@ -1,20 +1,24 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { FiCopy, FiUserPlus, FiMoreVertical } from "react-icons/fi";
 import { useTeamList } from "./TeamListLogic";
 import { TeamViewSkeleton } from "../../components/skeleton/ProjectMemberSkeleton";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../../hooks/Auth";
 import { useProjectRoleStore } from "../../stores/ProjectRoleStore";
+import { useProject } from "../../hooks/useProject";
+
 
 const TeamView = () => {
+  const [showToast, setShowToast] = useState(false);
   const { project_id } = useParams();
   const { data, isLoading, isError } = useTeamList(project_id);
   const { setRole, isAdmin } = useProjectRoleStore();
   const { data: authData } = useAuth();
-  console.log(isAdmin);
+  const { project } = useProject();
 
   const invites = data ? data.invites : [];
   const joined_members = data ? data.joined_members : [];
+  console.log("Invites Data: ", invites?.plain_token);
 
   //Admin role logic
   useEffect(() => {
@@ -29,14 +33,29 @@ const TeamView = () => {
     }
   }, [joined_members, authData, setRole]);
 
-
-
+  //Date formatting function
   const formatShortDate = (iso) => {
     const d = new Date(iso);
     return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
   };
 
+  //Copy to the clipboard function
+  const copyToClipboard = async (token) => {
+    if (typeof token !== "string") return;
 
+    try {
+      await navigator.clipboard.writeText(token);
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 2000);
+    } catch (err) {
+      console.error("Copy failed:", err);
+    }
+  };
+
+  const navigate = useNavigate();
+  const userInvite = () => {
+    navigate(`/projects/${project.id}/invite`);
+  }
 
   if (isLoading) {
     return (
@@ -46,7 +65,6 @@ const TeamView = () => {
       />
     );
   }
-
 
   if (isError) {
     return (
@@ -69,9 +87,19 @@ const TeamView = () => {
     );
   }
 
-
   return (
     <div className="min-h-screen -mt-5 bg-slate-50 text-slate-900 dark:bg-[#0a0c14] dark:text-slate-100">
+      {/* Toast notification */}
+      {showToast && (
+        <div className="fixed top-5 left-1/2 -translate-x-1/2 z-50">
+          <div className="flex items-center gap-2 px-6 py-3 rounded-full bg-card/10 backdrop-blur-sm border  border-black/20 dark:border-white/10 border-l-0 transition-all duration-300 dark:text-white text-gray-700 shadow-lg">
+            <FiCopy size={16} />
+            <span className="text-sm  text-gray-700 dark:text-gray-200 font-bold">
+              Copied to clipboard
+            </span>
+          </div>
+        </div>
+      )}
       <div className="fixed inset-0 pointer-events-none hidden dark:block">
         <div className="absolute inset-0 bg-gradient-to-br from-blue-950/30 via-transparent to-indigo-950/20" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_15%_20%,rgba(59,130,246,0.08)_0%,transparent_40%)]" />
@@ -80,20 +108,20 @@ const TeamView = () => {
       <div className="relative mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         <div className="mb-7  rounded-full text-gray-300 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="hover:underline decoration-dotted underline-offset-8 text-blue-600 dark:text-blue-300">
-          <h1
-            className=" text-5xl font-extrabold sm:text-3xl md:text-4xl  tracking-tight
+            <h1
+              className=" text-5xl font-extrabold sm:text-3xl md:text-4xl  tracking-tight
             bg-gradient-to-r from-blue-600 to-gray-600
             dark:from-blue-100 dark:to-indigo-200 
             bg-clip-text text-transparent"
             >
-            Team {isAdmin && "& Invites"}
-          </h1>
-            </div>
+              Team {isAdmin && "& Invites"}
+            </h1>
+          </div>
 
           {isAdmin ? (
-            <button
-              className="flex items-center cursor-pointer justify-center gap-2 w-6/12 sm:w-auto rounded-xl
-            bg-gradient-to-r from-indigo-600 to-blue-600 scale-3d
+            <button onClick={userInvite}
+              className="flex items-center cursor-pointer justify-center gap-2 w-6/12 sm:w-auto 
+            g-white dark:bg-white/90 bg-black/80 dark:text-black dark:shadow-none rounded-xl border border-slate-500/50 dark:border-white/10 scale-3d
             px-5 py-2.5 text-sm sm:text-base font-medium text-white
             shadow-lg hover:scale-[1.02] transition"
             >
@@ -203,6 +231,16 @@ const TeamView = () => {
                         >
                           {invite.role}
                         </span>
+                        <div
+                          className={`ml-3 px-2 py-0.5 text-xs font-semibold rounded-full 
+                      ${
+                      invite.is_used
+                      ? "bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-300"
+                      : "bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300"
+                      }`}
+                        >
+                          {invite.is_used ? "Used" : "Unused"}
+                        </div>
                       </div>
 
                       <div className="mt-2 text-xs text-slate-500 dark:text-slate-400 flex flex-wrap gap-4">
@@ -215,27 +253,24 @@ const TeamView = () => {
                       </div>
                     </div>
 
-                    {!invite.is_used && (
-                      <div className="flex flex-wrap items-center gap-3">
-                        <div
-                          className="px-4 py-2 text-sm font-mono rounded-lg
+                    <div className="flex flex-wrap items-center gap-3">
+                      {console.log(invite.plain_token)}
+                      <div
+                        className="px-4 py-2 text-sm font-mono rounded-lg
                         bg-slate-100 border border-slate-300 shadow-inner
                         dark:bg-black/40 dark:border-white/10 dark:text-slate-300"
-                        >
-                          {invite.plain_token.slice(0, 8)}…
-                          {invite.plain_token.slice(-6)}
-                        </div>
-
-                        <button
-                          className="p-2.5 rounded-lg
-                        bg-blue-100 text-blue-700 shadow-sm
-                        hover:bg-blue-200 transition
-                        dark:bg-blue-900/40 dark:text-blue-300"
-                        >
-                          <FiCopy size={18} />
-                        </button>
+                      >
+                        {invite.plain_token.slice(0, 8)}…
+                        {invite.plain_token.slice(-6)}
                       </div>
-                    )}
+
+                      <button
+                        onClick={() => copyToClipboard(invite.plain_token)}
+                        className="p-2 rounded-lg cursor-pointer  bg-blue-100 dark:bg-blue-900/40"
+                      >
+                        <FiCopy size={18} />
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))}

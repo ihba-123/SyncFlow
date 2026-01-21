@@ -17,6 +17,7 @@ import { CreateProject } from "./features/project/CreateProject";
 import { SoloProject } from "./features/project/SoloProject";
 import ProjectDetail from "./features/project/ProjectDetail";
 import TeamList from "./features/team/TeamList";
+import InvitePage from "./pages/dashboard/InvitePage";
 const App = () => {
   <ProgressBar />;
   useTheme();
@@ -53,7 +54,7 @@ const App = () => {
           <Route path="/welcome/" element={<WelcomePage />} />  
 
           <Route path="/projects/:id" element={<ProjectDetail />} />
-          {/* <Route path="/tasks/:id" element={<TaskDetail />} /> */}
+          <Route path="/projects/:id/invite" element={<InvitePage />} />
           <Route path="/teams/:project_id/Projectmembers" element={<TeamList />} />
           <Route path="/users/:id" element={<UserProfileEdit />} />
         </Route>
