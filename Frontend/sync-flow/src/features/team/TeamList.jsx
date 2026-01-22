@@ -121,7 +121,7 @@ const TeamView = () => {
           {isAdmin ? (
             <button onClick={userInvite}
               className="flex items-center cursor-pointer justify-center gap-2 w-6/12 sm:w-auto 
-            g-white dark:bg-white/90 bg-black/80 dark:text-black dark:shadow-none rounded-xl border border-slate-500/50 dark:border-white/10 scale-3d
+            g-white dark:bg-white/90 bg-blue-700 dark:text-black dark:shadow-none rounded-xl border border-slate-500/50 dark:border-white/10 scale-3d
             px-5 py-2.5 text-sm sm:text-base font-medium text-white
             shadow-lg hover:scale-[1.02] transition"
             >

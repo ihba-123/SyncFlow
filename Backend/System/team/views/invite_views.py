@@ -46,10 +46,6 @@ class InviteView(APIView):
         if invited_email and invited_email.lower() == request.user.email.lower():
             return Response({"detail": "You cannot invite yourself"}, status=400)
 
-        # Prevent inviting as admin
-        if serializer.validated_data["role"] == "admin":
-            return Response({"detail": "You cannot invite an admin"}, status=400)
-
         # Check current user is admin of project
         if not ProjectMember.objects.filter(project=project, user=request.user, role="admin").exists():
             return Response({"detail": "You do not have permission to create invites"}, status=403)

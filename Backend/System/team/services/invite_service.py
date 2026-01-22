@@ -26,6 +26,7 @@ def is_invite(
     valid_roles = {choice[0] for choice in Invite._meta.get_field('role').choices}
     if role not in valid_roles:
         raise ValidationError("Invalid role selected.")
+    
 
     if invited_email and invited_email.lower() == created_by.email.lower():
         raise ValidationError("You cannot invite yourself.")
