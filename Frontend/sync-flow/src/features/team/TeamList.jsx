@@ -18,7 +18,6 @@ const TeamView = () => {
 
   const invites = data ? data.invites : [];
   const joined_members = data ? data.joined_members : [];
-  console.log("Invites Data: ", invites?.plain_token);
 
   //Admin role logic
   useEffect(() => {

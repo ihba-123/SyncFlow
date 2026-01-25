@@ -106,6 +106,8 @@ def use_invite(plain_token: str, user: User) -> Project:
     return invite.project
 
 
+
+
 # Adding helper function to prevent project from viewer being modified
 def project_write_permission(project: Project, user:User):
     member = ProjectMember.objects.filter(project=project, user=user).first()
