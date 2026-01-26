@@ -10,7 +10,6 @@ from django.contrib.postgres.indexes import GinIndex
 
 
 # Project Model
-# ===============================
 class Project(models.Model):
     name = models.CharField(max_length=255)
     description = models.TextField(blank=True, null=True)
@@ -42,7 +41,6 @@ class Project(models.Model):
     
 
 # Invite Model
-# ===============================
 class Invite(models.Model):
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name="invites")
     token = models.CharField(max_length=255, unique=True) 

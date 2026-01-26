@@ -1,7 +1,7 @@
 from ..serializers import UserInviteSerializer , UseInviteSerializer, InviteDetailSerializer
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated 
 from rest_framework import status
 from rest_framework.throttling import UserRateThrottle
 from django.shortcuts import get_object_or_404
@@ -55,13 +55,14 @@ class InviteView(APIView):
             return Response({"detail": "You cannot invite to a solo project"}, status=400)
 
         try:
-            invite_url, plain_token = is_invite(
+            invite_url, token = is_invite(
                 project=project,
                 created_by=request.user,
                 role=serializer.validated_data["role"],
                 expires_days=serializer.validated_data.get("expires_days", 3),
                 invited_email=invited_email
             )
+            print(token)
         except ValidationError as exc:
             if hasattr(exc, 'message_dict'):
                 return Response(exc.message_dict, status=400)
@@ -78,7 +79,7 @@ class InviteView(APIView):
         return Response(
             {
                 "message": "Invite created",
-                "token": plain_token,
+                "token": token,
                 "invite_url": invite_url,
                 "expires_days": serializer.validated_data.get("expires_days", 3),
             },
@@ -174,9 +175,6 @@ class ListInvitesView(APIView):
                 display_name = user.name
             else:
                 display_name = user.email.split("@")[0]
-
-
-
 
             joined_members.append(
                 {

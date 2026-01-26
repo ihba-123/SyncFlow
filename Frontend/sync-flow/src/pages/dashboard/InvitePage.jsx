@@ -37,7 +37,6 @@ const InvitePage = () => {
   const mutation = useMutation({
     mutationFn: inviteLink,
     onSuccess: (data) => {
-      console.log(data);
       setShowModal(true);
       setDatas(data);
     },

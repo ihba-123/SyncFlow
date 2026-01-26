@@ -57,6 +57,7 @@ INSTALLED_APPS = [
     'search',
     'django_filters',
     'django.contrib.postgres',
+    
 ]
 
 MIDDLEWARE = [

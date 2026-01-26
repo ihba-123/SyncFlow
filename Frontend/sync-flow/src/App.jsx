@@ -18,6 +18,7 @@ import { SoloProject } from "./features/project/SoloProject";
 import ProjectDetail from "./features/project/ProjectDetail";
 import TeamList from "./features/team/TeamList";
 import InvitePage from "./pages/dashboard/InvitePage";
+import Join_InvitePage from "./pages/dashboard/Join_InvitePage";
 const App = () => {
   <ProgressBar />;
   useTheme();
@@ -42,8 +43,8 @@ const App = () => {
           <Route path="/signup" element={<SignupPage />} />
         </Route>
 
-        <Route path="*" element={<div>404 Not Found</div>} />
 
+          <Route path="/join/:token" element={<Join_InvitePage />} />
         <Route element={<ProtectedRoute />}>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/dashboard/edit-profile" element={<EditProfile />} />
@@ -58,6 +59,8 @@ const App = () => {
           <Route path="/teams/:project_id/Projectmembers" element={<TeamList />} />
           <Route path="/users/:id" element={<UserProfileEdit />} />
         </Route>
+        <Route path="*" element={<div>404 Not Found</div>} />
+
       </Routes>
     </div>
   );

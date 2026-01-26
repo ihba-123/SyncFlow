@@ -55,7 +55,7 @@ def is_invite(
             details=f"Sent invite for role '{role}' (expires in {expires_days} days)"
         )
 
-        invite_url = f"https://syncflow.com/join?token={invite.plain_token}"
+        invite_url = f"http://localhost:5173/join/{invite.plain_token}"
         return invite_url, invite.plain_token
 
 

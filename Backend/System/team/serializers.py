@@ -52,60 +52,15 @@ class UseInviteSerializer(serializers.Serializer):
 
 
 class InviteDetailSerializer(serializers.ModelSerializer):
-    # project = serializers.CharField(source='project.name', read_only=True)
-    # invited_email = serializers.EmailField(read_only=True, allow_null=True)
-    # photo = serializers.SerializerMethodField()
-    # joined_user_email = serializers.SerializerMethodField()
-    # joined_user_name = serializers.SerializerMethodField()  # ← Fixed here
-
-    # created_by_email = serializers.SerializerMethodField()
-    # creator_is_online = serializers.SerializerMethodField()
+    invite_url = serializers.SerializerMethodField()
     class Meta:
         model = Invite
-        fields = "__all__"
-    
+        fields = [ "id","project" ,"token" , "invited_email" ,"plain_token" ,"expires_at", "role" ,'invite_url']
 
-    #Photo of the user who is invited
-    # def get_photo(self, obj):
-    #     member = obj.members_joined.first()
-    #     if member:
-    #         from chatapp.models import Profile
-    #         try:
-    #             profile = Profile.objects.get(user=member.user)
-    #             return profile.photo.url if profile.photo else None
-    #         except Profile.DoesNotExist:
-    #             return None
-    #     return None
-
-
-    # def get_joined_user_email(self, obj):
-    #     member = obj.members_joined.first()
-    #     return member.user.email if member else None
-
-    # def get_joined_user_name(self, obj):
-    #   member = obj.members_joined.first()
-    #   if not member:
-    #     return None
-
-    #   user = member.user
-
-    # # Use actual name field
-    #   if user.name:
-    #     return user.name.strip()
-
-    # # Fallback to cleaned email
-    #   local_part = user.email.split("@")[0]
-    #   return local_part.replace(".", " ").replace("_", " ").title()
-
-    # def get_created_by_email(self, obj):
-    #     return obj.created_by.email if obj.created_by else None
-
-    # def get_creator_is_online(self, obj):
-    #     from chatapp.models import Profile
-    #     try:
-    #         return Profile.objects.get(user=obj.created_by).is_online
-    #     except Profile.DoesNotExist:
-    #         return False
+    def get_invite_url(self, obj):
+        if obj:
+            return f"http://localhost:5173/join/{obj.plain_token}"
+        return None
 
 
 class ActivityLogSerializer(serializers.ModelSerializer):
