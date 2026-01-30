@@ -8,3 +8,12 @@ export const inviteLink = async ({ project_id, role }) => {
   );
   return res.data;
 };
+
+
+
+// Join Project 
+
+export const joinLink = async (token) => {
+  const res = await api.post('join-invite/',{ token });
+  return res.data;
+}

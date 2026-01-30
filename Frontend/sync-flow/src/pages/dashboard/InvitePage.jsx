@@ -18,13 +18,14 @@ import InvitePageDetail from "./InvitePageDetail";
 import { useMutation } from "@tanstack/react-query";
 import { inviteLink } from "../../api/invite_join";
 import { useParams } from "react-router-dom";
+import { useProject } from "../../hooks/useProject";
 
 const InvitePage = () => {
   const [selectedRole, setSelectedRole] = useState("member");
   const [showModal, setShowModal] = useState();
   const [copied, setCopied] = useState(false);
   const [datas, setDatas] = useState();
-
+  const {project} = useProject();
   const { project_id } = useParams();
   const roles = [
     { id: "admin", icon: <Shield size={14} /> },
@@ -47,7 +48,7 @@ const InvitePage = () => {
 
   const handleInvite = () => {
     mutation.mutate({
-      project_id: project_id,
+      project_id: project_id || project.id,
       role: selectedRole,
     });
   };

@@ -6,24 +6,27 @@ import { useAuthStore } from "../../stores/AuthStore";
 import { toast } from "react-toastify";
 import { Button, CircularProgress } from "@mui/material";
 import { Settings } from "lucide-react";
+import { useProject } from "../../hooks/useProject";
 
 const Logout = () => {
   const navigate = useNavigate();
   const clearUser = useAuthStore((s) => s.clearUser);
   const queryClient = useQueryClient();
-
+  const clearProject = useProject((state) => state.clearProject);
   const mutation = useMutation({
     mutationFn: logoutApi,
-    onSuccess: () => {
-    queryClient.removeQueries(["user-profile"]); // clear profile query
-    queryClient.removeQueries(["chat-profile"]); // clear chat queries  
-    queryClient.clear();
+   onSuccess: () => {
+    queryClient.clear(); 
+    
+    if (clearProject) clearProject();
     clearUser();
+  
     localStorage.removeItem("isAuthenticated");
+    
+    toast.success("Logged out successfully");
     navigate("/login", { replace: true });
   },
     onError: () => {
-      // Even if backend fails, logout locally (cookies cleared)
       queryClient.removeQueries({ queryKey: ["auth"], exact: true });
       clearUser();
       navigate("/login", { replace: true });

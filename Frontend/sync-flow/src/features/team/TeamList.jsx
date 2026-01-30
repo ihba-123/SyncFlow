@@ -10,8 +10,8 @@ import { useProject } from "../../hooks/useProject";
 
 const TeamView = () => {
   const [showToast, setShowToast] = useState(false);
-  const { project_id } = useParams();
-  const { data, isLoading, isError } = useTeamList(project_id);
+  const { id } = useParams();
+  const { data, isLoading, isError } = useTeamList(id);
   const { setRole, isAdmin } = useProjectRoleStore();
   const { data: authData } = useAuth();
   const { project } = useProject();
@@ -52,7 +52,7 @@ const TeamView = () => {
 
   const navigate = useNavigate();
   const userInvite = () => {
-    navigate(`/projects/${project.id}/invite`);
+    navigate(`/projects/${project.project_id || project.id}/invite`);
   }
 
   if (isLoading) {
@@ -280,3 +280,43 @@ const TeamView = () => {
 };
 
 export default TeamView;
+
+
+
+
+
+
+
+
+
+
+
+
+//  <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-[#0a0c14] p-6">
+//         <div className="max-w-md w-full text-center">
+//           <div className="text-7xl mb-6">🏗️</div>
+//           <h2 className="text-2xl md:text-3xl font-bold mb-4 text-slate-800 dark:text-slate-100">
+//             No project selected
+//           </h2>
+//           <p className="text-base text-slate-600 dark:text-slate-400 mb-8 leading-relaxed">
+//             {authData
+//               ? "Create your first project to manage your team and send invites."
+//               : "Select or create a project to view team members."}
+//           </p>
+
+//           <div className="flex flex-col sm:flex-row gap-4 justify-center">
+//             <button
+//               onClick={() => navigate("/dashboard/project")} // ← or your create-project route
+//               className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium shadow transition"
+//             >
+//               Create Project
+//             </button>
+//             <button
+//               onClick={() => navigate("/dashboard")}
+//               className="px-6 py-3 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 rounded-xl font-medium transition"
+//             >
+//               Back to Dashboard
+//             </button>
+//           </div>
+//         </div>
+//       </div>

@@ -56,7 +56,7 @@ const App = () => {
 
           <Route path="/projects/:id" element={<ProjectDetail />} />
           <Route path="/projects/:project_id/invite" element={<InvitePage />} />
-          <Route path="/teams/:project_id/Projectmembers" element={<TeamList />} />
+          <Route path="/teams/:id/Projectmembers" element={<TeamList />} />
           <Route path="/users/:id" element={<UserProfileEdit />} />
         </Route>
         <Route path="*" element={<div>404 Not Found</div>} />

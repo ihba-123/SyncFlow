@@ -11,6 +11,7 @@ import { FormControlLabel, CircularProgress } from "@mui/material";
 import { login } from "../../api/auth";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
+import { useProjectStore } from "../../stores/ProjectType";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -18,15 +19,17 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  
+  const clearProject = useProjectStore((state) => state.clearProject);
   const loginMutation = useMutation({
     mutationFn: login,
-    onSuccess: (res) => {
-      queryClient.invalidateQueries(["auth"]);
+    onSuccess:  (res) => {
+      queryClient.clear();
+      useProjectStore.persist.clear(); 
+      clearProject();
+      
       navigate("/dashboard");
       toast.success("Login Successful");
     },
-
 
     onError: (error) => {
       const data = error.response?.data;

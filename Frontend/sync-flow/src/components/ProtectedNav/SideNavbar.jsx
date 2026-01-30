@@ -25,9 +25,10 @@ export function Sidebar({ isExpanded, setIsExpanded, isMobile }) {
   const location = useLocation();
   const [open, setOpen] = useState(false);
   const { is_solo, project } = useProject();
+  console.log("project",project)
   const navItems = [
     { icon: LayoutDashboard, label: "Dashboard", to: "/dashboard" },
-    { icon: Users, label: "Team", to: `/teams/${project?.id}/Projectmembers` },
+    (project?{ icon: Users, label: "Team", to: `/teams/${project.project_id || project.id}/Projectmembers` }: null),  
     { icon: Folder, label: "Projects", to: "/dashboard/project" },
     { icon: MessageSquare, label: "Messages", to: "/messages" },
   ];
@@ -215,7 +216,7 @@ export function Sidebar({ isExpanded, setIsExpanded, isMobile }) {
           open={open}
           setOpen={setOpen}
         />
-      </div>
+      </div>  
     </aside>
   );
 }

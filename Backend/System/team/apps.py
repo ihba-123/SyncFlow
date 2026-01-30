@@ -6,5 +6,6 @@ class TeamConfig(AppConfig):
     name = 'team'
 
     def ready(self):
-        from .scheduler import delete_expired_invites
-        delete_expired_invites()    
+        from .scheduler import start
+        start()   
+        
