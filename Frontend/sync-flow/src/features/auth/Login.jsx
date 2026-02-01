@@ -18,15 +18,9 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
-  const clearProject = useProjectStore((state) => state.clearProject);
   const loginMutation = useMutation({
     mutationFn: login,
     onSuccess:  (res) => {
-      queryClient.clear();
-      useProjectStore.persist.clear(); 
-      clearProject();
-      
       navigate("/dashboard");
       toast.success("Login Successful");
     },

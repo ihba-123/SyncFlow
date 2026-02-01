@@ -17,12 +17,11 @@ const Logout = () => {
     mutationFn: logoutApi,
    onSuccess: () => {
     queryClient.clear(); 
-    
-    if (clearProject) clearProject();
+  
     clearUser();
   
     localStorage.removeItem("isAuthenticated");
-    
+    localStorage.removeItem("project-active-storage");
     toast.success("Logged out successfully");
     navigate("/login", { replace: true });
   },

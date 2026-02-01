@@ -3,105 +3,101 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import { joinLink } from "../../api/invite_join";
 
-const Join_InvitePage = () => {
-  const { token } = useParams();
+const JoinInvitePage = () => {
+  const { token } = useParams(); // ← better typing
   const navigate = useNavigate();
 
-  const { mutate, data, isLoading, isError, error, isSuccess } = useMutation({
-    mutationFn: joinLink,
+  console.log("Invite token:", token); // debug
+
+  const mutation = useMutation({
+    mutationFn: (inviteToken) => joinLink(inviteToken), // explicit arg
+    // OR — if your joinLink expects object:   mutationFn: ({ token }: { token: string }) => joinLink({ token }),
+    retry: false, // usually no retry on invite links
+    onSuccess: (responseData) => {
+      // Assuming your API returns something like { message, project_id }
+      if (responseData?.project_id) {
+        setTimeout(() => {
+          navigate(`/projects/${responseData.project_id}`, { replace: true });
+        }, 1400);
+      }
+    },
+    onError: (err) => {
+      console.error("Join failed:", err);
+    },
   });
 
-  // Automatically call mutation when component mounts
   useEffect(() => {
     if (token) {
-      mutate(token);
+      mutation.mutate(token);
+    } else {
+      // Optional: show nice error if no token in URL
+      mutation.reset(); // just in case
     }
-  }, [token, mutate]);
+  }, [token]); // no need to depend on mutate
 
-  // Redirect to project after success
-  useEffect(() => {
-    if (isSuccess && data?.project_id) {
-      const timer = setTimeout(() => {
-        navigate(`/projects/${data.project_id}`, { replace: true });
-      }, 1500); // 1.5s delay
-      return () => clearTimeout(timer);
-    }
-  }, [isSuccess, data, navigate]);
+  // ────────────────────────────────────────────────
+  //               RENDER STATES
+  // ────────────────────────────────────────────────
 
-  // --- Loading State ---
-  if (isLoading) {
+  if (mutation.isPending) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="p-6 bg-gray-100 rounded-lg shadow-lg flex flex-col items-center">
-          <div className="animate-spin border-4 border-blue-500 border-t-transparent rounded-full w-12 h-12 mb-4" />
-          <p className="text-gray-700 font-medium">Verifying invite link...</p>
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center p-8 bg-white rounded-2xl shadow-xl max-w-sm w-full">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-blue-600 mx-auto mb-6" />
+          <h2 className="text-xl font-semibold text-gray-800">Verifying invite...</h2>
+          <p className="text-gray-500 mt-2">Please wait a moment</p>
         </div>
       </div>
     );
   }
 
-  // --- Error State ---
-  if (isError) {
+  if (mutation.isError) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="p-6 bg-red-100 rounded-lg shadow-lg flex flex-col items-center">
-          <svg
-            className="w-12 h-12 text-red-500 mb-4"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M12 8v4m0 4h.01M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9 9 4.03 9 9z"
-            />
-          </svg>
-          <p className="text-red-700 font-medium">
-            {error?.response?.data?.error || "Invalid or expired invite"}
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center p-8 bg-white rounded-2xl shadow-xl max-w-md w-full border border-red-200">
+          <div className="mx-auto mb-6 text-red-500">
+            <svg className="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <h2 className="text-2xl font-bold text-red-700 mb-3">Oops!</h2>
+          <p className="text-red-600 mb-6">
+            {mutation.error?.response?.data?.error || "This invite is invalid or has expired."}
           </p>
           <button
-            onClick={() => navigate("/dashboard")}
-            className="mt-4 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+            onClick={() => navigate("/dashboard", { replace: true })}
+            className="px-6 py-3 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 transition"
           >
-            Go to Dashboard
+            Back to Dashboard
           </button>
         </div>
       </div>
     );
   }
 
-  // --- Success State ---
-  if (isSuccess && data?.message) {
+  if (mutation.isSuccess) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="p-6 bg-green-100 rounded-lg shadow-lg flex flex-col items-center">
-          <svg
-            className="w-12 h-12 text-green-500 mb-4"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M5 13l4 4L19 7"
-            />
-          </svg>
-          <p className="text-green-700 font-medium">{data.message}</p>
-          <p className="text-green-600 text-sm mt-2">
-            Redirecting you to the project...
-          </p>
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center p-10 bg-white rounded-2xl shadow-2xl max-w-md w-full border border-green-200">
+          <div className="mx-auto mb-6 text-green-500">
+            <svg className="w-20 h-20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <h2 className="text-3xl font-bold text-green-800 mb-3">Welcome aboard!</h2>
+          <p className="text-green-700 text-lg mb-2">{mutation.data?.message || "You've successfully joined the workspace."}</p>
+          <p className="text-gray-500">Redirecting to your project...</p>
         </div>
       </div>
     );
   }
 
-  return null;
+  // Fallback — should rarely reach here
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <p className="text-gray-600 text-lg">No invite token found in the URL.</p>
+    </div>
+  );
 };
 
-
-
-export default Join_InvitePage
+export default JoinInvitePage;

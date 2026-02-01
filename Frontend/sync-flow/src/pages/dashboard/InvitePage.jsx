@@ -33,8 +33,9 @@ const InvitePage = () => {
     { id: "viewer", icon: <Eye size={14} /> },
   ];
 
-  //Handeling invites
 
+  //Handeling invites
+  
   const mutation = useMutation({
     mutationFn: inviteLink,
     onSuccess: (data) => {
@@ -45,13 +46,15 @@ const InvitePage = () => {
       console.error("Invite error:", err.response?.data);
     },
   });
-
+  
   const handleInvite = () => {
     mutation.mutate({
       project_id: project_id || project.id,
+      project_name: project.name,
       role: selectedRole,
     });
   };
+
 
   const handleCopy = () => {
     navigator.clipboard.writeText(datas?.invite_url);

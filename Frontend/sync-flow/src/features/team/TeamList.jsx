@@ -17,7 +17,6 @@ const TeamView = () => {
   const { project } = useProject();
   const invites = data ? data.invites : [];
   const joined_members = data ? data.joined_members : [];
-
  
   //Admin role logic
   useEffect(() => {
@@ -31,6 +30,10 @@ const TeamView = () => {
       setRole(myRole);
     }
   }, [joined_members, authData, setRole]);
+
+
+
+
 
   //Date formatting function
   const formatShortDate = (iso) => {
@@ -49,11 +52,6 @@ const TeamView = () => {
       console.error("Copy failed:", err);
     }
   };
-
-  const navigate = useNavigate();
-  const userInvite = () => {
-    navigate(`/projects/${project.project_id || project.id}/invite`);
-  }
 
   if (isLoading) {
     return (
@@ -116,17 +114,6 @@ const TeamView = () => {
             </h1>
           </div>
 
-          {isAdmin ? (
-            <button onClick={userInvite}
-              className="flex items-center cursor-pointer justify-center gap-2 w-6/12 sm:w-auto 
-            g-white dark:bg-white/90 bg-blue-700 dark:text-black dark:shadow-none rounded-xl border border-slate-500/50 dark:border-white/10 scale-3d
-            px-5 py-2.5 text-sm sm:text-base font-medium text-white
-            shadow-lg hover:scale-[1.02] transition"
-            >
-              <FiUserPlus size={16} />
-              Invite member
-            </button>
-          ) : null}
         </div>
 
         <div className="mb-14">
@@ -147,16 +134,21 @@ const TeamView = () => {
                 <div className="flex items-center gap-4">
                   <div className="relative">
                     <div className="h-12 w-12 sm:h-14 sm:w-14 overflow-hidden rounded-full ring-1 ring-slate-300 dark:ring-white/10">
-                      <img
+                      {member.photo != null ?<img
                         src={member.photo}
                         alt={member.name}
                         className="h-full w-full object-cover"
-                      />
+                      />:<div className="flex  w-full items-center font-bold text-xl justify-center bg-linear-gradient bg-blue-300 dark:bg-gradient-to-br from-indigo-900 to-indigo-600 h-full">{member.name[0].toUpperCase()}</div>}
                     </div>
-                    {member.is_online && (
+                    {member.is_online? (
                       <span
                         className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full
                         bg-emerald-500 border-2 border-white dark:border-[#0a0c14]"
+                      />
+                    ):(
+                      <span
+                        className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full
+                        bg-gray-500 border-2 border-white dark:border-[#0a0c14]"
                       />
                     )}
                   </div>

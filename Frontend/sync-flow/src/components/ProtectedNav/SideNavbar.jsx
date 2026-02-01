@@ -1,5 +1,4 @@
 import {
-  Home,
   LayoutDashboard,
   Users,
   Settings,
@@ -25,13 +24,23 @@ export function Sidebar({ isExpanded, setIsExpanded, isMobile }) {
   const location = useLocation();
   const [open, setOpen] = useState(false);
   const { is_solo, project } = useProject();
-  console.log("project",project)
+  
   const navItems = [
     { icon: LayoutDashboard, label: "Dashboard", to: "/dashboard" },
-    (project?{ icon: Users, label: "Team", to: `/teams/${project.project_id || project.id}/Projectmembers` }: null),  
+  ];
+
+  if (project?.project_id && !is_solo) {
+    navItems.push({
+      icon: Users,
+      label: "Team",
+      to: `/teams/${project.project_id}/Projectmembers`,
+    });
+  }
+
+  navItems.push(
     { icon: Folder, label: "Projects", to: "/dashboard/project" },
     { icon: MessageSquare, label: "Messages", to: "/messages" },
-  ];
+  );
 
   const bottomItems = [
     { icon: Bell, label: "Notifications", to: "/notifications" },
@@ -216,7 +225,7 @@ export function Sidebar({ isExpanded, setIsExpanded, isMobile }) {
           open={open}
           setOpen={setOpen}
         />
-      </div>  
+      </div>
     </aside>
   );
 }

@@ -79,6 +79,8 @@ class InviteView(APIView):
         return Response(
             {
                 "message": "Invite created",
+                "project_id": project.id,
+                "project_name": project.name,
                 "token": token,
                 "invite_url": invite_url,
                 "expires_days": serializer.validated_data.get("expires_days", 3),
@@ -88,45 +90,63 @@ class InviteView(APIView):
 
 
 class UseInviteView(APIView):
-  permission_classes = [IsAuthenticated]
-  throttle_classes = [ThrottleView]
+    permission_classes = [IsAuthenticated]
+    throttle_classes = [ThrottleView]
 
-  def post(self , request):
-    serializer = UseInviteSerializer(data=request.data)
-    
-    # project_write_permission(project, request.user)
-    if not serializer.is_valid():
-      logger.warning(f"Invite creation failed: {serializer.errors}")
-      return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
-  
-    try:
-        project = use_invite(
-        plain_token=serializer.validated_data['token'],
-        user=request.user,
-        )
-        
-    except ValidationError as exc:
-            logger.error(f"Error using invite: {str(exc)}")
-            return Response(
-                {"error": str(exc), "code": "validation_error"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-    except Exception:
-            logger.error("Unexpected error while using invite", exc_info=True, stack_info=True)
-            return Response(
-                {"error": "Unexpected error"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
+    def post(self, request):
+        serializer = UseInviteSerializer(data=request.data)
+
+        if not serializer.is_valid():
+            logger.warning(f"Invite usage failed validation: {serializer.errors}")
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            project = use_invite(
+                plain_token=serializer.validated_data['token'],
+                user=request.user,
             )
 
-    return Response(
-      {
-      "message": f"Joined project '{project.name}'",
-       "project_id": project.id,
-        },
-        status=status.HTTP_200_OK,
-          )
+            return Response(
+                {
+                    "message": f"Joined project '{project.name}'",
+                    "project_id": project.id,
+                },
+                status=status.HTTP_200_OK,
+            )
 
+        except ValidationError as exc:
+            # These are expected user/input errors → 400
+            error_detail = (
+                exc.messages[0]
+                if hasattr(exc, 'messages') and exc.messages
+                else str(exc)
+            )
 
+            # Optional: add code for frontend to handle specially
+            response_data = {"error": error_detail}
+            if "already a member" in error_detail.lower():
+                response_data["code"] = "already_member"
+                # You could also include project.id here if you fetch it before raising
+
+            logger.info(f"Invite usage rejected: {error_detail}")  # ← info, not error
+
+            return Response(
+                response_data,
+                status=status.HTTP_400_BAD_REQUEST,   # or 409 Conflict if you prefer
+            )
+
+        except PermissionDenied as exc:
+            return Response(
+                {"error": str(exc)},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        except Exception as exc:
+            logger.exception("Critical unexpected error while using invite")
+            return Response(
+                {"error": "An unexpected error occurred. Please try again later."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 class ListInvitesView(APIView):
     permission_classes = [IsAuthenticated]
