@@ -62,6 +62,11 @@ class ProjectCreateView(APIView):
                 "project_name": project.name,
                 "is_solo": project.is_solo,
                 "image": project.image.url if project.image else None,
+                 "active_project": {
+                "id": project.id,
+                "name": project.name
+                },
+                "show_create_project_popup": False
             },
             status=status.HTTP_201_CREATED,
         )

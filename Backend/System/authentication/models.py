@@ -1,4 +1,3 @@
-# authentication/models.py
 from django.db import models
 from django.contrib.auth.models import BaseUserManager, AbstractBaseUser, PermissionsMixin
 from django.contrib.postgres.indexes import GinIndex
@@ -29,6 +28,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     has_completed_onboarding = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    last_active_project = models.ForeignKey("team.Project", on_delete=models.SET_NULL, null=True, blank=True ,related_name="last_active_user")
 
   
     objects = UserManager()

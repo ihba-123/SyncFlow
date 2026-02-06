@@ -20,8 +20,8 @@ const Logout = () => {
   
     clearUser();
   
-    localStorage.removeItem("isAuthenticated");
-    localStorage.removeItem("project-active-storage");
+    // localStorage.removeItem("isAuthenticated");
+    // localStorage.removeItem("project-active-storage");
     toast.success("Logged out successfully");
     navigate("/login", { replace: true });
   },

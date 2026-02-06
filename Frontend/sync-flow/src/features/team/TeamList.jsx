@@ -15,6 +15,7 @@ const TeamView = () => {
   const { setRole, isAdmin } = useProjectRoleStore();
   const { data: authData } = useAuth();
   const { project } = useProject();
+  
   const invites = data ? data.invites : [];
   const joined_members = data ? data.joined_members : [];
  

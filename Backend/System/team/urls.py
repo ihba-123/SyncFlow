@@ -13,6 +13,8 @@ from team.views.remove_view import LeaveProjectView , RemoveMemberView , Project
 from team.views.invite_views import InviteView , UseInviteView , ListInvitesView
 from rest_framework.routers import DefaultRouter
 from team.views.activity_log import ActivityLogView as ActivityLogViewSet
+from team.views.context import UserContextView
+from team.views.active_project import SetActiveProjectView
 
 
 # Dynamic router to register viewsets
@@ -35,4 +37,16 @@ urlpatterns = [
     path("projects/<int:project_id>/invites/list/", ListInvitesView.as_view(), name="project-invites-list"),
     path('projects/<int:project_id>/leave/', LeaveProjectView.as_view(), name='project-leave'),
     path('projects/<int:project_id>/remove/<int:user_id>/', RemoveMemberView.as_view(), name='project-remove-member'),
+
+    #active_projects 
+    path(
+        "users/me/context/",
+        UserContextView.as_view(),
+        name="user-context"
+    ),
+    path(
+        "projects/<int:project_id>/set-active/",
+        SetActiveProjectView.as_view(),
+        name="set-active-project"
+    ),
 ]

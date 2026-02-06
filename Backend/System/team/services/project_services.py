@@ -27,6 +27,7 @@ def project_create(name:str, description:str ,created_by ,is_solo:bool=True , im
       chat_room=chat_room,
       image=image,
     )
+  
 
     ProjectMember.objects.create(
       project=project,
@@ -37,12 +38,17 @@ def project_create(name:str, description:str ,created_by ,is_solo:bool=True , im
     if chat_room:
         chat_room.add_participant(created_by)
 
+    
+    created_by.last_active_project = project
+    created_by.save(update_fields=["last_active_project"])
+
     ActivityLog.objects.create(
       project=project,
       user=created_by,
       action="project_created",
       details=f"Project '{name}' created as {'solo' if is_solo else 'team'}",
     )
+
   return project
 
 

@@ -4,7 +4,6 @@ from .view.login_views import UserLoginView
 from .view.user_logout_views import UserLogoutView
 from .view.user_profile_views import UserProfileView
 from .view.token_views import RefreshTokenView
-from .utils.onboard import OnboardView
 
 urlpatterns = [
     path('register/', UserRegistrationView.as_view(), name='register' ),
