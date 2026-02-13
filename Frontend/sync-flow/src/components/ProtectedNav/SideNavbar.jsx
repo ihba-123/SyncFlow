@@ -19,21 +19,25 @@ import { Link, useLocation } from "react-router-dom";
 import { useState } from "react";
 import { useProject } from "../../hooks/useProject";
 import Avatars from "./Avatar";
-
+import { useActiveProject } from "../../hooks/useActiveProject";
+import { useActiveProjectStore } from "../../stores/ActiveProject";
 export function Sidebar({ isExpanded, setIsExpanded, isMobile }) {
   const location = useLocation();
   const [open, setOpen] = useState(false);
-  const { is_solo, project } = useProject();
-  
+  const { is_solo } = useProject();
+  const { isLoading , data} = useActiveProject();
+  const activeProject = useActiveProjectStore((state) => state.activeProject);
+  const projectData = activeProject?.id;
+
   const navItems = [
     { icon: LayoutDashboard, label: "Dashboard", to: "/dashboard" },
   ];
 
-  if (project?.project_id && !is_solo) {
+  if (projectData && !is_solo) {
     navItems.push({
       icon: Users,
       label: "Team",
-      to: `/teams/${project.project_id}/Projectmembers`,
+      to: `/teams/${projectData}/Projectmembers`,
     });
   }
 

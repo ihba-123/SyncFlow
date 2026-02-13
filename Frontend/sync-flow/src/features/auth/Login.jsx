@@ -11,7 +11,6 @@ import { FormControlLabel, CircularProgress } from "@mui/material";
 import { login } from "../../api/auth";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
-import { useProjectStore } from "../../stores/ProjectType";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -42,13 +41,13 @@ export default function Login() {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    // Basic validation
+   
     if (!email || !password) {
       toast.error("Please fill in all required fields.");
       return;
     }
 
-    // Trigger mutation
+
     loginMutation.mutate({ email, password });
   };
 
@@ -68,7 +67,7 @@ export default function Login() {
 
   return (
     <div className="relative w-full flex justify-center items-center overflow-hidden">
-      {/* Background blobs */}
+      
       <motion.div
         className="absolute w-72 h-72 sm:w-96 sm:h-96 bg-gradient-to-br from-gray-200/30 to-gray-100/30 rounded-full blur-3xl"
         animate={{ x: [0, 50, -50, 0], y: [0, 30, -30, 0] }}
@@ -82,7 +81,7 @@ export default function Login() {
         style={{ bottom: "-10%", right: "-10%" }}
       />
 
-      {/* Form card */}
+      
       <motion.div
         className="w-full max-w-md sm:max-w-lg lg:max-w-xl z-10"
         initial={{ opacity: 0, y: 20 }}

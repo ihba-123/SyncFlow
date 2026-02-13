@@ -22,4 +22,4 @@ class SetActiveProjectView(APIView):
         request.user.last_active_project = project
         request.user.save(update_fields=["last_active_project"])
 
-        return Response({"success": True , "active_project": project.id , "active_project_name": project.name, "active_project_description": project.description})
+        return Response({"success": True , "active_project": project.id , "active_project_name": project.name})

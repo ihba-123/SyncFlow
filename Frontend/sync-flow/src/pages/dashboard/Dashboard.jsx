@@ -1,9 +1,13 @@
 import { Plus, FolderOpen, Clock, TrendingUp, Globe, Smartphone, Check, MessageSquare } from "lucide-react"
 import {  useNavigate } from "react-router-dom"
-
+import { useActiveProjectStore } from "../../stores/ActiveProject";
 
 export default function Dashboard() {
 const navigate = useNavigate();
+const activeProject = useActiveProjectStore((state) => state.activeProject);  
+
+const project_id = activeProject?.id;
+
 const handleClick = () => {
   setTimeout(() => {
     navigate("/dashboard/create-project");
@@ -17,7 +21,7 @@ const handleClick = () => {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <h2 className="text-3xl md:text-4xl font-black tracking-tight mb-1 text-slate-900 dark:text-white">
-              Welcome back, Alex
+              Welcome back, Alex and project_id is {project_id}
             </h2>
             <p className="text-slate-500 dark:text-slate-400 text-base">
               Here is what's happening in your workspace today.

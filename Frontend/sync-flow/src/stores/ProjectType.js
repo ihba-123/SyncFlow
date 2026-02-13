@@ -10,7 +10,6 @@ export const useProjectStore = create(
       setProject: (project) =>
         set({
           project: project,
-          // Add optional chaining ?. here to prevent crashes
           is_solo: project?.is_solo ?? null, 
         }),
 
@@ -18,7 +17,6 @@ export const useProjectStore = create(
 
       clearProject: () => {
         set({ project: null, is_solo: null });
-        // Manually clear the storage key to be 100% sure
         localStorage.removeItem("project-active-storage");
       },
     }),
