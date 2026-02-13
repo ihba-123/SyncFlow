@@ -14,6 +14,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "../../components/ui/Toolltip";
+import { useParams } from "react-router-dom";
 import { cn } from "../../utils/utils";
 import { Link, useLocation } from "react-router-dom";
 import { useState } from "react";
@@ -24,11 +25,13 @@ import { useActiveProjectStore } from "../../stores/ActiveProject";
 export function Sidebar({ isExpanded, setIsExpanded, isMobile }) {
   const location = useLocation();
   const [open, setOpen] = useState(false);
+
   const { is_solo } = useProject();
-  const { isLoading , data} = useActiveProject();
+  const { isLoading, data } = useActiveProject();
   const activeProject = useActiveProjectStore((state) => state.activeProject);
   const projectData = activeProject?.id;
 
+  // alert(isViewer)
   const navItems = [
     { icon: LayoutDashboard, label: "Dashboard", to: "/dashboard" },
   ];

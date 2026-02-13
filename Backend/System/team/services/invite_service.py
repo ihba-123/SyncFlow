@@ -37,7 +37,7 @@ def is_invite(
             if ProjectMember.objects.filter(project=project, user=target_user).exists():
                 raise ValidationError("This user is already a member of the project.")
         except User.DoesNotExist:
-            pass  # Open invite for unregistered user
+            pass 
 
     with transaction.atomic():
         invite = Invite.objects.create(

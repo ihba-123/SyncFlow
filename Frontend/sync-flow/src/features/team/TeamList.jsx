@@ -5,20 +5,17 @@ import { TeamViewSkeleton } from "../../components/skeleton/ProjectMemberSkeleto
 import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../../hooks/Auth";
 import { useProjectRoleStore } from "../../stores/ProjectRoleStore";
-import { useProject } from "../../hooks/useProject";
 
 
 const TeamView = () => {
   const [showToast, setShowToast] = useState(false);
   const { id } = useParams();
-  const { data, isLoading, isError } = useTeamList(id);
+  const { data, isLoading, isError } = useTeamList(id); 
   const { setRole, isAdmin } = useProjectRoleStore();
   const { data: authData } = useAuth();
-  const { project } = useProject();
-  
-  const invites = data ? data.invites : [];
-  const joined_members = data ? data.joined_members : [];
  
+const invites = data?.invites || [];
+const joined_members = data?.joined_members || [];
   //Admin role logic
   useEffect(() => {
     if (!joined_members.length || !authData?.id) return;
@@ -26,8 +23,7 @@ const TeamView = () => {
     const myRole = joined_members.find(
       (member) => member.id === authData.id,
     )?.role;
-
-    if (myRole) {
+    if (myRole === "Admin" || myRole === "Member" && myRole ) {
       setRole(myRole);
     }
   }, [joined_members, authData, setRole]);
@@ -189,7 +185,7 @@ const TeamView = () => {
                     <FiMoreVertical size={18} />
                   </button>
                 </div>
-              </div>
+              </div>  
             ))}
           </div>
         </div>
@@ -250,7 +246,7 @@ const TeamView = () => {
                         bg-slate-100 border border-slate-300 shadow-inner
                         dark:bg-black/40 dark:border-white/10 dark:text-slate-300"
                       >
-                        {invite.invite_url.slice(0, 8)}…
+                        {invite.invite_url.slice(0, 8)}...
                         {invite.invite_url.slice(-6)}
                       </div>
 

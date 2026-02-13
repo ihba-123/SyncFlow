@@ -46,7 +46,6 @@ const InvitePage = () => {
       console.error("Invite error:", err.response?.data);
     },
   });
-  console.log(project_id)
   const handleInvite = () => {
     mutation.mutate({
       project_id: project_id || project.id,
@@ -54,8 +53,6 @@ const InvitePage = () => {
       role: selectedRole,
     });
   };
-
-  console.log("detail",datas)
 
   const handleCopy = () => {
     navigator.clipboard.writeText(datas?.invite_url);
