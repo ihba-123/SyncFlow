@@ -18,6 +18,7 @@ const ProjectDetail = () => {
 
   return (
     <div>
+
     {role==="admin" && !is_solo ? (
                 <button onClick={userInvite}
                   className="flex items-center cursor-pointer justify-center gap-2 w-6/12 sm:w-auto 
