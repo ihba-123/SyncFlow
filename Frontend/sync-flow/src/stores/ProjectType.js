@@ -1,8 +1,7 @@
 import { create } from "zustand";
-import { persist, createJSONStorage } from "zustand/middleware";
 
 export const useProjectStore = create(
-  persist(
+ 
     (set) => ({
       project: null,
       is_solo: null,
@@ -17,12 +16,7 @@ export const useProjectStore = create(
 
       clearProject: () => {
         set({ project: null, is_solo: null });
-        localStorage.removeItem("project-active-storage");
+        
       },
     }),
-    {
-      name: "project-active-storage",
-      storage: createJSONStorage(() => localStorage),
-    }
   )
-);

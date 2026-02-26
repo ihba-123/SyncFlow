@@ -131,11 +131,11 @@ const joined_members = data?.joined_members || [];
                 <div className="flex items-center gap-4">
                   <div className="relative">
                     <div className="h-12 w-12 sm:h-14 sm:w-14 overflow-hidden rounded-full ring-1 ring-slate-300 dark:ring-white/10">
-                      {member.photo != null ?<img
-                        src={member.photo}
+                      <img
+                        src={member.photo ||  `https://ui-avatars.com/api/?name=${encodeURIComponent(member.name)}&background=random&color=fff&size=128`}
                         alt={member.name}
                         className="h-full w-full object-cover"
-                      />:<div className="flex  w-full items-center font-bold text-xl justify-center bg-linear-gradient bg-blue-300 dark:bg-gradient-to-br from-indigo-900 to-indigo-600 h-full">{member.name[0].toUpperCase()}</div>}
+                      />
                     </div>
                     {member.is_online? (
                       <span
