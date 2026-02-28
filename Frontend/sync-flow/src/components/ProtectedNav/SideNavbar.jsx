@@ -22,21 +22,24 @@ import { useProject } from "../../hooks/useProject";
 import Avatars from "./Avatar";
 import { useActiveProject } from "../../hooks/useActiveProject";
 import { useActiveProjectStore } from "../../stores/ActiveProject";
+
+
+
 export function Sidebar({ isExpanded, setIsExpanded, isMobile }) {
   const location = useLocation();
   const [open, setOpen] = useState(false);
-
-  const { is_solo } = useProject();
-  const { isLoading, data } = useActiveProject();
+  
+  // 1. Get the loading state from your hook
+  const { is_solo, isLoading: projectLoading } = useProject(); 
   const activeProject = useActiveProjectStore((state) => state.activeProject);
   const projectData = activeProject?.id;
 
-  // alert(isViewer)
   const navItems = [
     { icon: LayoutDashboard, label: "Dashboard", to: "/dashboard" },
   ];
 
-  if (projectData && !is_solo) {
+  // 2. Wrap the "Team" logic: Only show if NOT loading and project exists
+  if (!projectLoading && projectData && !is_solo && activeProject) {
     navItems.push({
       icon: Users,
       label: "Team",

@@ -1,12 +1,8 @@
 import React from "react";
-import { FiUserPlus } from "react-icons/fi";
 import { useParams } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
-import { useProjectRoleStore } from "../../stores/ProjectRoleStore";
 import { useTeamList } from "../team/TeamListLogic";
-import { useProject } from "../../hooks/useProject";
 import { ActivityBox } from "../../components/Project/ActivityBox";
-import { Activity } from "../../components/Project/Activity";
 import { DangerZone } from "../../components/Project/DangerZone";
 import { ProjectHeader } from "../../components/Project/ProjectHeader";
 const ProjectDetail = () => {

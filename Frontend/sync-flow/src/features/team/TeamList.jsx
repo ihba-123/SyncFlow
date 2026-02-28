@@ -5,7 +5,7 @@ import { TeamViewSkeleton } from "../../components/skeleton/ProjectMemberSkeleto
 import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../../hooks/Auth";
 import { useProjectRoleStore } from "../../stores/ProjectRoleStore";
-
+import { useActiveProjectStore } from "../../stores/ActiveProject";
 
 const TeamView = () => {
   const [showToast, setShowToast] = useState(false);
@@ -13,6 +13,7 @@ const TeamView = () => {
   const { data, isLoading, isError } = useTeamList(id); 
   const { setRole, isAdmin } = useProjectRoleStore();
   const { data: authData } = useAuth();
+  const { activeProject } = useActiveProjectStore();
  
 const invites = data?.invites || [];
 const joined_members = data?.joined_members || [];
@@ -59,26 +60,23 @@ const joined_members = data?.joined_members || [];
     );
   }
 
-  if (isError) {
+  if ( activeProject && activeProject.id === null) {
     return (
-      <div className="min-h-screen flex items-center justify-center  px-4">
-        <div className="max-w-md w-full bg-white border border-red-300 dark:bg-white/[0.05] dark:border-gray-600 rounded-2xl shadow-md p-6 text-center">
-          <h2 className="text-xl font-semibold text-red-600 dark:text-red-400 mb-2">
-            Oops!
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-[#0a0c14] p-6">
+        <div className="max-w-md w-full text-center">
+          <div className="text-7xl mb-6">🏗️</div>
+          <h2 className="text-2xl md:text-3xl font-bold mb-4 text-slate-800 dark:text-slate-100">
+            Loading team members...
           </h2>
-          <p className="text-sm text-slate-700 dark:text-slate-300">
-            Something went wrong while loading team members.
+          <p className="text-base text-slate-600 dark:text-slate-400 mb-8 leading-relaxed">
+            Please wait while we load the team members for the selected project.
           </p>
-          <button
-            className="mt-4 px-4 py-2 rounded-lg bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-800 transition"
-            onClick={() => window.location.reload()}
-          >
-            Retry
-          </button>
         </div>
       </div>
     );
   }
+
+
 
   return (
     <div className="min-h-screen -mt-5 bg-slate-50 text-slate-900 dark:bg-[#0a0c14] dark:text-slate-100">
