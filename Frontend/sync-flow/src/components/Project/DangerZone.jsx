@@ -14,7 +14,6 @@ import { deleteProject, softDeleteProject } from '../../api/Project'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useParams, useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
-import { setActiveProjects } from '../../api/active_project'
 import { useActiveProjectStore } from '../../stores/ActiveProject'
 
 export function DangerZone({ projectId }) {
@@ -39,6 +38,10 @@ export function DangerZone({ projectId }) {
       queryClient.invalidateQueries({ queryKey: ['projects'] })
       setShowSoftDeleteDialog(false)
       toast.success('Project moved to trash successfully!')
+      setTimeout(() => {  
+        resetActiveProject();
+        navigate('/dashboard')
+      }, 500); // delay to allow toast to show
     },
     onError: (error) => {
       console.error('Failed to soft delete project:', error)

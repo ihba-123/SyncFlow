@@ -34,11 +34,22 @@ export const deleteProject = async (project_id) => {
 
 
 //Soft delete project
-export const softDeleteProject = async (project_id) => {
-  const res = await api.delete(`projects/${project_id}/soft-delete/`);
+export const softDeleteProject = async (id) => {
+  const res = await api.delete(`projects/${id}/delete/`);
   return res.data;
 }
 
+//Archived projects
+export const archivedProjects = async () => {
+  const res = await api.get(`projects/archived/`);
+  return res.data;
+}
+
+//Restore project
+export const restoreProject = async (project_id) => {
+  const res = await api.post(`projects/${project_id}/restore/`);
+  return res.data;
+}
 
 //Remove memeber from project
 export const removeMember = async (project_id, user_id) => {

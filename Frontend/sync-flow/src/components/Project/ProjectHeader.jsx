@@ -33,6 +33,7 @@ export function ProjectHeader() {
     queryKey: ["projectMembers", id],
     queryFn: () => getProjectMembers(id),
     enabled: !!id,
+    
   });
 
   const members = membersData?.joined_members || [];

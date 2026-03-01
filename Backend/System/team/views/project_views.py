@@ -4,7 +4,7 @@ from rest_framework import permissions
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
-from ..services.project_services import project_create , get_user_project , get_project_detail , project_update , project_soft_delete , project_restore
+from ..services.project_services import project_create , get_archived_projects, get_user_project , get_project_detail , project_update , project_soft_delete , project_restore
 from rest_framework import throttling
 from rest_framework.exceptions import ValidationError,PermissionDenied
 from rest_framework.parsers import MultiPartParser, FormParser
@@ -117,6 +117,8 @@ class ProjectSoftDeleteView(APIView):
         serializer = ProjectDetailSerializer(project)
         return Response({"message": "Project deleted successfully", "project": serializer.data}, status=status.HTTP_200_OK)
 
+
+
 class ProjectRestoreView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
@@ -125,6 +127,17 @@ class ProjectRestoreView(APIView):
         project_write_permission(project, request.user)
         serializer = ProjectDetailSerializer(project)
         return Response({"project": serializer.data}, status=status.HTTP_200_OK)
+
+
+
+class ArchivedProjectsView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        projects = get_archived_projects(user=request.user)
+        serializer = ProjectDetailSerializer(projects, many=True)
+        return Response(serializer.data)
+    
 
 
 class ProjectListPagination(PageNumberPagination):

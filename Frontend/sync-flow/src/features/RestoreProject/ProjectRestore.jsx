@@ -1,157 +1,192 @@
-'use client';
-
 import React, { useState } from 'react';
-import { ArrowLeft, RotateCcw, Trash2, Calendar, Clock, LayoutGrid, Archive } from 'lucide-react';
-
-const mockProjects = [
-  { id: '1', name: 'Analytics Dashboard', description: 'Real-time analytics and reporting platform with deep data visualization.', deletedDate: '2024-02-15', retentionDays: 30 },
-  { id: '2', name: 'Mobile App Backend', description: 'Node.js REST API for cross-platform iOS and Android applications.', deletedDate: '2024-02-10', retentionDays: 20 },
-  { id: '3', name: 'E-Commerce Platform', description: 'Full-stack solution with Stripe payment integration and inventory management.', deletedDate: '2024-02-08', retentionDays: 5 },
-  { id: '4', name: 'Legacy Migration', description: 'Data migration utility for converting legacy SQL systems to NoSQL.', deletedDate: '2024-01-28', retentionDays: 2 },
-];
+import { RotateCcw, Trash2, LayoutGrid, Calendar, Clock, AlertCircle } from 'lucide-react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { archivedProjects, deleteProject, restoreProject } from '../../api/Project';
+import { toast } from 'react-toastify';
+import { useActiveProjectStore } from '../../stores/ActiveProject';
 
 export default function ProjectRestore() {
-  const [projects, setProjects] = useState(mockProjects);
   const [restoring, setRestoring] = useState(null);
   const [deleting, setDeleting] = useState(null);
+  const queryClient = useQueryClient();
+  const resetActiveProject = useActiveProjectStore((state) => state.reset);
 
-  const handleAction = (id, type) => {
-    type === 'restore' ? setRestoring(id) : setDeleting(id);
-    setTimeout(() => {
-      setProjects(projects.filter((p) => p.id !== id));
+  const { data: projects = [], isLoading } = useQuery({
+    queryKey: ['archivedProjects'],
+    queryFn: archivedProjects,
+    onSuccess: () => {
+      queryClient.invalidateQueries(['projects']);
+    },
+  });
+
+  const restoreMutation = useMutation({
+    mutationFn: restoreProject,
+    onSuccess: (_, projectId) => {
+      queryClient.setQueryData(['archivedProjects'], old =>
+        old.filter(p => p.id !== projectId)
+      );
+      queryClient.invalidateQueries(['projects']);
       setRestoring(null);
+      toast.success('Project restored to workspace');
+    },
+  });
+
+  const { mutate: handlePermanentDelete } = useMutation({
+    mutationFn: (id) => deleteProject(id),
+    onSuccess: (_, deletedId) => {
+      queryClient.setQueryData(['archivedProjects'], (old) =>
+        old ? old.filter((p) => p.id !== deletedId) : []
+      );
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
+      resetActiveProject();
       setDeleting(null);
-    }, 600);
+      toast.success('Project purged permanently');
+    },
+    onError: () => {
+      setDeleting(null);
+      toast.error('Failed to delete project');
+    },
+  });
+
+  const handleRestore = (id) => {
+    setRestoring(id);
+    restoreMutation.mutate(id);
   };
 
+  const onConfirmDelete = (id) => {
+    setDeleting(id);
+    handlePermanentDelete(id);
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex h-[60vh] items-center justify-center">
+        <div className="relative h-12 w-12">
+          <div className="absolute h-full w-full rounded-full border-4 border-blue-500/20"></div>
+          <div className="absolute h-full w-full animate-spin rounded-full border-4 border-blue-500 border-t-transparent"></div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!projects.length) {
+    return (
+      <div className="flex flex-col items-center justify-center py-32 text-center animate-in fade-in zoom-in duration-500">
+        <div className="mb-6 rounded-full bg-gray-100 p-6 dark:bg-gray-800/50">
+          <LayoutGrid size={48} className="text-gray-400 dark:text-gray-600" />
+        </div>
+        <h3 className="text-xl font-bold text-gray-900 dark:text-white">The Vault is Empty</h3>
+        <p className="mt-2 text-gray-500 dark:text-gray-400">No archived projects found.</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen font-sans text-slate-900 dark:text-slate-100
-      bg-[#f8fafc] dark:bg-[#020617]
-      dark:bg-[radial-gradient(at_top_right,_rgba(99,102,241,0.08),_transparent),radial-gradient(at_bottom_left,_rgba(168,85,247,0.08),_transparent)]">
+    <div className="min-h-screen bg-[#f8fafc] p-6 transition-colors duration-500 dark:bg-[#020617] md:p-12">
+      {/* Dynamic Background Accents */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-[10%] -left-[10%] h-[40%] w-[40%] rounded-full bg-blue-500/5 blur-[120px]" />
+        <div className="absolute -bottom-[10%] -right-[10%] h-[40%] w-[40%] rounded-full bg-purple-500/5 blur-[120px]" />
+      </div>
 
-      <main className="max-w-7xl  mx-auto px-4 sm:px-6 md:px-8 py-12 md:py-20">
+      <header className="relative mb-12 max-w-3xl">
+        <h1 className="bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-4xl font-black tracking-tight text-transparent dark:from-white dark:to-gray-400 md:text-5xl">
+          Project Archive
+        </h1>
+        <p className="mt-4 text-lg text-gray-600 dark:text-gray-400">
+          Review and recover projects. Items here will be kept for <span className="font-semibold text-blue-500">30 days</span> before being permanently removed.
+        </p>
+      </header>
 
-      
-        <header className="mb-12 md:mb-16 flex flex-col lg:flex-row lg:items-end justify-between gap-6">
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {projects.map((project, index) => {
+          const retentionDays = Math.max(0, 30 - Math.floor(
+            (new Date() - new Date(project.created_at)) / (1000 * 60 * 60 * 24)
+          ));
 
-          <div className="space-y-4 -pb-16 max-w-2xl">
+          const isActionable = restoring === project.id || deleting === project.id;
 
-            <h1 className="font-black tracking-tight leading-tight
-              text-[clamp(1.8rem,5vw,3.5rem)]">
-              Project Archive.
-            </h1>
+          return (
+            <div
+              key={project.id}
+              style={{ animationDelay: `${index * 50}ms` }}
+              className={`group relative flex flex-col overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm transition-all duration-500 animate-in fade-in slide-in-from-bottom-4 hover:shadow-2xl hover:shadow-blue-500/10 dark:border-white/10 dark:bg-gray-900/40 dark:backdrop-blur-xl ${
+                isActionable ? 'scale-95 opacity-50 grayscale' : ''
+              }`}
+            >
+              {/* Image Container */}
+              <div className="relative h-48 w-full overflow-hidden">
+                {project.image ? (
+                  <img
+                    src={project.image}
+                    alt={project.name}
+                    className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+                  />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900">
+                    <span className="text-5xl font-black text-gray-300 dark:text-gray-700">{project.name.charAt(0)}</span>
+                  </div>
+                )}
+                <div className="absolute top-4 right-4">
+                  <span className={`rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-wider shadow-sm backdrop-blur-md ${
+                    retentionDays <= 7 
+                      ? 'bg-red-500/10 text-red-500 border border-red-500/20' 
+                      : 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20'
+                  }`}>
+                    {retentionDays} Days Left
+                  </span>
+                </div>
+              </div>
 
-            <p className="text-slate-500 dark:text-slate-400 
-              text-[clamp(0.9rem,2vw,1.1rem)] 
-              leading-relaxed">
-              Recover deleted projects within 30 days or purge them permanently.
-            </p>
-          </div>
+              {/* Content */}
+              <div className="flex flex-1 flex-col p-6">
+                <div className="mb-4">
+                  <h2 className="line-clamp-1 text-xl font-bold text-gray-900 dark:text-white group-hover:text-blue-500 transition-colors">
+                    {project.name}
+                  </h2>
+                  <p className="mt-2 line-clamp-2 text-sm text-gray-500 dark:text-gray-400">
+                    {project.description || "No description provided for this project."}
+                  </p>
+                </div>
 
-        </header>
-
-        {/* Empty State */}
-        {projects.length === 0 ? (
-          <div className="py-16 md:py-24 rounded-3xl border border-dashed border-slate-200 dark:border-white/10 flex flex-col items-center bg-white/30 dark:bg-white/[0.01]">
-            <LayoutGrid className="text-slate-300 dark:text-slate-800 mb-4" size={48} />
-            <p className="font-bold text-slate-400 uppercase tracking-widest text-sm">
-              Vault is empty
-            </p>
-          </div>
-        ) : (
-          <div className="space-y-6">
-            {projects.map((project) => (
-              <div
-                key={project.id}
-                className={`group relative overflow-hidden transition-all duration-500
-                ${restoring === project.id || deleting === project.id ? 'opacity-0 scale-95 -translate-y-4' : ''}
-                bg-white/70 dark:bg-white/[0.03] backdrop-blur-xl
-                border border-white/40 dark:border-white/[0.08]
-                rounded-3xl p-4 sm:p-6 md:p-8
-                shadow-lg hover:-translate-y-1`}
-              >
-
-                <div className="flex flex-col lg:flex-row gap-6 lg:gap-10">
-
-                  {/* Icon */}
-                  <div className="flex-shrink-0">
-                    <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl 
-                      bg-gradient-to-br from-slate-100 to-slate-200 
-                      dark:from-white/5 dark:to-white/[0.01]
-                      flex items-center justify-center shadow-inner">
-                      <span className="text-xl sm:text-2xl font-black text-slate-400 dark:text-slate-600">
-                        {project.name.charAt(0)}
-                      </span>
+                <div className="mt-auto space-y-3">
+                  <div className="flex flex-wrap gap-3 border-t border-gray-100 pt-4 dark:border-white/5">
+                    <div className="flex items-center gap-1.5 text-xs text-gray-500">
+                      <Calendar size={14} className="text-blue-500" />
+                      {new Date(project.created_at).toLocaleDateString()}
+                    </div>
+                    <div className="flex items-center gap-1.5 text-xs text-gray-500">
+                      <Clock size={14} className="text-purple-500" />
+                      Updated {new Date(project.updated_at).toLocaleDateString()}
                     </div>
                   </div>
 
-                  {/* Content */}
-                  <div className="flex-1 min-w-0">
-
-                    <div className="flex flex-wrap items-center gap-3 mb-2">
-                      <h3 className="font-bold tracking-tight 
-                        text-[clamp(1rem,2.5vw,1.3rem)]">
-                        {project.name}
-                      </h3>
-
-                      <div className={`text-[10px] sm:text-xs font-black uppercase px-2 py-1 rounded-full border
-                        ${project.retentionDays <= 7
-                          ? 'bg-rose-500/10 border-rose-500/20 text-rose-500'
-                          : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500'}`}>
-                        {project.retentionDays} Days Remaining
-                      </div>
-                    </div>
-
-                    <p className="text-slate-500 dark:text-slate-400
-                      text-[clamp(0.85rem,2vw,0.95rem)]
-                      leading-relaxed break-words">
-                      {project.description}
-                    </p>
-
-                    <div className="flex flex-wrap items-center gap-4 mt-4 text-xs font-bold text-slate-400 uppercase tracking-wider">
-                      <div className="flex items-center gap-2">
-                        <Calendar size={14} className="text-indigo-500" />
-                        {new Date(project.deletedDate).toLocaleDateString()}
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        <Clock size={14} className="text-indigo-500" />
-                        Auto Purge Active
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Buttons */}
-                  <div className="flex flex-row sm:flex-row lg:flex-col gap-3 w-full lg:w-auto">
-
+                  {/* Button Group */}
+                  <div className="flex gap-3 pt-2">
                     <button
-                      onClick={() => handleAction(project.id, 'restore')}
-                      disabled={restoring || deleting}
-                      className="flex-1 lg:flex-none  cursor-pointer px-6 py-3 rounded-xl
-                      bg-slate-900 dark:bg-white text-white dark:text-slate-900
-                      text-sm font-bold transition-all active:scale-95">
-                      <div className="flex items-center justify-center gap-2">
-                        <RotateCcw size={16} />
-                        Restore
-                      </div>
+                      onClick={() => handleRestore(project.id)}
+                      disabled={isActionable}
+                      className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-gray-900 px-4 py-2.5 text-sm font-bold text-white transition-all hover:bg-gray-800 active:scale-95 dark:bg-white dark:text-black dark:hover:bg-gray-100 disabled:opacity-50"
+                    >
+                      <RotateCcw size={16} className={restoring === project.id ? 'animate-spin' : ''} />
+                      {restoring === project.id ? 'Restoring...' : 'Restore'}
                     </button>
-
+                    
                     <button
-                      onClick={() => handleAction(project.id, 'delete')}
-                      disabled={restoring || deleting}
-                      className="p-3 rounded-xl bg-slate-100  cursor-pointer dark:bg-white/5
-                      text-red-400 hover:text-rose-500 flex justify-center items-center gap-2 transition-all active:scale-95">
+                      onClick={() => onConfirmDelete(project.id)}
+                      disabled={isActionable}
+                      className="flex aspect-square items-center justify-center rounded-xl bg-red-50 text-red-600 transition-all hover:bg-red-600 hover:text-white active:scale-95 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-600 dark:hover:text-white disabled:opacity-50"
+                      title="Delete Permanently"
+                    >
                       <Trash2 size={18} />
-                        <span className=" text-rose-500">Delete</span>
                     </button>
-
                   </div>
                 </div>
               </div>
-            ))}
-          </div>
-        )}
-      </main>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }

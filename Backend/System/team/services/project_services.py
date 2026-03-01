@@ -156,6 +156,28 @@ def project_restore(*, user, project_id: int) -> Project:
 
 
 
+
+def get_archived_projects(*, user) -> list[Project]:
+
+    solo_projects = list(Project.objects.deleted().filter(is_solo=True, created_by=user))
+    team_projects = list(Project.objects.deleted().filter(is_solo=False, members__user=user).distinct())
+
+    projects = solo_projects + team_projects
+
+    seen = set()
+    unique_projects = []
+    for project in projects:
+        if project.id not in seen:
+            seen.add(project.id)
+            unique_projects.append(project)
+
+    return unique_projects
+
+
+
+
+
+
 # User Project 
 from django.db.models import Subquery
 

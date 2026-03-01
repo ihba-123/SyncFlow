@@ -1,6 +1,7 @@
 # team/urls.py
 from django.urls import path , include
 from team.views.project_views import (
+    ArchivedProjectsView,
     ProjectCreateView,
     ListProjectsView,
     ProjectDetailView,
@@ -30,6 +31,7 @@ urlpatterns = [
     path("projects/<int:project_id>/delete/", ProjectSoftDeleteView.as_view(), name="project-soft-delete"),
     path("projects/<int:project_id>/permanent-delete/", ProjectPermanentDeleteView.as_view(), name="project-permanent-delete"), 
     path("projects/<int:project_id>/restore/", ProjectRestoreView.as_view(), name="project-restore"),
+    path("projects/archived/", ArchivedProjectsView.as_view(), name="project-archived"),
     path("projects/list/", ListProjectsView.as_view(), name="project-list"),
     path("projects/<int:project_id>/", ProjectDetailView.as_view(), name="project-detail"),
     path("projects/<int:project_id>/invite/", InviteView.as_view(), name="project-invite"),
