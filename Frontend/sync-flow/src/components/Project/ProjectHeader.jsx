@@ -4,7 +4,7 @@ import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from "../../components/ui/avatar";
+} from "../../components/ui/Avatar";
 import { useActiveProject } from "../../hooks/useActiveProject";
 import { getProjectMembers } from "../../api/Project";
 import { useQuery } from "@tanstack/react-query";
@@ -12,6 +12,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useTeamList } from "../../features/team/TeamListLogic";
 import { useProject } from "../../hooks/useProject";
 import { FiUserPlus } from "react-icons/fi";
+import { ProjectHeaderSkeleton } from "../skeleton/ProjectHeaderSkeleton";
 
 export function ProjectHeader() {
   const { data, isLoading: projectLoading } = useActiveProject();
@@ -44,20 +45,7 @@ export function ProjectHeader() {
 
   if (projectLoading || membersLoading) {
     return (
-      <div className="w-full h-48 flex items-center justify-center">
-        <div className="animate-pulse flex space-x-4">
-          <div className="rounded-full bg-slate-200 h-10 w-10"></div>
-          <div className="flex-1 space-y-6 py-1">
-            <div className="h-2 bg-slate-200 rounded"></div>
-            <div className="space-y-3">
-              <div className="grid grid-cols-3 gap-4">
-                <div className="h-2 bg-slate-200 rounded col-span-2"></div>
-                <div className="h-2 bg-slate-200 rounded col-span-1"></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+       <ProjectHeaderSkeleton/>
     );
   }
 
@@ -66,7 +54,7 @@ export function ProjectHeader() {
   return (
     <div className="mb-6 sm:mb-8">
       <div className="relative px-2 sm:px-4 md:px-8 pb-4 sm:pb-6 mt-4">
-        <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl shadow-lg border border-border dark:border-gray-700 p-4 sm:p-6">
+        <div className="bg-white dark:bg-gray-900 rounded-xl sm:rounded-2xl shadow-lg border border-border dark:border-gray-700 p-4 sm:p-6">
           <div className="flex flex-col md:flex-row items-center md:items-start justify-between gap-6">
             
             {/* 1. Project Image */}

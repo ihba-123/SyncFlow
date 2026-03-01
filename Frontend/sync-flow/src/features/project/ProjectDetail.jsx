@@ -9,7 +9,8 @@ const ProjectDetail = () => {
   const role = data?.user_role;
 
   return (
-    <div className="flex flex-col lg:flex-row gap-4 sm:gap-6 md:gap-8 p-2 sm:p-4 md:p-8">
+    <div className="flex flex-col lg:flex-row gap-4 sm:gap-6 md:gap-8 p-2 sm:p-4 md:p-8  bg-[#f8fafc] dark:bg-[#020617]
+      dark:bg-[radial-gradient(at_top_left,_rgba(56,189,248,0.05),_transparent),radial-gradient(at_bottom_right,_rgba(139,92,246,0.05),_transparent)]">
       <div className="flex-1 min-w-0">
         <ProjectHeader />
       </div>

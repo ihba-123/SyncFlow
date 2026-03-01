@@ -43,13 +43,13 @@ export function ProtectedNavbar({ isExpanded, setIsExpanded, isMobile }) {
   return (
     <header
       className={cn(
-        "fixed top-0 right-0 h-14   bg-card/10 backdrop-blur-sm border  border-black/20 dark:border-white/10 border-l-0 transition-all duration-300 z-50",
+        "fixed top-0 right-0 h-14   bg-card/10 backdrop-blur-sm   transition-all duration-300 z-50",
         !isMobile && (isExpanded ? "left-64" : "left-16"),
         isMobile && "left-0 w-full"
       )}
     >
       <div className="flex items-center  justify-between h-full px-4 md:px-6">
-        {/* Left: Hamburger + Logo */}
+        
         <div className="flex items-center gap-4">
           {isMobile && (
             <button

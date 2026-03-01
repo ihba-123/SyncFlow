@@ -19,6 +19,8 @@ import ProjectDetail from "./features/project/ProjectDetail";
 import TeamList from "./features/team/TeamList";
 import InvitePage from "./pages/dashboard/InvitePage";
 import Join_InvitePage from "./pages/dashboard/Join_InvitePage";
+import { Archive } from "lucide-react";
+import ProjectRestore from "./features/RestoreProject/ProjectRestore";
 const App = () => {
   <ProgressBar />;
   useTheme();
@@ -53,6 +55,7 @@ const App = () => {
           <Route path="/dashboard/create-project" element={<CreateProject/>} />
           <Route path="/dashboard/solo-project" element={<SoloProject/>} />
           <Route path="/welcome/" element={<WelcomePage />} />  
+          <Route path="/project-archive" element={<ProjectRestore/>} />
 
           <Route path="/projects/:id" element={<ProjectDetail />} />
           <Route path="/projects/:project_id/invite" element={<InvitePage />} />

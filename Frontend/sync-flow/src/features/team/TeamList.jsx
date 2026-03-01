@@ -79,7 +79,8 @@ const joined_members = data?.joined_members || [];
 
 
   return (
-    <div className="min-h-screen -mt-5 bg-slate-50 text-slate-900 dark:bg-[#0a0c14] dark:text-slate-100">
+    <div className="min-h-screen -mt-5  bg-[#f8fafc] dark:bg-[#020617]
+      dark:bg-[radial-gradient(at_top_left,_rgba(56,189,248,0.05),_transparent),radial-gradient(at_bottom_right,_rgba(139,92,246,0.05),_transparent)] text-slate-900  dark:text-slate-100">
       {/* Toast notification */}
       {showToast && (
         <div className="fixed top-5 left-1/2 -translate-x-1/2 z-50">

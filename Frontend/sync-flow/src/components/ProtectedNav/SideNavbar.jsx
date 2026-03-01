@@ -6,6 +6,7 @@ import {
   MessageSquare,
   Bell,
   ChevronLeft,
+  ArchiveRestore,
   ChevronRight,
 } from "lucide-react";
 import {
@@ -53,7 +54,7 @@ export function Sidebar({ isExpanded, setIsExpanded, isMobile }) {
   );
 
   const bottomItems = [
-    { icon: Bell, label: "Notifications", to: "/notifications" },
+    { icon: ArchiveRestore, label: "Archive", to: "/project-archive" },
     { icon: Settings, label: "Settings", to: "/settings" },
   ];
 
@@ -72,7 +73,7 @@ export function Sidebar({ isExpanded, setIsExpanded, isMobile }) {
   return (
     <aside
       className={cn(
-        "fixed left-0 top-0 h-full glass-card border-r border-black/20 dark:border-white/10 z-50",
+        "fixed left-0 top-0 h-full glass-card border-r dark:border-white/10 border-black/20  z-50 ",
         "flex flex-col",
         !isMobile && "transition-[width] duration-500 ease-in-out",
         isMobile && "transition-transform duration-300 ease-in-out",
@@ -81,7 +82,8 @@ export function Sidebar({ isExpanded, setIsExpanded, isMobile }) {
         isMobile && isExpanded && "translate-x-0",
       )}
     >
-      <div className="relative flex flex-col h-full bg-background/40 p-3 overflow-hidden">
+      <div className="relative  bg-[#f8fafc] dark:bg-[#020617]
+      dark:bg-[radial-gradient(at_top_left,_rgba(56,189,248,0.05),_transparent),radial-gradient(at_bottom_right,_rgba(139,92,246,0.05),_transparent)] flex flex-col h-full bg-background/40 p-3 overflow-hidden">
         <div className="relative flex items-center justify-between h-14 mb-6">
           <div
             className={cn(

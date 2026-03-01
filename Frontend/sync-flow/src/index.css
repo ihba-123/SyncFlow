@@ -31,8 +31,7 @@ body {
    Design tokens
    ========================= */
 :root {
- --background: oklch(0.14 0.035 255);
-  --foreground: oklch(0.15 0 0);
+
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.15 0 0);
   --popover: oklch(1 0 0);
@@ -73,7 +72,7 @@ body {
 .dark {
 --background: oklch(0.14 0.035 255);
   --foreground: oklch(0.98 0 0);
-  --card: oklch(0.16 0.03 260);
+  --card: oklch(16.452% 0.03707 259.378);
   --card-foreground: oklch(0.98 0 0);
   --popover: oklch(0.16 0.03 260);
   --popover-foreground: oklch(0.98 0 0);

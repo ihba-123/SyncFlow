@@ -31,8 +31,6 @@ const Project = () => {
   useEffect(() => {
     const previousSavedMode = localStorage.getItem("projectViewMode");
 
-    // A. Handle LocalStorage Removal logic
-    // We only remove if there was a PREVIOUS value and it DIFFERS from current
     if (previousSavedMode && previousSavedMode !== viewMode) {
       localStorage.removeItem("active-project-storage");
     }
@@ -105,7 +103,8 @@ const Project = () => {
   return (
     <div
       onClick={projectDetail}
-      className="relative min-h-screen bg-slate-50 dark:bg-[#020617] text-slate-900 dark:text-white font-sans transition-colors duration-500 overflow-x-hidden"
+      className="relative min-h-screen bg-slate-50 dark:bg-[#020617]  bg-[#f8fafc] dark:bg-[#020617]
+      dark:bg-[radial-gradient(at_top_left,_rgba(56,189,248,0.05),_transparent),radial-gradient(at_bottom_right,_rgba(139,92,246,0.05),_transparent)] text-slate-900 dark:text-white font-sans transition-colors duration-500 overflow-x-hidden"
     >
       {isLoading && (
       <div className="fixed inset-0 z-[100] bg-black/20 backdrop-blur-sm flex items-center justify-center">
