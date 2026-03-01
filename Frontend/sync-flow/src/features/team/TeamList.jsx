@@ -39,11 +39,11 @@ const joined_members = data?.joined_members || [];
     return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
   };
   //Copy to the clipboard function
-  const copyToClipboard = async (invite_url) => {
-    if (typeof invite_url !== "string") return;
+  const copyToClipboard = async (token) => {
+    if (typeof token !== "string") return;
 
     try {
-      await navigator.clipboard.writeText(invite_url);
+      await navigator.clipboard.writeText(token);
       setShowToast(true);
       setTimeout(() => setShowToast(false), 2000);
     } catch (err) {
@@ -244,12 +244,11 @@ const joined_members = data?.joined_members || [];
                         bg-slate-100 border border-slate-300 shadow-inner
                         dark:bg-black/40 dark:border-white/10 dark:text-slate-300"
                       >
-                        {invite.invite_url.slice(0, 8)}...
-                        {invite.invite_url.slice(-6)}
+                        {invite.token.slice(0, 8)}...{invite.token.slice(-6)}
                       </div>
 
                       <button
-                        onClick={() => copyToClipboard(invite.invite_url)}
+                        onClick={() => copyToClipboard(invite.token)}
                         className="p-2 rounded-lg cursor-pointer  bg-blue-100 dark:bg-blue-900/40"
                       >
                         <FiCopy size={18} />
@@ -277,33 +276,3 @@ export default TeamView;
 
 
 
-
-
-//  <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-[#0a0c14] p-6">
-//         <div className="max-w-md w-full text-center">
-//           <div className="text-7xl mb-6">🏗️</div>
-//           <h2 className="text-2xl md:text-3xl font-bold mb-4 text-slate-800 dark:text-slate-100">
-//             No project selected
-//           </h2>
-//           <p className="text-base text-slate-600 dark:text-slate-400 mb-8 leading-relaxed">
-//             {authData
-//               ? "Create your first project to manage your team and send invites."
-//               : "Select or create a project to view team members."}
-//           </p>
-
-//           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-//             <button
-//               onClick={() => navigate("/dashboard/project")} // ← or your create-project route
-//               className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium shadow transition"
-//             >
-//               Create Project
-//             </button>
-//             <button
-//               onClick={() => navigate("/dashboard")}
-//               className="px-6 py-3 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 rounded-xl font-medium transition"
-//             >
-//               Back to Dashboard
-//             </button>
-//           </div>
-//         </div>
-//       </div>

@@ -1,5 +1,7 @@
 from rest_framework import serializers
 from .models import Invite , Project  , ActivityLog
+from django.utils import timezone
+
 class CreateProjectSerializer(serializers.Serializer):
   name = serializers.CharField(max_length=100)
   description = serializers.CharField(max_length=1000,allow_blank=True, default='', required=False)
@@ -42,26 +44,29 @@ class ProjectDetailSerializer(serializers.ModelSerializer):
 
 
 class UserInviteSerializer(serializers.Serializer):
-  role = serializers.ChoiceField(choices=[('admin', 'Admin'), ('member', 'Member'), ('viewer', 'Viewer')], required=True)
-  expires_days = serializers.IntegerField(min_value=1, max_value=30 , default=3)
-  invited_email = serializers.EmailField(required=False , allow_blank=True)
-
+    role = serializers.ChoiceField(choices=[('admin', 'Admin'), ('member', 'Member'), ('viewer', 'Viewer')], required=True)
+    expires_days = serializers.IntegerField(min_value=1, max_value=30, default=3)
+    invited_email = serializers.EmailField(required=False, allow_blank=True)
 
 class UseInviteSerializer(serializers.Serializer):
     token = serializers.CharField(max_length=255, required=True)
 
-
 class InviteDetailSerializer(serializers.ModelSerializer):
-    invite_url = serializers.SerializerMethodField()
+    status = serializers.SerializerMethodField()
+
     class Meta:
         model = Invite
-        fields = [ "id","project" ,"token" , "invited_email" ,"plain_token" ,"expires_at", "role" ,'invite_url']
+        fields = [
+            "id", "project", "token", "invited_email", 
+            "expires_at", "role", "is_used", "status", "created_at"
+        ]
 
-    def get_invite_url(self, obj):
-        if obj:
-            return f"http://localhost:5173/join/{obj.plain_token}"
-        return None
-
+    def get_status(self, obj):
+        if obj.is_used:
+            return "Used"
+        if obj.expires_at < timezone.now():
+            return "Expired"
+        return "Active"
 
 class ActivityLogSerializer(serializers.ModelSerializer):
     user_name = serializers.CharField(source='user.username', read_only=True)

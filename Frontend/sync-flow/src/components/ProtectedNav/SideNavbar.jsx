@@ -20,7 +20,6 @@ import { Link, useLocation } from "react-router-dom";
 import { useState } from "react";
 import { useProject } from "../../hooks/useProject";
 import Avatars from "./Avatar";
-import { useActiveProject } from "../../hooks/useActiveProject";
 import { useActiveProjectStore } from "../../stores/ActiveProject";
 
 
@@ -33,13 +32,14 @@ export function Sidebar({ isExpanded, setIsExpanded, isMobile }) {
   const { is_solo, isLoading: projectLoading } = useProject(); 
   const activeProject = useActiveProjectStore((state) => state.activeProject);
   const projectData = activeProject?.id;
+  const activeProjectMode = activeProject?.is_solo
 
   const navItems = [
     { icon: LayoutDashboard, label: "Dashboard", to: "/dashboard" },
   ];
 
   // 2. Wrap the "Team" logic: Only show if NOT loading and project exists
-  if (!projectLoading && projectData && !is_solo && activeProject) {
+  if (!projectLoading && projectData && !activeProject?.is_solo) {
     navItems.push({
       icon: Users,
       label: "Team",

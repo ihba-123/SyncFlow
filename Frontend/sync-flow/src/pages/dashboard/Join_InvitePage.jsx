@@ -1,74 +1,62 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import { joinLink } from "../../api/invite_join";
 
 const JoinInvitePage = () => {
-  const { token } = useParams(); // ← better typing
+  const { token } = useParams();
   const navigate = useNavigate();
-
-  console.log("Invite token:", token); // debug
+  
+  // CRITICAL: This ref prevents the double-request in React Strict Mode
+  const joinAttempted = useRef(false);
 
   const mutation = useMutation({
-    mutationFn: (inviteToken) => joinLink(inviteToken), // explicit arg
-    // OR — if your joinLink expects object:   mutationFn: ({ token }: { token: string }) => joinLink({ token }),
-    retry: false, // usually no retry on invite links
-    onSuccess: (responseData) => {
-      // Assuming your API returns something like { message, project_id }
-      if (responseData?.project_id) {
-        setTimeout(() => {
-          navigate(`/projects/${responseData.project_id}`, { replace: true });
-        }, 1400);
-      }
-    },
-    onError: (err) => {
-      console.error("Join failed:", err);
+    mutationFn: (inviteToken) => joinLink(inviteToken),
+    retry: false, // Do not retry a 400 error
+    onSuccess: (data) => {
+      // Redirect to the project dashboard after success
+      setTimeout(() => {
+        navigate(`/projects/${data.project_id}`, { replace: true });
+      }, 1500);
     },
   });
 
   useEffect(() => {
-    if (token) {
+    // Only call the API if we have a token and haven't tried yet
+    if (token && !joinAttempted.current) {
+      joinAttempted.current = true;
       mutation.mutate(token);
-    } else {
-      // Optional: show nice error if no token in URL
-      mutation.reset(); // just in case
     }
-  }, [token]); // no need to depend on mutate
+  }, [token, mutation]);
 
-  // ────────────────────────────────────────────────
-  //               RENDER STATES
-  // ────────────────────────────────────────────────
+  // --- UI STATES ---
 
   if (mutation.isPending) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center p-8 bg-white rounded-2xl shadow-xl max-w-sm w-full">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-blue-600 mx-auto mb-6" />
-          <h2 className="text-xl font-semibold text-gray-800">Verifying invite...</h2>
-          <p className="text-gray-500 mt-2">Please wait a moment</p>
-        </div>
+      <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4" />
+        <h2 className="text-xl font-semibold text-slate-800">Joining Project...</h2>
       </div>
     );
   }
 
   if (mutation.isError) {
+    // This grabs the "detail" or "error" message sent by your Django ValidationError
+    const errorMessage = mutation.error?.response?.data?.error || 
+                         mutation.error?.response?.data?.detail || 
+                         "This invitation link is invalid or has expired.";
+
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center p-8 bg-white rounded-2xl shadow-xl max-w-md w-full border border-red-200">
-          <div className="mx-auto mb-6 text-red-500">
-            <svg className="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-          </div>
-          <h2 className="text-2xl font-bold text-red-700 mb-3">Oops!</h2>
-          <p className="text-red-600 mb-6">
-            {mutation.error?.response?.data?.error || "This invite is invalid or has expired."}
-          </p>
-          <button
-            onClick={() => navigate("/dashboard", { replace: true })}
-            className="px-6 py-3 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 transition"
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4">
+        <div className="max-w-md w-full bg-white p-8 rounded-2xl shadow-lg text-center border border-red-100">
+          <div className="text-red-500 text-5xl mb-4">✕</div>
+          <h2 className="text-2xl font-bold text-slate-900 mb-2">Unable to Join</h2>
+          <p className="text-slate-600 mb-6">{errorMessage}</p>
+          <button 
+            onClick={() => navigate("/dashboard")}
+            className="w-full py-3 bg-slate-900 text-white rounded-xl font-bold hover:bg-slate-800 transition-colors"
           >
-            Back to Dashboard
+            Go to Dashboard
           </button>
         </div>
       </div>
@@ -77,27 +65,17 @@ const JoinInvitePage = () => {
 
   if (mutation.isSuccess) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center p-10 bg-white rounded-2xl shadow-2xl max-w-md w-full border border-green-200">
-          <div className="mx-auto mb-6 text-green-500">
-            <svg className="w-20 h-20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-          </div>
-          <h2 className="text-3xl font-bold text-green-800 mb-3">Welcome aboard!</h2>
-          <p className="text-green-700 text-lg mb-2">{mutation.data?.message || "You've successfully joined the workspace."}</p>
-          <p className="text-gray-500">Redirecting to your project...</p>
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4">
+        <div className="max-w-md w-full bg-white p-8 rounded-2xl shadow-lg text-center border border-green-100">
+          <div className="text-green-500 text-5xl mb-4">✓</div>
+          <h2 className="text-2xl font-bold text-slate-900 mb-2">Success!</h2>
+          <p className="text-slate-600 mb-4">You've joined the team. Redirecting...</p>
         </div>
       </div>
     );
   }
 
-  // Fallback — should rarely reach here
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <p className="text-gray-600 text-lg">No invite token found in the URL.</p>
-    </div>
-  );
+  return null;
 };
 
 export default JoinInvitePage;

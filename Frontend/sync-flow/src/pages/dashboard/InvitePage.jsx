@@ -5,9 +5,6 @@ import {
   Eye,
   Copy,
   Check,
-  Sparkles,
-  X,
-  Globe,
   Lock,
   ShieldCheck,
   ArrowRight,
@@ -22,46 +19,58 @@ import { useProject } from "../../hooks/useProject";
 
 const InvitePage = () => {
   const [selectedRole, setSelectedRole] = useState("member");
-  const [showModal, setShowModal] = useState();
+  const [showModal, setShowModal] = useState(false); // Fixed: Initialize with false
   const [copied, setCopied] = useState(false);
-  const [datas, setDatas] = useState();
-  const {project} = useProject();
+  const [datas, setDatas] = useState(null);
+  
+  const { project } = useProject();
   const { project_id } = useParams();
+
   const roles = [
     { id: "admin", icon: <Shield size={14} /> },
     { id: "member", icon: <User size={14} /> },
     { id: "viewer", icon: <Eye size={14} /> },
   ];
 
-
-  //Handeling invites
-  
+  // Handling invites
   const mutation = useMutation({
     mutationFn: inviteLink,
     onSuccess: (data) => {
-      setShowModal(true);
       setDatas(data);
+      setShowModal(true);
     },
     onError: (err) => {
-      console.error("Invite error:", err.response?.data);
+      // Improved error logging to see backend validation messages
+      console.error("Invite error:", err.response?.data || err.message);
     },
   });
+
   const handleInvite = () => {
+    // Ensure we have an ID before firing the mutation
+    const targetId = project_id || project?.id;
+    
+    if (!targetId) {
+      console.error("No project ID found in URL or Context");
+      return;
+    }
+
     mutation.mutate({
-      project_id: project_id || project.id,
-      project_name: project.name,
+      project_id: targetId,
       role: selectedRole,
     });
   };
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(datas?.invite_url);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    if (datas?.invite_url) {
+      navigator.clipboard.writeText(datas.invite_url);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
   };
 
   return (
-    <div className="relative min-h-screen w-full  text-slate-900 dark:text-slate-200 font-sans selection:bg-blue-900/30 transition-colors duration-500 flex flex-col overflow-x-hidden">
+    <div className="relative min-h-screen w-full text-slate-900 dark:text-slate-200 font-sans selection:bg-blue-900/30 transition-colors duration-500 flex flex-col overflow-x-hidden">
+      {/* Background Glow */}
       <div className="fixed inset-0 pointer-events-none z-0">
         <div className="absolute -top-20 -right-20 w-80 h-80 rounded-full blur-[100px] opacity-20 bg-blue-400 transition-colors duration-1000" />
       </div>
@@ -99,12 +108,11 @@ const InvitePage = () => {
         </div>
       </header>
 
-      {/* CHOOSE SECTION */}
       <main className="relative z-10 w-full flex-1 flex flex-col items-center px-6 pb-20">
         <div className="w-full max-w-md space-y-10">
           <div className="space-y-3 md:-mt-12">
-            <div className="flex items-center justify-between px-2 my-6 md:my-3 md:px-0 ">
-              <span className="text-[10px] font-extrabold uppercase tracking-widest text-slate-600 ">
+            <div className="flex items-center justify-between px-2 my-6 md:my-3 md:px-0">
+              <span className="text-[10px] font-extrabold uppercase tracking-widest text-slate-600">
                 Select Role
               </span>
             </div>
@@ -114,7 +122,7 @@ const InvitePage = () => {
                 <button
                   key={role.id}
                   onClick={() => setSelectedRole(role.id)}
-                  className={`relative flex items-center justify-center  gap-2 py-3.5 rounded-xl text-xs font-bold transition-all duration-300
+                  className={`relative flex items-center justify-center gap-2 py-3.5 rounded-xl text-xs font-bold transition-all duration-300
                     ${
                       selectedRole === role.id
                         ? "text-slate-900 dark:text-white"
@@ -128,7 +136,7 @@ const InvitePage = () => {
                     />
                   )}
                   <span className="relative z-10">{role.icon}</span>
-                  <span className="relative z-10 tracking-tight">
+                  <span className="relative z-10 tracking-tight capitalize">
                     {role.id}
                   </span>
                 </button>
@@ -136,12 +144,11 @@ const InvitePage = () => {
             </div>
           </div>
 
-          {/* Action Button */}
           <div className="flex flex-col items-center gap-6">
             <button
               onClick={handleInvite}
               disabled={mutation.isPending}
-              className="group  flex items-center justify-center  w-auto px-5 py-3 bg-gray-900 cursor-pointer dark:bg-white text-white dark:text-slate-900 font-bold rounded-2xl shadow-2xl transition-all"
+              className="group flex items-center gap-2 justify-center w-auto px-6 py-3 bg-gray-900 cursor-pointer dark:bg-white text-white dark:text-slate-900 font-bold rounded-2xl shadow-2xl transition-all hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {mutation.isPending ? "Generating..." : "Generate Invitation"}
               <ArrowRight size={18} />
@@ -156,6 +163,7 @@ const InvitePage = () => {
         </div>
       </main>
 
+      {/* Modal for displaying the generated link */}
       <InvitePageDetail
         showModal={showModal}
         setShowModal={setShowModal}
@@ -167,6 +175,7 @@ const InvitePage = () => {
         datas={datas}
       />
 
+      {/* Toast Notification for Clipboard */}
       <AnimatePresence>
         {copied && (
           <motion.div

@@ -19,7 +19,6 @@ def remove_member(project: Project, acting_user: User, target_user: User) -> Non
     if not member:
         raise ValidationError("User is not a member of this project.")
 
-    # Solo project cannot be left/removed
     if project.is_solo:
         raise ValidationError("Cannot leave or remove members from a solo project.")
 
@@ -55,29 +54,36 @@ def remove_member(project: Project, acting_user: User, target_user: User) -> Non
         details=f"{acting_user.email} removed {target_user.email}"
     )
 
-
 def project_delete(project, user):
+   
+    try:
+        current_member = project.members.get(user=user)
+    except ProjectMember.DoesNotExist:
+        raise PermissionDenied("You are not a member of this project.")
+
+
+    if current_member.role not in ["Admin", "admin"]:
+        logger.warning(f"User {user.email} attempted to delete project {project.name} without Admin rights.")
+        raise PermissionDenied("Only an Admin can delete this project.")
+
     activitylog = ActivityLog.objects.select_for_update().filter(project=project)
+
     with transaction.atomic():
         if project.is_solo:
+        
             owner = project.members.first().user
             if owner != user:
-                logger.warning(f"User {user.email} attempted to delete solo project {project.name} owned by {owner.email}")
-                raise PermissionDenied("Only the owner can delete their solo project.")
-            
+                raise PermissionDenied("You do not own this solo project.")
             
             activitylog.delete()
             project.delete()
-            logger.info(f"Solo project {project.name} deleted by owner {owner.email}")
+            logger.info(f"Solo project {project.name} deleted by owner {user.email}")
             return
 
-       
-        project_write_permission(project, user)  
-
-        
         activitylog.delete()
         project.members.all().delete()
         project.invites.all().delete()
+        
         if project.chat_room:
             project.chat_room.messages.all().delete()
             project.chat_room.delete()

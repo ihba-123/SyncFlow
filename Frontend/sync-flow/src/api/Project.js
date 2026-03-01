@@ -38,3 +38,12 @@ export const softDeleteProject = async (project_id) => {
   const res = await api.delete(`projects/${project_id}/soft-delete/`);
   return res.data;
 }
+
+
+//Remove memeber from project
+export const removeMember = async (project_id, user_id) => {
+  const res = await api.post(`projects/${project_id}/remove/${user_id}/`, {
+    data: { user_id },
+  });
+  return res.data;
+}

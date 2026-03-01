@@ -20,19 +20,33 @@ const Project = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { is_solo, setIsSolo } = useProjectStore();
   const { mutateAsync: setActiveProjects, isLoading } = useSetActiveProject();
-  // Initialize viewMode from store
-  const [viewMode, setViewMode] = useState(is_solo ? "solo" : "team");
+  const saveMode = localStorage.getItem("projectViewMode");
+  const [viewMode, setViewMode] = useState(() => {
+    const savedMode = localStorage.getItem("projectViewMode");
+    if (savedMode) return savedMode;
+    return is_solo ? "solo" : "team";   
+  });
 
-  // Update store whenever viewMode changes
+
   useEffect(() => {
-    setIsSolo(viewMode === "solo");
+    const previousSavedMode = localStorage.getItem("projectViewMode");
+
+    // A. Handle LocalStorage Removal logic
+    // We only remove if there was a PREVIOUS value and it DIFFERS from current
+    if (previousSavedMode && previousSavedMode !== viewMode) {
+      localStorage.removeItem("active-project-storage");
+    }
+
+   
     localStorage.setItem("projectViewMode", viewMode);
-  }, [viewMode, setIsSolo]);
 
-  // Update viewMode if global store changes (like from search)
-  useEffect(() => {
-    setViewMode(is_solo ? "solo" : "team");
-  }, [is_solo]);
+
+    const shouldBeSolo = viewMode === "solo";
+    if (is_solo !== shouldBeSolo) {
+      setIsSolo(shouldBeSolo);
+    }
+  }, [viewMode, setIsSolo, is_solo]);
+
 
   const {
     data: projects,
@@ -85,6 +99,8 @@ const Project = () => {
     }
   }
 };
+
+
 
   return (
     <div

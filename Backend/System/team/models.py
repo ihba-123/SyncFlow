@@ -40,39 +40,20 @@ class Project(models.Model):
         return self.name
     
 
-# Invite Model
 class Invite(models.Model):
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name="invites")
-    token = models.CharField(max_length=255, unique=True) 
+    token = models.CharField(max_length=255, unique=True, db_index=True) 
     invited_email = models.EmailField(blank=True, null=True)
-    plain_token = models.CharField(max_length=255, unique=True)
     expires_at = models.DateTimeField()
     is_used = models.BooleanField(default=False)
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name="created_invites")
     created_at = models.DateTimeField(auto_now_add=True)
-    role = models.CharField(max_length=255, choices=(
+    role = models.CharField(max_length=20, choices=(
         ('admin', 'Admin'),
         ('member', 'Member'),
         ('viewer', 'Viewer'),
     ))
 
-    class Meta:
-        indexes = [
-            models.Index(fields=['token']),
-            models.Index(fields=['expires_at']),
-        ]
-
-    def save(self, *args, **kwargs):
-        if not self.plain_token:  # Only generate if it doesn't exist
-            self.plain_token = str(uuid.uuid4())
-            self.token = hashlib.sha256(self.plain_token.encode()).hexdigest()
-        super().save(*args, **kwargs)
-
-    def is_valid(self):
-        return not self.is_used and self.expires_at > timezone.now()
-
-    def __str__(self):
-        return f"Invite for {self.project.name} (Role: {self.role})"
 
 
 
