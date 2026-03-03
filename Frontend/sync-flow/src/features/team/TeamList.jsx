@@ -14,18 +14,21 @@ const TeamView = () => {
   const { setRole, isAdmin } = useProjectRoleStore();
   const { data: authData } = useAuth();
   const { activeProject } = useActiveProjectStore();
- 
+
+  
 const invites = data?.invites || [];
 const joined_members = data?.joined_members || [];
-  //Admin role logic
+const {role} = useProjectRoleStore()
+console.log(role)
+  console.log(joined_members)
   useEffect(() => {
     if (!joined_members.length || !authData?.id) return;
 
     const myRole = joined_members.find(
       (member) => member.id === authData.id,
     )?.role;
-    if (myRole === "Admin" || myRole === "Member" && myRole ) {
-      setRole(myRole);
+    if (myRole === "Admin" || myRole === "Member" ) {
+      setRole(myRole,id);
     }
   }, [joined_members, authData, setRole]);
 

@@ -21,7 +21,7 @@ export function ProjectHeader() {
   const { is_solo } = useProject();
   const role = teamData?.user_role;
   const navigate = useNavigate();
-  
+
   const values = data?.active_project || {};
 
   // Fetch Members
@@ -33,7 +33,7 @@ export function ProjectHeader() {
     queryKey: ["projectMembers", id],
     queryFn: () => getProjectMembers(id),
     enabled: !!id,
-    
+    refetchInterval: 5000,
   });
 
   const members = membersData?.joined_members || [];
@@ -45,19 +45,16 @@ export function ProjectHeader() {
   };
 
   if (projectLoading || membersLoading) {
-    return (
-       <ProjectHeaderSkeleton/>
-    );
+    return <ProjectHeaderSkeleton />;
   }
 
-  if (membersError) return <div className="p-4 text-red-500 text-center">Failed to load members</div>;
+  if (membersError) return navigate("/dashboard");
 
   return (
     <div className="mb-6 sm:mb-8">
       <div className="relative px-2 sm:px-4 md:px-8 pb-4 sm:pb-6 mt-4">
         <div className="bg-white dark:bg-gray-900 rounded-xl sm:rounded-2xl shadow-lg border border-border dark:border-gray-700 p-4 sm:p-6">
           <div className="flex flex-col md:flex-row items-center md:items-start justify-between gap-6">
-            
             {/* 1. Project Image */}
             <div className="shrink-0">
               <div className="overflow-hidden rounded-xl border border-border dark:border-gray-700 shadow-md group">
@@ -65,7 +62,7 @@ export function ProjectHeader() {
                   src={
                     values.image ||
                     `https://ui-avatars.com/api/?name=${encodeURIComponent(
-                      values.name || "Project"
+                      values.name || "Project",
                     )}&background=random&color=fff&size=128`
                   }
                   alt={values.name}
@@ -104,9 +101,7 @@ export function ProjectHeader() {
                 )}
               </div>
 
-              
               <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6 pt-5 border-t border-gray-100 dark:border-gray-700">
-                
                 {/* Avatar Stack Section */}
                 <div className="flex items-center gap-2">
                   <div className="flex -space-x-3.5 transition-all duration-300">
@@ -139,7 +134,7 @@ export function ProjectHeader() {
                       </div>
                     )}
                   </div>
-                  
+
                   {hiddenCount > 0 && (
                     <span className="text-[11px] text-muted-foreground hidden sm:block">
                       Team members
@@ -151,11 +146,13 @@ export function ProjectHeader() {
                 <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground dark:text-gray-400">
                   <Calendar size={14} />
                   <span>
-                    Created: {values.created_at ? new Date(values.created_at).toLocaleDateString() : "N/A"}
+                    Created:{" "}
+                    {values.created_at
+                      ? new Date(values.created_at).toLocaleDateString()
+                      : "N/A"}
                   </span>
                 </div>
               </div>
-
             </div>
           </div>
         </div>

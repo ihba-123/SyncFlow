@@ -17,7 +17,6 @@ export const useUserProfile = () => {
     
     onSuccess: (value) => {
       setUser(value)  
-      console.log(value)  
     },
     onError: (err) => {
       if (err.response?.status !== 401) {

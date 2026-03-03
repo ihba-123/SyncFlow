@@ -61,6 +61,7 @@ const Project = () => {
     },
     select: (data) => data.pages.flatMap((page) => page.data.results),
     staleTime: 5 * 60 * 1000,
+     refetchInterval: 5000,
   });
 
   const soloProjects = projects?.filter((p) => p.is_solo) || [];

@@ -1,5 +1,5 @@
 import LandingPageRoute from "./routes/LandingPageRoute";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, useParams } from "react-router-dom";
 import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignupPage";
 import Dashboard from "./pages/dashboard/Dashboard";
@@ -19,12 +19,13 @@ import ProjectDetail from "./features/project/ProjectDetail";
 import TeamList from "./features/team/TeamList";
 import InvitePage from "./pages/dashboard/InvitePage";
 import Join_InvitePage from "./pages/dashboard/Join_InvitePage";
-import { Archive } from "lucide-react";
 import ProjectRestore from "./features/RestoreProject/ProjectRestore";
+import { useProjectRole } from "./hooks/useProjectRole";
 const App = () => {
   <ProgressBar />;
   useTheme();
   useUserProfile();
+  useProjectRole();
   return (
     <div>
       <ToastContainer
