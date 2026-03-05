@@ -7,14 +7,12 @@ const JoinInvitePage = () => {
   const { token } = useParams();
   const navigate = useNavigate();
   
-  // CRITICAL: This ref prevents the double-request in React Strict Mode
   const joinAttempted = useRef(false);
 
   const mutation = useMutation({
     mutationFn: (inviteToken) => joinLink(inviteToken),
-    retry: false, // Do not retry a 400 error
+    retry: false,
     onSuccess: (data) => {
-      // Redirect to the project dashboard after success
       setTimeout(() => {
         navigate(`/projects/${data.project_id}`, { replace: true });
       }, 1500);
@@ -29,7 +27,6 @@ const JoinInvitePage = () => {
     }
   }, [token, mutation]);
 
-  // --- UI STATES ---
 
   if (mutation.isPending) {
     return (
@@ -41,7 +38,6 @@ const JoinInvitePage = () => {
   }
 
   if (mutation.isError) {
-    // This grabs the "detail" or "error" message sent by your Django ValidationError
     const errorMessage = mutation.error?.response?.data?.error || 
                          mutation.error?.response?.data?.detail || 
                          "This invitation link is invalid or has expired.";

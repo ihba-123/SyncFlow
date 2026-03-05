@@ -29,13 +29,6 @@ export function DangerZone({ projectId }) {
   //Admin check
   const { isAdmin } = useProjectRoleStore();
 
-  // Archive placeholder
-  const handleArchive = () => {
-    console.log("Project archived");
-    setShowArchiveDialog(false);
-    toast.success("Project archived successfully!");
-  };
-
   const { mutate: handleSoftDelete, isLoading: softDeleting } = useMutation({
     mutationFn: () => softDeleteProject(id),
     onSuccess: async () => {
@@ -43,7 +36,7 @@ export function DangerZone({ projectId }) {
 
       await queryClient.invalidateQueries({ queryKey: ["projects"] });
       queryClient.removeQueries({ queryKey: ["projectMembers", id] });
-      queryClient.removeQueries({ queryKey: ["activeProject"] });
+      queryClient.invalidateQueries({queryKey:["archivedProjects"]})
 
       setShowSoftDeleteDialog(false);
       toast.success("Project moved to trash successfully!");
@@ -62,6 +55,7 @@ export function DangerZone({ projectId }) {
       queryClient.invalidateQueries({ queryKey: ["projects"] });
       queryClient.invalidateQueries({ queryKey: ["projectDetails"] });
       queryClient.invalidateQueries({ queryKey: ["activeProject"] });
+      queryClient.invalidateQueries({queryKey:["archivedProjects"]})
       resetActiveProject();
       setShowDeleteDialog(false);
       toast.success("Project deleted permanently!");

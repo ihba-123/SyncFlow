@@ -24,9 +24,8 @@ const Project = () => {
   const [viewMode, setViewMode] = useState(() => {
     const savedMode = localStorage.getItem("projectViewMode");
     if (savedMode) return savedMode;
-    return is_solo ? "solo" : "team";   
+    return is_solo ? "solo" : "team";
   });
-
 
   useEffect(() => {
     const previousSavedMode = localStorage.getItem("projectViewMode");
@@ -35,16 +34,13 @@ const Project = () => {
       localStorage.removeItem("active-project-storage");
     }
 
-   
     localStorage.setItem("projectViewMode", viewMode);
-
 
     const shouldBeSolo = viewMode === "solo";
     if (is_solo !== shouldBeSolo) {
       setIsSolo(shouldBeSolo);
     }
   }, [viewMode, setIsSolo, is_solo]);
-
 
   const {
     data: projects,
@@ -61,7 +57,7 @@ const Project = () => {
     },
     select: (data) => data.pages.flatMap((page) => page.data.results),
     staleTime: 5 * 60 * 1000,
-     refetchInterval: 5000,
+    refetchInterval: 5000,
   });
 
   const soloProjects = projects?.filter((p) => p.is_solo) || [];
@@ -82,24 +78,22 @@ const Project = () => {
   const navigate = useNavigate();
 
   const projectDetail = async (e) => {
-  const card = e.target.closest(".group.cursor-pointer");
-  if (card) {
-    const projectName = card.querySelector("h3")?.textContent;
-    const project = projects?.find((p) => p.name === projectName);
-    
-    if (project && !isLoading) { 
-      try {
-        await setActiveProjects(project.id);
+    const card = e.target.closest(".group.cursor-pointer");
+    if (card) {
+      const projectName = card.querySelector("h3")?.textContent;
+      const project = projects?.find((p) => p.name === projectName);
 
-        navigate(`/projects/${project.id}`);
-      } catch (error) {
-        console.error("Failed to sync project before navigation", error);
+      if (project && !isLoading) {
+        try {
+          await setActiveProjects(project.id);
+
+          navigate(`/projects/${project.id}`);
+        } catch (error) {
+          console.error("Failed to sync project before navigation", error);
+        }
       }
     }
-  }
-};
-
-
+  };
 
   return (
     <div
@@ -108,10 +102,10 @@ const Project = () => {
       dark:bg-[radial-gradient(at_top_left,_rgba(56,189,248,0.05),_transparent),radial-gradient(at_bottom_right,_rgba(139,92,246,0.05),_transparent)] text-slate-900 dark:text-white font-sans transition-colors duration-500 overflow-x-hidden"
     >
       {isLoading && (
-      <div className="fixed inset-0 z-[100] bg-black/20 backdrop-blur-sm flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-      </div>
-    )}
+        <div className="fixed inset-0 z-[100] bg-black/20 backdrop-blur-sm flex items-center justify-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+        </div>
+      )}
       {/* Modals */}
       {isModalOpen && viewMode === "solo" && (
         <SoloProject onClose={() => setIsModalOpen(false)} />
@@ -181,11 +175,15 @@ const Project = () => {
             <>
               {(viewMode === "solo" ? soloProjects : teamProjects).map(
                 (project) => (
-                  <GlassCard key={project.id} project={project} onClick={() => {
-     setActiveProjects(project.id, {
-       onSuccess: () => navigate(`/projects/${project.id}`)
-     });
-  }} />
+                  <GlassCard
+                    key={project.id}
+                    project={project}
+                    onClick={() => {
+                      setActiveProjects(project.id, {
+                        onSuccess: () => navigate(`/projects/${project.id}`),
+                      });
+                    }}
+                  />
                 ),
               )}
               {isFetchingNextPage && <ProjectSkeleton count={3} />}
@@ -213,8 +211,8 @@ const GlassCard = ({ project }) => (
         <ImageIcon size={32} className="text-slate-300 dark:text-slate-700" />
       )}
       <div className="absolute top-3 left-3">
-        <span className="px-2 py-1 rounded-lg bg-white/90 dark:bg-blue-600/20 text-[8px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest border border-slate-100 dark:border-blue-500/30">
-          {project.is_solo ? "INDIVIDUAL" : "NETWORK"}
+        <span className="px-2 py-1 rounded-lg bg-white/90 dark:bg-blue-200/20 text-[8px] font-black  text-blue-600 dark:text-white uppercase tracking-widest border border-slate-100 dark:border-blue-500/30">
+          {project.is_solo ? "Solo_Project" : "Team_Project"}
         </span>
       </div>
     </div>

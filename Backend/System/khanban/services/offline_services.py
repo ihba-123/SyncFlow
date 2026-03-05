@@ -5,7 +5,6 @@ def save_for_offline_users(project, payload, exclude_user=None):
         # Solo project: only owner
         members = [project.created_by] if project.created_by != exclude_user else []
     else:
-        # Use the related_name 'members' instead of default _set
         members_qs = project.members.values_list('user', flat=True)
         if exclude_user:
             members_qs = members_qs.exclude(id=exclude_user.id)

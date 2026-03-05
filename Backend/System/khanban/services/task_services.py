@@ -7,7 +7,7 @@ from khanban.models import Task
 from khanban.serializers import TaskSerializer
 from khanban.utils.broadcast_helper import broadcast_task_update, create_activity_log
 from khanban.services.offline_services import save_for_offline_users
-
+from activitylog.activity.services import log_activity
 
 @transaction.atomic
 def create_task_service(user, project_id, request_data):
@@ -33,9 +33,9 @@ def create_task_service(user, project_id, request_data):
     task = serializer.save(project=project)
 
     # Log + Broadcast + Offline sync
-    create_activity_log(project, user, "task_created", f"Created task: {task.title}")
+    log_activity(project, user, "task_created", f"Created task '{task.title}' in column '{column}'")
     broadcast_task_update(project.id, serializer.data)
-    save_for_offline_users(project, serializer.data, exclude_user=user)  # Correct
+    save_for_offline_users(project, serializer.data, exclude_user=user)  
 
     return task, serializer.data, 201
 
@@ -78,7 +78,7 @@ def update_task_fields(task, data, user, project):
     serializer.is_valid(raise_exception=True)
     task = serializer.save()
 
-    create_activity_log(project, user, "task_updated", f"Updated task: {task.title}")
+    log_activity(project, user, "task_updated", f"Updated task '{task.title}'")
     return task
 
 
@@ -131,7 +131,7 @@ def delete_task(request, project_id, task_id):
     task.delete()
 
     create_activity_log(project, request.user, "task_deleted", f"Deleted task: {title}")
-
+    log_activity(project, request.user, "task_deleted", f"Deleted task '{title}'")
     delete_payload = {"id": task_id_for_payload, "deleted": True}
     broadcast_task_update(project.id, delete_payload)
     save_for_offline_users(project, delete_payload, exclude_user=request.user)  # Fixed

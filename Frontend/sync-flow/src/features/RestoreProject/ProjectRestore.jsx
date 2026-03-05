@@ -16,6 +16,7 @@ export default function ProjectRestore() {
     queryFn: archivedProjects,
     onSuccess: () => {
       queryClient.invalidateQueries(['projects']);
+      queryClient.invalidateQueries(['archivedProjects']);
     },
   });
 
@@ -175,7 +176,7 @@ export default function ProjectRestore() {
                     <button
                       onClick={() => onConfirmDelete(project.id)}
                       disabled={isActionable}
-                      className="flex aspect-square items-center justify-center rounded-xl bg-red-50 text-red-600 transition-all hover:bg-red-600 hover:text-white active:scale-95 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-600 dark:hover:text-white disabled:opacity-50"
+                      className="flex aspect-square px-3 items-center justify-center rounded-xl bg-red-50 text-red-600 transition-all hover:bg-red-600 hover:text-white active:scale-95 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-600 dark:hover:text-white disabled:opacity-50"
                       title="Delete Permanently"
                     >
                       <Trash2 size={18} />

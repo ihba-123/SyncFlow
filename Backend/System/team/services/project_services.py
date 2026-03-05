@@ -5,6 +5,9 @@ from chatapp.models import ChatRoom
 from rest_framework.exceptions import ValidationError , PermissionDenied
 from django.shortcuts import get_object_or_404
 from ..serializers import CreateProjectSerializer
+from activitylog.activity.services import log_activity
+
+
 def project_create(name:str, description:str ,created_by ,is_solo:bool=True , image=None )->Project:
 
   if not name:
@@ -42,12 +45,12 @@ def project_create(name:str, description:str ,created_by ,is_solo:bool=True , im
     created_by.last_active_project = project
     created_by.save(update_fields=["last_active_project"])
 
-    ActivityLog.objects.create(
-      project=project,
-      user=created_by,
-      action="project_created",
-      details=f"Project '{name}' created as {'solo' if is_solo else 'team'}",
-    )
+    log_activity(
+            project=project,
+            user=created_by,
+            action="project_created",
+            details=f"Project '{name}' created as {'solo' if is_solo else 'team'}"
+        )
 
   return project
 
@@ -86,11 +89,11 @@ def project_update(*,user, project_id:int , data:dict , file=None )->Project:
       project.save()
 
 
-    ActivityLog.objects.create(
-      project=project,
-      user=user,
-      action="project_updated",
-      details=f"Project '{project.name}' updated and image updated {file}",
+    log_activity(
+        project=project,
+        user=user,
+        action="project_updated",
+        details=f"Project '{project.name}' updated. Image updated: {bool(file)}"
     )
 
     return project
@@ -118,11 +121,11 @@ def project_soft_delete(*, user, project_id: int) -> Project:
         project.save()
 
         # Activity log
-        ActivityLog.objects.create(
+        log_activity(
             project=project,
             user=user,
             action="project_deleted",
-            details=f"Project '{project.name}' soft deleted",
+            details=f"Project '{project.name}' soft deleted"
         )
 
     return project
@@ -144,11 +147,11 @@ def project_restore(*, user, project_id: int) -> Project:
         project.is_deleted = False
         project.save()
 
-        ActivityLog.objects.create(
+        log_activity(
             project=project,
             user=user,
             action="project_restored",
-            details=f"Project '{project.name}' restored",
+            details=f"Project '{project.name}' restored"
         )
 
     return project

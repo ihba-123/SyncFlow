@@ -87,10 +87,25 @@ class ProjectMember(models.Model):
 # ===============================
 class ActivityLog(models.Model):
     ACTION_CHOICES = (
+        # Project
+        ('project_created', 'Project Created'),
+        ('project_updated', 'Project Updated'),
+        ('project_deleted', 'Project Deleted'),
+        ('project_restored', 'Project Restored'),
+
+        # Members
         ('member_added', 'Member Added'),
+        ('member_removed', 'Member Removed'),
+
+        # Tasks
         ('task_created', 'Task Created'),
         ('task_updated', 'Task Updated'),
+        ('task_deleted', 'Task Deleted'),
+
+        # Comments
         ('comment_added', 'Comment Added'),
+
+        # Attachments
         ('attachment_added', 'Attachment Added'),
     )
 

@@ -7,6 +7,8 @@ from django.core.exceptions import ValidationError, PermissionDenied
 from django.utils import timezone
 from team.models import Project, Invite, ProjectMember, ActivityLog
 from authentication.models import User
+from activitylog.activity.services import log_activity
+
 
 def is_admin(project: Project, user: User) -> bool:
     return ProjectMember.objects.filter(project=project, user=user, role='admin').exists()
@@ -53,12 +55,12 @@ def create_project_invite(
             invited_email=invited_email,
         )
         
-        ActivityLog.objects.create(
+        log_activity(
             project=project,
             user=created_by,
-            action='invite_created',
-            details=f"Invite created for {invited_email or 'anyone'} as {role}."
-        )
+            action="member_added",
+            details=f"Invite created for {invited_email or 'anyone'} as {role}"
+)
 
     invite_url = f"http://localhost:5173/join/{raw_token}"
     return invite_url, raw_token
@@ -103,11 +105,11 @@ def use_invite(plain_token: str, user: User) -> Tuple[Project, Optional[any]]:
         if chat_room:
             chat_room.add_participant(user)
 
-        ActivityLog.objects.create(
+        log_activity(
             project=invite.project,
             user=user,
-            action='member_joined',
-            details=f"User {user.email} joined via invite."
+            action="member_added",
+            details=f"{user.email} joined via invite"
         )
 
     return invite.project, chat_room

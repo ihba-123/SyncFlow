@@ -14,6 +14,7 @@ urlpatterns = [
     path('api/', include('team.urls')),
     path('api/', include('khanban.urls')),
     path('api/', include('search.urls')),
+    path('api/', include('activitylog.urls')),
 
 
 # Swagger / API Documentation URLs

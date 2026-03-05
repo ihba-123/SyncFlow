@@ -21,6 +21,7 @@ import InvitePage from "./pages/dashboard/InvitePage";
 import Join_InvitePage from "./pages/dashboard/Join_InvitePage";
 import ProjectRestore from "./features/RestoreProject/ProjectRestore";
 import { useProjectRole } from "./hooks/useProjectRole";
+import MessageUi from "./components/Message/MessageUi";
 const App = () => {
   <ProgressBar />;
   useTheme();
@@ -46,7 +47,7 @@ const App = () => {
           <Route path="/signup" element={<SignupPage />} />
         </Route>
 
-
+        <Route path="/messages" element={<MessageUi/>}/>
           <Route path="/join/:token" element={<Join_InvitePage />} />
         <Route element={<ProtectedRoute />}>
           <Route path="/dashboard" element={<Dashboard />} />
@@ -62,6 +63,7 @@ const App = () => {
           <Route path="/projects/:project_id/invite" element={<InvitePage />} />
           <Route path="/teams/:id/Projectmembers" element={<TeamList />} />
           <Route path="/users/:id" element={<UserProfileEdit />} />
+          
         </Route>
         <Route path="*" element={<div>404 Not Found</div>} />
 
