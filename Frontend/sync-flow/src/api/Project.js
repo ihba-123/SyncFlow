@@ -51,6 +51,12 @@ export const restoreProject = async (project_id) => {
   return res.data;
 }
 
+//Update projects 
+export const updateProject = async (project_id) => {
+  const res = await api.post(`projects/${project_id}/update/`)
+  return res.data;
+}
+
 //Remove memeber from project
 export const removeMember = async (project_id, user_id) => {
   const res = await api.post(`projects/${project_id}/remove/${user_id}/`, {

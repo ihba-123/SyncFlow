@@ -37,13 +37,12 @@ class InviteView(APIView):
         # Logic for target user
         user_id = serializer.validated_data.get("user_id")
         invited_email = serializer.validated_data.get("invited_email")
-
         if user_id:
             invited_user = get_object_or_404(User, id=user_id)
             invited_email = invited_user.email
 
         try:
-            invite_url, token = create_project_invite(
+            invite_url, token , expires_days = create_project_invite(
                 project=project,
                 created_by=request.user,
                 role=serializer.validated_data["role"],
@@ -52,8 +51,9 @@ class InviteView(APIView):
             )
             return Response({
                 "message": "Invite created",
+                "invite_url":invite_url,
+                "expires_days":expires_days,
                 "token": token,
-                "invite_url": invite_url
             }, status=status.HTTP_201_CREATED)
         except ValidationError as e:
             return Response({"detail": list(e.messages)[0] if hasattr(e, 'messages') else str(e)}, status=400)

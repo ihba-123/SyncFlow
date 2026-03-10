@@ -40,7 +40,7 @@ def create_project_invite(
         if ProjectMember.objects.filter(project=project, user__email__iexact=invited_email).exists():
             raise ValidationError("This user is already a member of this project.")
 
-    # 2. Token Generation (Only once!)
+    # Token Generation (Only once!)
     raw_token = secrets.token_urlsafe(32)
     hashed_token = hashlib.sha256(raw_token.encode()).hexdigest()
 
@@ -63,7 +63,7 @@ def create_project_invite(
 )
 
     invite_url = f"http://localhost:5173/join/{raw_token}"
-    return invite_url, raw_token
+    return invite_url, raw_token , expires_days
 
 def use_invite(plain_token: str, user: User) -> Tuple[Project, Optional[any]]:
     clean_token = plain_token.strip()

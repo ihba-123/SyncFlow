@@ -77,7 +77,7 @@ export function ActivityBox() {
         {/* SCROLLABLE LIST AREA */}
         <div className="flex-1 overflow-y-auto custom-scrollbar px-5 py-6">
           <div className="relative space-y-8">
-            {/* Timeline Vertical Line */}
+         
             <div className="absolute left-[17px] top-1 bottom-1 w-[1.5px] bg-slate-100 dark:bg-slate-800" />
 
             {activities.map((activity, idx) => {

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { AlertCircle, Archive, Trash2, Trash } from "lucide-react";
+import { AlertCircle, Archive, Trash2, Trash, LogOut } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -19,6 +19,7 @@ import { useProjectRoleStore } from "../../stores/ProjectRoleStore";
 
 export function DangerZone({ projectId }) {
   const [showArchiveDialog, setShowArchiveDialog] = useState(false);
+  const [leaveProject, setLeaveProject] = useState(false);
   const [showSoftDeleteDialog, setShowSoftDeleteDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const queryClient = useQueryClient();
@@ -36,7 +37,7 @@ export function DangerZone({ projectId }) {
 
       await queryClient.invalidateQueries({ queryKey: ["projects"] });
       queryClient.removeQueries({ queryKey: ["projectMembers", id] });
-      queryClient.invalidateQueries({queryKey:["archivedProjects"]})
+      queryClient.invalidateQueries({ queryKey: ["archivedProjects"] });
 
       setShowSoftDeleteDialog(false);
       toast.success("Project moved to trash successfully!");
@@ -55,7 +56,7 @@ export function DangerZone({ projectId }) {
       queryClient.invalidateQueries({ queryKey: ["projects"] });
       queryClient.invalidateQueries({ queryKey: ["projectDetails"] });
       queryClient.invalidateQueries({ queryKey: ["activeProject"] });
-      queryClient.invalidateQueries({queryKey:["archivedProjects"]})
+      queryClient.invalidateQueries({ queryKey: ["archivedProjects"] });
       resetActiveProject();
       setShowDeleteDialog(false);
       toast.success("Project deleted permanently!");
@@ -87,6 +88,17 @@ export function DangerZone({ projectId }) {
 
           <div className="h-px bg-red-200 dark:bg-red-700 mb-3 sm:mb-4" />
 
+          {/* Leave project  */}
+          <button
+            onClick={() => setLeaveProject(true)}
+            className="w-full mb-2 sm:mb-3 h-14 sm:h-11.5 flex items-center justify-center gap-2 px-3 sm:px-4 py-2 sm:py-3 rounded-lg sm:rounded-xl bg-orange-100 dark:bg-orange-800 hover:bg-orange-200 dark:hover:bg-orange-700 text-orange-700 dark:text-orange-200 font-medium transition-colors text-xs sm:text-sm active:scale-95"
+          >
+            <LogOut size={19} className="flex-shrink-0" />
+            <span className="text-sm sm:text-sm">
+              {softDeleting ? "Leaving..." : "Leave Project"}
+            </span>
+          </button>
+
           {/* Soft Delete Button */}
           <button
             onClick={() => setShowSoftDeleteDialog(true)}
@@ -108,12 +120,39 @@ export function DangerZone({ projectId }) {
               {deleting ? "Deleting..." : "Delete Permanently"}
             </span>
           </button>
-
-          <p className="text-xs text-muted-foreground dark:text-gray-300 mt-3 sm:mt-4 italic">
-            Last modified: Today at 2:34 PM
-          </p>
         </div>
       ) : null}
+
+      {/* Leave project */}
+
+      <AlertDialog
+        open={leaveProject}
+        onOpenChange={setLeaveProject}
+      >
+        <AlertDialogContent className="rounded-2xl bg-white dark:bg-gray-800">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <LogOut
+                className="text-orange-600 dark:text-orange-400"
+                size={20}
+              />
+              Leave Project?
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-base dark:text-gray-300">
+              After leaving you are not able to join the project without admin approval!
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => handleSoftDelete(projectId)}
+              className="bg-orange-600 h-11 sm:h-9.5 hover:bg-orange-700 dark:bg-orange-700 dark:hover:bg-orange-600"
+            >
+              {softDeleting ? "Leaving..." : "Leave Project"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <AlertDialog
         open={showSoftDeleteDialog}

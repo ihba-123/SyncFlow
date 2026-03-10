@@ -11,6 +11,7 @@ const InvitePageDetail = ({
   Check,
   datas,
 }) => {
+  console.log(datas);
   return (
     <div>
       <AnimatePresence>
@@ -65,7 +66,7 @@ const InvitePageDetail = ({
                         Token
                       </span>
                       <span className="text-xs font-mono font-bold dark:text-slate-300">
-                        {datas.token}
+                        {datas.token.slice(0, 10) + "...."+datas.token.slice(11,15)}
                       </span>
                     </div>
                     <div className="p-4 rounded-2xl bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/5">
