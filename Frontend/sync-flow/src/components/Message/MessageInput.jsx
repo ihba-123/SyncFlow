@@ -1,5 +1,3 @@
-'use client';
-
 import { useState, useRef } from 'react';
 import { Paperclip, Mic, Smile, Send, X } from 'lucide-react';
 

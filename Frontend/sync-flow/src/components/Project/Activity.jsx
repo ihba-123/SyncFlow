@@ -1,5 +1,3 @@
-'use client'
-
 import React from 'react'
 import { ChevronRight, FileText, MessageSquare, Trash2, Plus, CheckCircle2, User } from 'lucide-react'
 import { cn } from '../../utils/utils'

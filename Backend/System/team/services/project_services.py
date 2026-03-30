@@ -1,113 +1,119 @@
 from django.db import transaction
-from django.core.exceptions import ValidationError,PermissionDenied
-from ..models import Project , ActivityLog , ProjectMember
+from django.core.exceptions import ValidationError, PermissionDenied
+from ..models import Project, ActivityLog, ProjectMember
 from chatapp.models import ChatRoom
-from rest_framework.exceptions import ValidationError , PermissionDenied
+from rest_framework.exceptions import ValidationError, PermissionDenied
 from django.shortcuts import get_object_or_404
 from ..serializers import CreateProjectSerializer
-from activitylog.activity.services import log_activity
+from activitylog.activity.services import ActivityAction, log_activity
 
+# Channels imports
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
+
+def broadcast_project_update(project_id, action, data=None):
+    """Helper to send WebSocket messages to the project group."""
+    channel_layer = get_channel_layer()
+    async_to_sync(channel_layer.group_send)(
+        f"project_{project_id}",
+        {
+            "type": "project_update",
+            "data": {
+                "action": action,
+                "project_id": project_id,
+                **(data or {})
+            }
+        }
+    )
 
 def project_create(name:str, description:str ,created_by ,is_solo:bool=True , image=None )->Project:
-
-  if not name:
-    raise ValidationError("Name of the project must be define")
+    if not name:
+        raise ValidationError("Name of the project must be define")
   
-  with transaction.atomic():
-    chat_room = None
-    if not is_solo:
-      chat_room = ChatRoom.objects.create(
-      name=f"{name} Chat",
-      is_group=True,      
-      admin=created_by      
-       )
-    
-    project = Project.objects.active().create(
-      name=name,
-      description=description,
-      is_solo=is_solo,
-      created_by=created_by,
-      chat_room=chat_room,
-      image=image,
-    )
-  
+    with transaction.atomic():
+        chat_room = None
+        if not is_solo:
+            chat_room = ChatRoom.objects.create(
+                name=f"{name} Chat",
+                is_group=True,      
+                admin=created_by      
+            )
+        
+        project = Project.objects.active().create(
+            name=name,
+            description=description,
+            is_solo=is_solo,
+            created_by=created_by,
+            chat_room=chat_room,
+            image=image,
+        )
 
-    ProjectMember.objects.create(
-      project=project,
-      user=created_by,
-      role='admin',
-    )
-
-    if chat_room:
-        chat_room.add_participant(created_by)
-
-    
-    created_by.last_active_project = project
-    created_by.save(update_fields=["last_active_project"])
-
-    log_activity(
+        ProjectMember.objects.create(
             project=project,
             user=created_by,
-            action="project_created",
+            role='admin',
+        )
+
+        if chat_room:
+            chat_room.add_participant(created_by)
+
+        created_by.last_active_project = project
+        created_by.save(update_fields=["last_active_project"])
+
+        log_activity(
+            project=project,
+            user=created_by,
+            action_type=ActivityAction.PROJECT_CREATED,
             details=f"Project '{name}' created as {'solo' if is_solo else 'team'}"
         )
 
-  return project
-
-
+    return project
 
 def project_update(*,user, project_id:int , data:dict , file=None )->Project:
-
     project = get_object_or_404(Project.objects.active(),id=project_id)
 
     if project.is_solo == True:
-      if project.created_by != user:
-        raise PermissionDenied("You are not the creator of this project.")
-    
+        if project.created_by != user:
+            raise PermissionDenied("You are not the creator of this project.")
     else:
-      member = ProjectMember.objects.filter(
-        project=project,
-        user=user
-        ).first()
-      
-      if not member:
-        raise PermissionDenied("You are not a member of this project.")
-
-      if member.role != 'admin':
-        raise PermissionDenied("You are not an admin of this project.")
+        member = ProjectMember.objects.filter(project=project, user=user).first()
+        if not member:
+            raise PermissionDenied("You are not a member of this project.")
+        if member.role != 'admin':
+            raise PermissionDenied("You are not an admin of this project.")
     
-      serializer = CreateProjectSerializer(data=data)
-      serializer.is_valid(raise_exception=True)
+    serializer = CreateProjectSerializer(data=data)
+    serializer.is_valid(raise_exception=True)
 
-         
-      # Manually assign validated fields
-      project.name = serializer.validated_data['name']
-      project.description = serializer.validated_data['description']
+    project.name = serializer.validated_data['name']
+    project.description = serializer.validated_data['description']
 
-      if file and 'image' in file:
-         project.image = file['image']
-      project.save()
-
+    if file and 'image' in file:
+        project.image = file['image']
+    
+    project.save()
 
     log_activity(
         project=project,
         user=user,
-        action="project_updated",
-        details=f"Project '{project.name}' updated. Image updated: {bool(file)}"
+        action_type=ActivityAction.PROJECT_UPDATED,
+        details=f"Project '{project.name}' updated."
     )
+
+    # --- WEBSOCKET BROADCAST ---
+    broadcast_project_update(project.id, "project_updated", {
+        "name": project.name,
+        "description": project.description
+    })
 
     return project
 
-
-#Restore
 def project_soft_delete(*, user, project_id: int) -> Project:
-    
     project = get_object_or_404(Project.objects.active(), id=project_id)
 
     if project.is_solo:
         if project.created_by != user:
             raise PermissionDenied("Only the creator can delete this solo project.")
-
     else:
         member = ProjectMember.objects.filter(user=user, project=project).first()
         if not member:
@@ -115,18 +121,22 @@ def project_soft_delete(*, user, project_id: int) -> Project:
         if member.role != "admin":
             raise PermissionDenied("Only admin can delete this project.")
 
-    # Soft delete
     with transaction.atomic():
         project.is_deleted = True
         project.save()
 
-        # Activity log
         log_activity(
             project=project,
             user=user,
-            action="project_deleted",
+            action_type=ActivityAction.PROJECT_DELETED,
             details=f"Project '{project.name}' soft deleted"
         )
+
+    # --- WEBSOCKET BROADCAST ---
+    broadcast_project_update(project.id, "project_archived", {  
+        "message": "This project has been moved to trash.",
+        "redirect": True
+    })
 
     return project
 
@@ -150,13 +160,14 @@ def project_restore(*, user, project_id: int) -> Project:
         log_activity(
             project=project,
             user=user,
-            action="project_restored",
+            action_type=ActivityAction.PROJECT_RESTORED,
             details=f"Project '{project.name}' restored"
         )
 
+    # --- WEBSOCKET BROADCAST ---
+    broadcast_project_update(project.id, "project_restored")
+
     return project
-
-
 
 
 

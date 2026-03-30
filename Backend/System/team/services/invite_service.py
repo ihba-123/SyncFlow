@@ -5,18 +5,25 @@ from typing import Tuple, Optional
 from django.db import transaction, IntegrityError
 from django.core.exceptions import ValidationError, PermissionDenied
 from django.utils import timezone
-from team.models import Project, Invite, ProjectMember, ActivityLog
-from authentication.models import User
-from activitylog.activity.services import log_activity
 
+# Channels imports
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
+
+from team.models import Project, Invite, ProjectMember
+from authentication.models import User
+from activitylog.activity.services import ActivityAction, log_activity
 
 def is_admin(project: Project, user: User) -> bool:
     return ProjectMember.objects.filter(project=project, user=user, role='admin').exists()
+
 
 def project_write_permission(project: Project, user: User):
     member = ProjectMember.objects.filter(project=project, user=user).first()
     if not member or member.role == 'viewer':
         raise PermissionDenied("You do not have permission to modify this project.")
+    
+    
 
 def create_project_invite(
     project: Project,
@@ -24,8 +31,7 @@ def create_project_invite(
     role: str,
     expires_days: int = 3,
     invited_email: str = None
-) -> Tuple[str, str]:
-    # 1. Permission & Validation Checks
+) -> Tuple[str, str, int]:
     if not is_admin(project, created_by):
         raise PermissionDenied("You do not have permission to invite members.")
 
@@ -40,11 +46,9 @@ def create_project_invite(
         if ProjectMember.objects.filter(project=project, user__email__iexact=invited_email).exists():
             raise ValidationError("This user is already a member of this project.")
 
-    # Token Generation (Only once!)
     raw_token = secrets.token_urlsafe(32)
     hashed_token = hashlib.sha256(raw_token.encode()).hexdigest()
 
-    # 3. Database Operations
     with transaction.atomic():
         Invite.objects.create(
             project=project,
@@ -58,12 +62,29 @@ def create_project_invite(
         log_activity(
             project=project,
             user=created_by,
-            action="member_added",
+            action_type=ActivityAction.INVITE_CREATED,
             details=f"Invite created for {invited_email or 'anyone'} as {role}"
-)
+        )
+
+    # --- BROADCAST NEW INVITE ---
+    channel_layer = get_channel_layer()
+    async_to_sync(channel_layer.group_send)(
+        f"project_{project.id}",
+        {
+            "type": "project_update",
+            "data": {
+                "action": "invite_created",
+                "invited_email": invited_email,
+                "role": role,
+                "created_by": created_by.email
+            }
+        }
+    )
 
     invite_url = f"http://localhost:5173/join/{raw_token}"
-    return invite_url, raw_token , expires_days
+    return invite_url, raw_token, expires_days
+
+
 
 def use_invite(plain_token: str, user: User) -> Tuple[Project, Optional[any]]:
     clean_token = plain_token.strip()
@@ -71,7 +92,6 @@ def use_invite(plain_token: str, user: User) -> Tuple[Project, Optional[any]]:
 
     with transaction.atomic():
         try:
-            print(f"Searching for hash: {hashed}")
             invite = Invite.objects.select_for_update().select_related("project").get(token=hashed)
         except Invite.DoesNotExist:
             raise ValidationError("The invite link is invalid or has been revoked.")
@@ -85,6 +105,7 @@ def use_invite(plain_token: str, user: User) -> Tuple[Project, Optional[any]]:
         if invite.project.is_solo:
             raise ValidationError("This is a private solo project.")
 
+        # If already a member, just return
         if ProjectMember.objects.filter(project=invite.project, user=user).exists():
             return invite.project, getattr(invite.project, 'chat_room', None)
 
@@ -96,7 +117,7 @@ def use_invite(plain_token: str, user: User) -> Tuple[Project, Optional[any]]:
                 invite_used=invite
             )
         except IntegrityError:
-            raise ValidationError("Error joining the project. Please try again.")
+            raise ValidationError("Error joining the project.")
 
         invite.is_used = True
         invite.save(update_fields=["is_used"])
@@ -108,8 +129,23 @@ def use_invite(plain_token: str, user: User) -> Tuple[Project, Optional[any]]:
         log_activity(
             project=invite.project,
             user=user,
-            action="member_added",
+            action_type=ActivityAction.MEMBER_ADDED,
             details=f"{user.email} joined via invite"
         )
+
+    # --- BROADCAST NEW MEMBER JOINED ---
+    channel_layer = get_channel_layer()
+    async_to_sync(channel_layer.group_send)(
+        f"project_{invite.project.id}",
+        {
+            "type": "project_update",
+            "data": {
+                "action": "member_joined",
+                "user_id": user.id,
+                "email": user.email,
+                "role": invite.role
+            }
+        }
+    )
 
     return invite.project, chat_room

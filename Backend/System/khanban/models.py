@@ -8,11 +8,11 @@ from decimal import Decimal
 from django.contrib.postgres.indexes import GinIndex
 from .utils.managers import TaskQuerySet
 
-# Task (Kanban)
 class Task(models.Model):
     STATUS_CHOICES = (
         ('todo', 'To Do'),
         ('in_progress', 'In Progress'),
+        ('review', 'Review'),  # Added Review Column
         ('done', 'Done'),
     )
     PRIORITY_CHOICES = (
@@ -21,34 +21,44 @@ class Task(models.Model):
         ('high', 'High'),
     )
 
-    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name="tasks")
+    project = models.ForeignKey('team.Project', on_delete=models.CASCADE, related_name="tasks")
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True, null=True)
-    assigned_to = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    assigned_to = models.ForeignKey('authentication.User', on_delete=models.SET_NULL, null=True, blank=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='todo')
     priority = models.CharField(max_length=20, choices=PRIORITY_CHOICES, default='low')
+    
+    progress_percentage = models.PositiveIntegerField(default=0) # 0 to 100
+    
     due_date = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    order = models.DecimalField(max_digits=20, decimal_places=10, default=0 , db_index=True)
+    order = models.DecimalField(max_digits=20, decimal_places=10, default=0, db_index=True)
     tags = models.CharField(max_length=255, blank=True, null=True)
-    objects = TaskQuerySet.as_manager()
 
     class Meta:
         indexes = [
-            models.Index(fields=['project','status']),
+            models.Index(fields=['project', 'status']),
             models.Index(fields=['assigned_to']),
+            models.Index(fields=['priority']), # For Filtering
             GinIndex(fields=['title'], opclasses=['gin_trgm_ops'], name='task_title_trgm_idx'),
-            GinIndex(fields=['description'], opclasses=['gin_trgm_ops'], name='task_desc_trgm_idx'),
-            GinIndex(fields=['tags'], opclasses=['gin_trgm_ops'], name='task_tags_trgm_idx'),
         ]
 
     def clean(self):
+        # Assigned User Validation: Ensure user is part of the project
+        if self.assigned_to and not self.project.is_solo:
+            from team.models import ProjectMember
+            if not ProjectMember.objects.filter(project=self.project, user=self.assigned_to).exists():
+                raise ValidationError("Assigned user must be a member of this project.")
+        
         if self.due_date and self.due_date < timezone.now():
             raise ValidationError("Due date cannot be in the past.")
 
-    def __str__(self):
-        return f"{self.title} ({self.status})"
+    def save(self, *args, **kwargs):
+        # Auto-set progress if status is 'done'
+        if self.status == 'done':
+            self.progress_percentage = 100
+        super().save(*args, **kwargs)
 
 
 # Task Comment

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Shield,
   User,
@@ -12,19 +12,21 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import InvitePageDetail from "./InvitePageDetail";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { inviteLink } from "../../api/invite_join";
 import { useParams } from "react-router-dom";
 import { useProject } from "../../hooks/useProject";
+import { toast } from "react-toastify";
 
 const InvitePage = () => {
   const [selectedRole, setSelectedRole] = useState("member");
-  const [showModal, setShowModal] = useState(false); // Fixed: Initialize with false
+  const [showModal, setShowModal] = useState(false);
   const [copied, setCopied] = useState(false);
   const [datas, setDatas] = useState(null);
-  
+
   const { project } = useProject();
   const { project_id } = useParams();
+  const queryClient = useQueryClient();
 
   const roles = [
     { id: "admin", icon: <Shield size={14} /> },
@@ -48,7 +50,7 @@ const InvitePage = () => {
   const handleInvite = () => {
     // Ensure we have an ID before firing the mutation
     const targetId = project_id || project?.id;
-    
+
     if (!targetId) {
       console.error("No project ID found in URL or Context");
       return;
@@ -59,6 +61,26 @@ const InvitePage = () => {
       role: selectedRole,
     });
   };
+
+  useEffect(() => {
+    if (!project_id) return;
+
+    const socket = new WebSocket(
+      `ws://localhost:8000/ws/projects/${project_id}/`
+    );
+
+    socket.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      
+      if (data.action === "member_joined") {
+        toast.success(`${data.email} joined as ${data.role}!`);
+        // Refresh the member list automatically
+        queryClient.invalidateQueries({ queryKey: ["members", project_id] });
+      }
+    };
+
+    return () => socket.close();
+  }, [project_id, queryClient]);
 
   const handleCopy = () => {
     if (datas?.invite_url) {

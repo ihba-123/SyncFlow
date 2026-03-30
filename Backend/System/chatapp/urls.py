@@ -11,6 +11,8 @@ from .view.profile_views import ProfileAPIView
 from .view.user_status_view import AllUsersStatusView
 from .view.user_search_view import UserSearchView
 from .view.Profile_delete import ProfilePhotoRemoveView
+
+
 urlpatterns = [
     path('chatrooms/create/', ChatRoomCreateView.as_view(), name='chatroom-create'),
     path('message-list/<int:room_id>/', MessageListView.as_view(), name='message-list'),

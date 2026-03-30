@@ -1,46 +1,70 @@
 import React, { useEffect, useState } from "react";
-import { FiCopy, FiUserPlus, FiMoreVertical } from "react-icons/fi";
+import { FiCopy, FiMoreHorizontal, FiUserMinus } from "react-icons/fi";
 import { useTeamList } from "./TeamListLogic";
 import { TeamViewSkeleton } from "../../components/skeleton/ProjectMemberSkeleton";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../../hooks/Auth";
 import { useProjectRoleStore } from "../../stores/ProjectRoleStore";
 import { useActiveProjectStore } from "../../stores/ActiveProject";
+import { removeMember } from "../../api/Project";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 const TeamView = () => {
   const [showToast, setShowToast] = useState(false);
+  const [openMenuId, setOpenMenuId] = useState(null);
   const { id } = useParams();
-  const { data, isLoading, isError } = useTeamList(id); 
+  const { data, isLoading, isError } = useTeamList(id);
   const { setRole, isAdmin } = useProjectRoleStore();
   const { data: authData } = useAuth();
   const { activeProject } = useActiveProjectStore();
+  const navigate = useNavigate();
+
+  const resetActiveProject = useActiveProjectStore((state) => state.reset);
 
   
-const invites = data?.invites || [];
-const joined_members = data?.joined_members || [];
-const {role} = useProjectRoleStore()
-console.log(role)
-  console.log(joined_members)
+  const invites = data?.invites || [];
+  const joined_members = data?.joined_members || [];
+  const { role } = useProjectRoleStore();
+
   useEffect(() => {
     if (!joined_members.length || !authData?.id) return;
 
     const myRole = joined_members.find(
       (member) => member.id === authData.id,
     )?.role;
-    if (myRole === "Admin" || myRole === "Member" ) {
-      setRole(myRole,id);
+    if (myRole === "Admin" || myRole === "Member") {
+      setRole(myRole, id);
     }
   }, [joined_members, authData, setRole]);
 
+  //Remove member from project
+  const queryClient = useQueryClient();
 
+  const removeMutation = useMutation({
+    mutationFn: ({ project_id, user_id }) => removeMember(project_id, user_id),
+    
+    onSuccess: () => {
+      resetActiveProject();
+      localStorage.removeItem("active-project-storage"); // extra safety
+      queryClient.removeQueries({ queryKey: ["projects"] });
+      queryClient.invalidateQueries({ queryKey: ["projectDetails"] });
+      queryClient.invalidateQueries({ queryKey: ["members", id] });
+      queryClient.invalidateQueries({ queryKey: ["activeProject"] });
+      queryClient.invalidateQueries({ queryKey: ["archivedProjects"] });
+      setOpenMenuId(null);
+    },
 
-
+    onError: (error) => {
+      console.error("Remove failed:", error);
+    },
+  });
 
   //Date formatting function
   const formatShortDate = (iso) => {
     const d = new Date(iso);
     return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
   };
+
   //Copy to the clipboard function
   const copyToClipboard = async (token) => {
     if (typeof token !== "string") return;
@@ -63,7 +87,7 @@ console.log(role)
     );
   }
 
-  if ( activeProject && activeProject.id === null) {
+  if (activeProject && activeProject.id === null) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-[#0a0c14] p-6">
         <div className="max-w-md w-full text-center">
@@ -79,14 +103,14 @@ console.log(role)
     );
   }
 
-
-
   return (
-    <div className="min-h-screen -mt-5  bg-[#f8fafc] dark:bg-[#020617]
-      dark:bg-[radial-gradient(at_top_left,_rgba(56,189,248,0.05),_transparent),radial-gradient(at_bottom_right,_rgba(139,92,246,0.05),_transparent)] text-slate-900  dark:text-slate-100">
+    <div
+      className="min-h-screen -mt-5  bg-[#f8fafc] dark:bg-[#020617]
+      dark:bg-[radial-gradient(at_top_left,_rgba(56,189,248,0.05),_transparent),radial-gradient(at_bottom_right,_rgba(139,92,246,0.05),_transparent)] text-slate-900  dark:text-slate-100"
+    >
       {/* Toast notification */}
       {showToast && (
-        <div className="fixed top-5 left-1/2 -translate-x-1/2 z-50">
+        <div className="fixed bottom-15 left-1/2 -translate-x-1/2 z-50">
           <div className="flex items-center gap-2 px-6 py-3 rounded-full bg-card/10 backdrop-blur-sm border  border-black/20 dark:border-white/10 border-l-0 transition-all duration-300 dark:text-white text-gray-700 shadow-lg">
             <FiCopy size={16} />
             <span className="text-sm  text-gray-700 dark:text-gray-200 font-bold">
@@ -112,7 +136,6 @@ console.log(role)
               Team {isAdmin && "& Invites"}
             </h1>
           </div>
-
         </div>
 
         <div className="mb-14">
@@ -134,17 +157,20 @@ console.log(role)
                   <div className="relative">
                     <div className="h-12 w-12 sm:h-14 sm:w-14 overflow-hidden rounded-full ring-1 ring-slate-300 dark:ring-white/10">
                       <img
-                        src={member.photo ||  `https://ui-avatars.com/api/?name=${encodeURIComponent(member.name)}&background=random&color=fff&size=128`}
+                        src={
+                          member.photo ||
+                          `https://ui-avatars.com/api/?name=${encodeURIComponent(member.name)}&background=random&color=fff&size=128`
+                        }
                         alt={member.name}
                         className="h-full w-full object-cover"
                       />
                     </div>
-                    {member.is_online? (
+                    {member.is_online ? (
                       <span
                         className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full
                         bg-emerald-500 border-2 border-white dark:border-[#0a0c14]"
                       />
-                    ):(
+                    ) : (
                       <span
                         className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full
                         bg-gray-500 border-2 border-white dark:border-[#0a0c14]"
@@ -179,15 +205,82 @@ console.log(role)
                     </div>
                   </div>
 
-                  <button
-                    className="p-2 rounded-lg text-slate-500
-                    hover:bg-slate-100 shadow-sm
-                    dark:hover:bg-white/5 transition"
-                  >
-                    <FiMoreVertical size={18} />
-                  </button>
+                  {role == "Admin" && (
+                    <div className="relative">
+                      <button
+                        onClick={() =>
+                          setOpenMenuId(
+                            openMenuId === member.id ? null : member.id,
+                          )
+                        }
+                        className={`
+                                p-1.5 rounded-md transition-all duration-150
+                              text-slate-400 hover:text-slate-600
+                              hover:bg-slate-100 dark:hover:bg-slate-700/60
+                              dark:text-slate-500 dark:hover:text-slate-300
+                              ${openMenuId === member.id ? "bg-slate-100 dark:bg-slate-700/60 text-slate-600 dark:text-slate-300" : ""}
+              `}
+                      >
+                        <FiMoreHorizontal size={15} />
+                      </button>
+
+                      {/* Dropdown Menu */}
+                      {openMenuId === member.id && (
+                        <>
+                          {/* Backdrop */}
+                          <div
+                            className="fixed inset-0 z-40"
+                            onClick={() => setOpenMenuId(null)}
+                          />
+
+                          <div
+                            className="
+                                absolute right-0 top-full mt-1 z-50
+                                w-48 py-1
+                                bg-white dark:bg-slate-800
+                                border border-slate-200 dark:border-slate-700
+                                rounded-lg shadow-lg shadow-slate-200/80 dark:shadow-black/30
+                                origin-top-right
+                                animate-in fade-in zoom-in-95 duration-100
+                              "
+                          >
+                            {/* Optional: section label */}
+                            <div className="px-3 py-1.5 mb-0.5">
+                              <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                                Member actions
+                              </span>
+                            </div>
+
+                            <div className="h-px bg-slate-100 dark:bg-slate-700 mb-1" />
+
+                            <button
+                              onClick={() => {
+                                removeMutation.mutate({
+                                  project_id: id,
+                                  user_id: member.id,
+                                });
+                              }}
+                              className="
+    w-full flex items-center gap-2.5 px-3 py-2 text-sm
+    text-red-500 dark:text-red-400
+    hover:bg-red-50 dark:hover:bg-red-500/10
+    transition-colors duration-100
+  "
+                            >
+                              <FiUserMinus size={14} />
+                              <span className="font-medium">
+                                {removeMutation.isPending
+                                  ? "Removing..."
+                                  : "Remove member"}
+                              </span>
+                            </button>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  )}
                 </div>
-              </div>  
+              </div>
             ))}
           </div>
         </div>
@@ -223,9 +316,9 @@ console.log(role)
                         <div
                           className={`ml-3 px-2 py-0.5 text-xs font-semibold rounded-full 
                       ${
-                      invite.is_used
-                      ? "bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-300"
-                      : "bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300"
+                        invite.is_used
+                          ? "bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-300"
+                          : "bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300"
                       }`}
                         >
                           {invite.is_used ? "Used" : "Unused"}
@@ -270,13 +363,3 @@ console.log(role)
 };
 
 export default TeamView;
-
-
-
-
-
-
-
-
-
-

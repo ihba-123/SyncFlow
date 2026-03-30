@@ -1,21 +1,22 @@
-from typing import Tuple
-from team.models import Project, Invite, ProjectMember, ActivityLog
-from authentication.models import User
-from django.core.exceptions import ValidationError, PermissionDenied
+from typing import Optional
+from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import transaction
-from ..services.invite_service import project_write_permission
-from ..models import ActivityLog
-import logging  
-from activitylog.activity.services import log_activity
+from django.shortcuts import get_object_or_404
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
+import logging
+
+from ..models import Project, ProjectMember, Invite
+from activitylog.activity.services import log_activity , ActivityAction
+from authentication.models import User
 
 logger = logging.getLogger(__name__)
 
-def is_admin(project: Project, user) -> bool:
+
+def is_admin(project: Project, user: User) -> bool:
     return ProjectMember.objects.filter(project=project, user=user, role='admin').exists()
 
 def remove_member(project: Project, acting_user: User, target_user: User) -> None:
-
-    # Check membership
     member = ProjectMember.objects.filter(project=project, user=target_user).first()
     if not member:
         raise ValidationError("User is not a member of this project.")
@@ -23,78 +24,117 @@ def remove_member(project: Project, acting_user: User, target_user: User) -> Non
     if project.is_solo:
         raise ValidationError("Cannot leave or remove members from a solo project.")
 
-    
+    # --- THE "LAST ADMIN" PROTECTION ---
+    if member.role == 'admin':
+        admin_count = ProjectMember.objects.filter(project=project, role='admin').count()
+        if admin_count <= 1:
+            raise ValidationError(
+                "You are the last admin. You must promote another member to admin before leaving or being removed."
+            )
+    # ------------------------------------
+
+    # User leaving themselves
     if acting_user == target_user:
         member.delete()
+        if target_user.last_active_project == project:
+            target_user.last_active_project = None
+            target_user.save(update_fields=["last_active_project"])
+
         log_activity(
             project=project,
             user=acting_user,
-            action='member_left',
+            action_type='member_left',
             details=f"{acting_user.email} left the project"
         )
+        # Add WebSocket broadcast for leaving too! (Optional but recommended)
         return
 
-    
+    # Admin removing someone else
     if not is_admin(project, acting_user):
         raise PermissionDenied("Only admins can remove other members.")
 
-    
-    if acting_user == target_user:
-        raise PermissionDenied("Admins cannot remove themselves.")
-
-    
+    # If an admin is trying to remove another admin
     if member.role == 'admin':
-        raise PermissionDenied("Admins cannot remove other admins.")
+        raise PermissionDenied("Admins cannot remove other admins. Demote them first.")
 
-    
     member.delete()
+    if target_user.last_active_project == project:
+        target_user.last_active_project = None
+        target_user.save(update_fields=["last_active_project"])
+
+    # Broadcast removal via WebSocket
+    channel_layer = get_channel_layer()
+    async_to_sync(channel_layer.group_send)(
+        f"project_{project.id}",
+        {
+            "type": "project_update",
+            "data": {
+                "action": "member_removed",
+                "target_user_id": target_user.id,
+                "target_email": target_user.email,
+                "acting_user": acting_user.email
+            }
+        }
+    )
+
     log_activity(
         project=project,
         user=acting_user,
-        action='member_removed',
+        action_type=ActivityAction.MEMBER_REMOVED,
         details=f"{acting_user.email} removed {target_user.email}"
     )
 
-def project_delete(project: Project, user: User):
 
+
+
+def project_delete(project_id: int, user: User):
+    # 1. Fetch the project fresh
+    project = get_object_or_404(Project, id=project_id)
+
+    # 2. Check permissionsproje
     try:
-        current_member = project.members.get(user=user)
+        current_member = ProjectMember.objects.get(project=project, user=user)
     except ProjectMember.DoesNotExist:
         raise PermissionDenied("You are not a member of this project.")
 
     if current_member.role.lower() != "admin":
-        logger.warning(f"User {user.email} attempted to delete project {project.name} without admin rights.")
         raise PermissionDenied("Only an Admin can delete this project.")
 
+    project_name = project.name  # Save name for logs and broadcasts
+
     with transaction.atomic():
-        
-        if project.is_solo:
-            owner = project.members.first().user
-            if owner != user:
-                raise PermissionDenied("You do not own this solo project.")
-
-            log_activity(
-                project=project,
-                user=user,
-                action='project_deleted',
-                details=f"Solo project '{project.name}' deleted by owner {user.email}"
-            )
-            project.members.all().delete()
-            project.delete()
-            logger.info(f"Solo project {project.name} deleted by owner {user.email}")
-            return
-
+        # 3. Log the deletion
         log_activity(
             project=project,
             user=user,
-            action='project_deleted',
-            details=f"Team project '{project.name}' deleted by admin {user.email}"
+            action_type=ActivityAction.PROJECT_DELETED,
+            details=f"Project '{project_name}' deleted by {user.email}"
         )
-        project.members.all().delete()
-        project.invites.all().delete()
-        if project.chat_room:
-            project.chat_room.messages.all().delete()
-            project.chat_room.delete()
-        project.delete()
-        logger.info(f"Team project {project.name} deleted by admin {user.email}")
 
+        # 4. Reset last_active_project for all members safely
+        User.objects.filter(last_active_project=project).update(last_active_project=None)
+
+        # 5. Delete related objects using filter (safe)
+        ProjectMember.objects.filter(project_id=project_id).delete()
+        Invite.objects.filter(project_id=project_id).delete()
+
+        # 6. Delete chat room if exists
+        if hasattr(project, 'chat_room') and project.chat_room:
+            project.chat_room.delete()
+
+        # 7. Finally, delete the project itself
+        project.delete()
+        logger.info(f"Project id={project_id} deleted successfully.")
+
+    # 8. Broadcast deletion over WebSocket
+    channel_layer = get_channel_layer()
+    async_to_sync(channel_layer.group_send)(
+        f"project_{project_id}",
+        {
+            "type": "project_update",
+            "data": {
+                "action": ActivityAction.PROJECT_DELETED,
+                "details": f"Project '{project_name}' has been deleted."
+            }
+        }
+    )

@@ -51,13 +51,15 @@ const Project = () => {
   } = useInfiniteQuery({
     queryKey: ["projects"],
     queryFn: ({ pageParam = 1 }) => projectList(pageParam),
+     refetchInterval: 3000,
     getNextPageParam: (lastPage) => {
       if (!lastPage.data.next) return undefined;
       return new URL(lastPage.data.next).searchParams.get("page");
     },
-    select: (data) => data.pages.flatMap((page) => page.data.results),
-    staleTime: 5 * 60 * 1000,
-    refetchInterval: 5000,
+    select: (data) =>
+  data.pages
+    .flatMap((page) => page.data.results)
+    .filter((project) => !project.is_archived),
   });
 
   const soloProjects = projects?.filter((p) => p.is_solo) || [];

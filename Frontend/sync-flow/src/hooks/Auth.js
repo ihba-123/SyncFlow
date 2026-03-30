@@ -1,4 +1,3 @@
-// src/hooks/useAuth.js
 import { useQuery } from "@tanstack/react-query";
 import { getProfile } from "../api/auth";
 import { useAuthStore } from "../stores/AuthStore";

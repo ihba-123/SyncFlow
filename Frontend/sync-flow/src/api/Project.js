@@ -10,8 +10,6 @@ export const createProject = async (formData) => {
 };
     
 
-  
-    
 export const projectList = async (page=1) => {
   const data = await api.get(`projects/list/?page=${page}`)
   return data;
@@ -19,10 +17,15 @@ export const projectList = async (page=1) => {
 
 
 
+
 export const getProjectMembers = async (project_id) => {
+  if (!project_id || project_id === "undefined") {
+    return []; 
+  }
+
   const res = await api.get(`projects/${project_id}/invites/list/`);
   return res.data;
-}
+};
 
 
 // Delete projects 
@@ -64,3 +67,7 @@ export const removeMember = async (project_id, user_id) => {
   });
   return res.data;
 }
+
+
+
+

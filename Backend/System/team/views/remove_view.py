@@ -46,7 +46,7 @@ class ProjectPermanentDeleteView(APIView):
     def delete(self, request, project_id: int):
         try:
             project = get_object_or_404(Project, id=project_id)
-            project_delete(project, request.user)
+            project_delete(project.id, request.user)
             logger.info(f"Project {project.name} permanently deleted by {request.user.email}")
             return Response({"detail": "Project permanently deleted successfully."})
         except Exception as e:

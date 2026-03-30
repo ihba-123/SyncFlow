@@ -60,6 +60,8 @@ class InviteView(APIView):
         except Exception as e:
             logger.error(f"Invite creation error: {e}", exc_info=True)
             return Response({"detail": "Internal server error"}, status=500)
+        
+        
 
 class UseInviteView(APIView):
     permission_classes = [IsAuthenticated]

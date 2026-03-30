@@ -12,5 +12,13 @@ class TaskSerializer(serializers.ModelSerializer):
         if value is not None and value < 0:
             raise serializers.ValidationError("Order cannot be negative.")
         return value
-    
 
+
+    
+class CommentSerializer(serializers.ModelSerializer): 
+    user_email = serializers.ReadOnlyField(source='user.email')
+
+    class Meta:
+        model = TaskComment
+        fields = ['id', 'task', 'user', 'user_email', 'content', 'created_at']
+        read_only_fields = ['id', 'task', 'user', 'created_at']
