@@ -46,6 +46,7 @@ def check_task_permission(project, user):
     return ProjectMember.objects.filter(project=project, user=user).exists()
 
 
+
 # -------------------- REORDER TASK --------------------
 def reorder_task(task, project, new_status, prev_task_id, next_task_id, user):
     siblings = Task.objects.filter(project=project, status=new_status).exclude(id=task.id)

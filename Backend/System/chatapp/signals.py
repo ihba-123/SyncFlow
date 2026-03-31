@@ -1,7 +1,10 @@
 from .models import *
 from django.contrib.auth.signals import user_logged_in, user_logged_out
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save , post_delete
 from django.dispatch import receiver
+from .models import ChatRoom
+from team.models import ProjectMember
+
 import logging
 
 logger = logging.getLogger(__name__)
@@ -58,4 +61,24 @@ def set_default_profile_photo(sender,instance, created , **kwargs):
 
 
     
+# Signal to add a member to the project chat when they are added to the project
+@receiver(post_save, sender=ProjectMember)
+def add_member_to_project_chat(sender, instance, created, **kwargs):
+    if created:
+        project = instance.project
+        user = instance.user
+        
+        # Check if the project has a chat room assigned
+        if project.chat_room:
+            # Use your model's helper method to add the participant
+            project.chat_room.add_participant(user)
 
+
+# Signal to remove a member from the project chat when they are removed from the project
+@receiver(post_delete, sender=ProjectMember)
+def remove_member_from_project_chat(sender, instance, **kwargs):
+    project = instance.project
+    user = instance.user
+    
+    if project.chat_room:
+        project.chat_room.remove_participant(user)

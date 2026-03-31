@@ -28,7 +28,6 @@ def create_chat_room(user, participant_ids, name, is_group=False):
 
     if is_group:
         existing_group = ChatRoom.objects.filter(is_group=True , participants=user)
-        print("Existing group:", existing_group)
         for room in existing_group:
             room_participants = list(room.participants.values_list('id', flat=True))
             if sorted(room_participants) == sorted(participant_ids + [user.id]):
@@ -39,7 +38,7 @@ def create_chat_room(user, participant_ids, name, is_group=False):
                 }
     
     unique_ids = set(participant_ids)
-    print("Uniqueu Ids---->",unique_ids)
+    # print("Uniqueu Ids---->",unique_ids)
     
     if len(unique_ids) != len(participant_ids):
         return{

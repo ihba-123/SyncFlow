@@ -16,7 +16,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useActiveProjectStore } from "../../stores/ActiveProject";
 import { useProjectRoleStore } from "../../stores/ProjectRoleStore";
-import useProjectSocket from "../../hooks/useProjectSocket"; // WebSocket hook
+import useProjectSocket from "../../hooks/useProjectSocket";
 
 export function DangerZone({ projectId, currentUser }) {
   const [showSoftDeleteDialog, setShowSoftDeleteDialog] = useState(false);
@@ -28,7 +28,7 @@ export function DangerZone({ projectId, currentUser }) {
   const resetActiveProject = useActiveProjectStore((state) => state.reset);
   const { isAdmin } = useProjectRoleStore();
 
-  // WebSocket connection for real-time updates
+  // WebSocket — all currentUser accesses guarded with optional chaining
   useProjectSocket(projectId, (data) => {
     if (data.action === "project_deleted") {
       toast.info("This project was deleted!");
@@ -36,27 +36,34 @@ export function DangerZone({ projectId, currentUser }) {
       navigate("/dashboard");
     }
 
-    if (data.action === "member_removed" && data.target_user_id === currentUser.id) {
+    if (
+      data.action === "member_removed" &&
+      currentUser?.id &&
+      data.target_user_id === currentUser.id
+    ) {
       toast.info("You were removed from this project!");
       resetActiveProject();
       navigate("/dashboard");
     }
 
-    if(data.action === "project_restored") {
+    if (data.action === "project_restored") {
       toast.info("This project was restored!");
       queryClient.invalidateQueries({ queryKey: ["projects"] });
     }
 
-    if(data.action === "leave_project" && data.target_user_id === currentUser.id) {
+    if (
+      data.action === "leave_project" &&
+      currentUser?.id &&
+      data.target_user_id === currentUser.id
+    ) {
       toast.info("You left the project!");
       resetActiveProject();
       navigate("/dashboard");
     }
   });
 
-
-  // Leave Project / Soft Delete mutation
-  const { mutate: handleSoftDelete, isLoading: softDeleting } = useMutation({
+  // Leave / Soft-delete mutation
+  const { mutate: handleSoftDelete, isPending: softDeleting } = useMutation({
     mutationFn: () => softDeleteProject(projectId),
     onSuccess: () => {
       resetActiveProject();
@@ -72,9 +79,8 @@ export function DangerZone({ projectId, currentUser }) {
     },
   });
 
-
-  // Permanent Delete mutation
-  const { mutate: handlePermanentDelete, isLoading: deleting } = useMutation({
+  // Permanent delete mutation
+  const { mutate: handlePermanentDelete, isPending: deleting } = useMutation({
     mutationFn: () => deleteProject(projectId),
     onSuccess: () => {
       resetActiveProject();
@@ -89,12 +95,14 @@ export function DangerZone({ projectId, currentUser }) {
     },
   });
 
+  // Don't render anything for non-admins
   if (!isAdmin) return null;
 
   return (
     <div className="lg:sticky lg:top-8 lg:h-fit">
-      {/* Danger Zone Header */}
       <div className="rounded-lg sm:rounded-2xl border-2 dark:border-gray-800 border-gray-200 p-3 sm:p-4 md:p-6 shadow-lg">
+
+        {/* Header */}
         <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
           <div className="p-1.5 sm:p-2 rounded-lg bg-red-100 dark:bg-red-800 flex-shrink-0">
             <AlertCircle size={18} className="text-red-600 sm:size-5" />
@@ -103,40 +111,61 @@ export function DangerZone({ projectId, currentUser }) {
             Danger Zone
           </h3>
         </div>
+
         <p className="text-xs text-muted-foreground dark:text-gray-300 mb-3 sm:mb-4 leading-relaxed">
           These actions are permanent and irreversible. Please be careful.
         </p>
+
         <div className="h-px bg-red-200 dark:bg-red-700 mb-3 sm:mb-4" />
 
-        {/* Leave Project Button */}
+        {/* Leave Project */}
         <button
           onClick={() => setLeaveProject(true)}
-          className="w-full mb-2 sm:mb-3 h-14 sm:h-11.5 flex items-center justify-center gap-2 px-3 sm:px-4 py-2 sm:py-3 rounded-lg sm:rounded-xl bg-orange-100 dark:bg-orange-200 hover:bg-orange-200 dark:hover:bg-orange-300 text-orange-700 dark:text-black font-medium transition-colors text-xs sm:text-sm active:scale-95"
+          disabled={softDeleting}
+          className="w-full mb-2 sm:mb-3 h-11 flex items-center justify-center gap-2
+            px-3 sm:px-4 py-2 rounded-lg sm:rounded-xl
+            bg-orange-100 dark:bg-orange-200
+            hover:bg-orange-200 dark:hover:bg-orange-300
+            text-orange-700 dark:text-black
+            font-medium transition-colors text-xs sm:text-sm
+            active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <LogOut size={19} className="flex-shrink-0" />
+          <LogOut size={16} className="flex-shrink-0" />
           <span>{softDeleting ? "Leaving..." : "Leave Project"}</span>
         </button>
 
-        {/* Soft Delete / Move to Trash Button */}
+        {/* Move to Trash */}
         <button
           onClick={() => setShowSoftDeleteDialog(true)}
-          className="w-full mb-2 sm:mb-3 h-14 sm:h-11.5 flex items-center justify-center gap-2 px-3 sm:px-4 py-2 sm:py-3 rounded-lg sm:rounded-xl bg-red-700 hover:bg-red-500 text-white dark:text-orange-200 font-medium transition-colors text-xs sm:text-sm active:scale-95"
+          disabled={softDeleting}
+          className="w-full mb-2 sm:mb-3 h-11 flex items-center justify-center gap-2
+            px-3 sm:px-4 py-2 rounded-lg sm:rounded-xl
+            bg-red-700 hover:bg-red-500
+            text-white dark:text-orange-200
+            font-medium transition-colors text-xs sm:text-sm
+            active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <Trash size={19} className="flex-shrink-0" />
+          <Trash size={16} className="flex-shrink-0" />
           <span>{softDeleting ? "Moving..." : "Move to Trash"}</span>
         </button>
 
-        {/* Permanent Delete Button */}
+        {/* Delete Permanently */}
         <button
           onClick={() => setShowDeleteDialog(true)}
-          className="w-full flex items-center h-14 sm:h-11.5 justify-center gap-2 px-3 sm:px-4 py-2 sm:py-3 rounded-lg sm:rounded-xl bg-red-600 hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-800 text-white font-medium transition-colors text-xs sm:text-sm shadow-md active:scale-95"
+          disabled={deleting}
+          className="w-full h-11 flex items-center justify-center gap-2
+            px-3 sm:px-4 py-2 rounded-lg sm:rounded-xl
+            bg-red-600 hover:bg-red-700
+            dark:bg-red-700 dark:hover:bg-red-800
+            text-white font-medium transition-colors text-xs sm:text-sm
+            shadow-md active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <Trash2 size={19} className="flex-shrink-0" />
+          <Trash2 size={16} className="flex-shrink-0" />
           <span>{deleting ? "Deleting..." : "Delete Permanently"}</span>
         </button>
       </div>
 
-      {/* Leave Project Dialog */}
+      {/* ── Leave Project Dialog ─────────────────────────────────────────────── */}
       <AlertDialog open={leaveProject} onOpenChange={setLeaveProject}>
         <AlertDialogContent className="rounded-2xl bg-white dark:bg-gray-800">
           <AlertDialogHeader>
@@ -145,14 +174,16 @@ export function DangerZone({ projectId, currentUser }) {
               Leave Project?
             </AlertDialogTitle>
             <AlertDialogDescription className="text-base dark:text-gray-300">
-              After leaving, you will not be able to join the project without admin approval!
+              After leaving, you will not be able to join the project without admin approval.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel disabled={softDeleting}>Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => handleSoftDelete()}
-              className="bg-orange-600 h-11 sm:h-9.5 hover:bg-orange-700 dark:bg-orange-700 dark:hover:bg-orange-600"
+              disabled={softDeleting}
+              className="bg-orange-600 h-9 hover:bg-orange-700 dark:bg-orange-700 dark:hover:bg-orange-600
+                disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {softDeleting ? "Leaving..." : "Leave Project"}
             </AlertDialogAction>
@@ -160,7 +191,7 @@ export function DangerZone({ projectId, currentUser }) {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Soft Delete Dialog */}
+      {/* ── Move to Trash Dialog ─────────────────────────────────────────────── */}
       <AlertDialog open={showSoftDeleteDialog} onOpenChange={setShowSoftDeleteDialog}>
         <AlertDialogContent className="rounded-2xl bg-white dark:bg-gray-800">
           <AlertDialogHeader>
@@ -173,10 +204,12 @@ export function DangerZone({ projectId, currentUser }) {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel disabled={softDeleting}>Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => handleSoftDelete()}
-              className="bg-orange-600 h-11 sm:h-9.5 hover:bg-orange-700 dark:bg-orange-700 dark:hover:bg-orange-600"
+              disabled={softDeleting}
+              className="bg-orange-600 h-9 hover:bg-orange-700 dark:bg-orange-700 dark:hover:bg-orange-600
+                disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {softDeleting ? "Moving..." : "Move to Trash"}
             </AlertDialogAction>
@@ -184,7 +217,7 @@ export function DangerZone({ projectId, currentUser }) {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Permanent Delete Dialog */}
+      {/* ── Permanent Delete Dialog ──────────────────────────────────────────── */}
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <AlertDialogContent className="rounded-2xl bg-white dark:bg-gray-800">
           <AlertDialogHeader>
@@ -197,10 +230,12 @@ export function DangerZone({ projectId, currentUser }) {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => handlePermanentDelete()}
-              className="bg-red-600 h-11 sm:h-9.5 hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-800"
+              disabled={deleting}
+              className="bg-red-600 h-9 hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-800
+                disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {deleting ? "Deleting..." : "Delete Permanently"}
             </AlertDialogAction>

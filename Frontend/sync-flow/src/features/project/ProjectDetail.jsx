@@ -4,6 +4,8 @@ import { ActivityBox } from "../../components/Project/ActivityBox";
 import { DangerZone } from "../../components/Project/DangerZone";
 import { ProjectHeader } from "../../components/Project/ProjectHeader";
 import { TooltipProvider } from "@radix-ui/react-tooltip";
+import KanbanBoard from "../../components/Kanban/KanbanBoard";
+
 
 const ProjectDetail = () => {
   const { id, project_id } = useParams();
@@ -22,10 +24,13 @@ const ProjectDetail = () => {
         </TooltipProvider>
 
         {/* Kanban Board Container */}
-        <div className="flex-1 bg-white/50 dark:bg-zinc-900/20 rounded-3xl border border-zinc-200 dark:border-zinc-800/50 overflow-hidden">
-        {/* // The KanbanBoard component is responsible for fetching its own data and managing its state. */}
+        <div className="flex-1 w-[97%] bg-white/50 dark:bg-zinc-900/20 rounded border border-zinc-200 dark:border-zinc-800/50 overflow-hidden">
+       
+        <KanbanBoard />
         </div>
       </div>
+
+      
 
       {/* Sidebar: Danger Zone & Activity */}
       <div className="w-full lg:w-80 shrink-0 flex flex-col gap-4 sm:gap-6 md:gap-8">
@@ -34,8 +39,8 @@ const ProjectDetail = () => {
             <DangerZone projectId={activeProjectId} />
           )}
         </div>
+          <ActivityBox projectId={activeProjectId} />
 
-        <ActivityBox projectId={activeProjectId} />
       </div>
     </div>
   );
