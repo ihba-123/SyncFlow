@@ -22,381 +22,27 @@ import useProjectSocket from "../../hooks/useProjectSocket";
 import { useAuthStore } from "../../stores/AuthStore";
 import { useActiveProjectStore } from "../../stores/ActiveProject";
 import { CreateProject } from "../../features/project/CreateProject";
-
-const STATUS_ORDER = ["todo", "in_progress", "inreview", "done"];
-const STATUS_LABELS = {
-  todo: "To Do",
-  in_progress: "In Progress",
-  inprogress: "In Progress",
-  inreview: "Review",
-  done: "Done",
-};
-
-const STATUS_COLORS = {
-  todo: "#60a5fa",
-  in_progress: "#f59e0b",
-  inprogress: "#f59e0b",
-  inreview: "#a855f7",
-  done: "#10b981",
-};
-
-const PRIORITY_ORDER = ["low", "medium", "high"];
-const PRIORITY_LABELS = {
-  low: "Low",
-  medium: "Medium",
-  high: "High",
-};
-
-const PRIORITY_COLORS = {
-  low: "#38bdf8",
-  medium: "#f59e0b",
-  high: "#fb7185",
-};
-
-const toNumber = (value) => Number(value) || 0;
-
-const normalizeKey = (value) => {
-  if (value === null || value === undefined) return "";
-  return String(value)
-    .trim()
-    .toLowerCase()
-    .replace(/\s+/g, "_")
-    .replace(/-/g, "_");
-};
-
-const getLabel = (key, fallback = "Unknown") =>
-  STATUS_LABELS[key] || PRIORITY_LABELS[key] || fallback;
-
-const buildSeries = (items = [], order = [], colors = {}, labels = {}) => {
-  const map = new Map();
-
-  items.forEach((item) => {
-    const rawKey = normalizeKey(
-      item?.status ?? item?.priority ?? item?.name ?? item?.label,
-    );
-    const key = rawKey === "inprogress" ? "in_progress" : rawKey;
-    const value = toNumber(item?.count ?? item?.task_count ?? item?.value ?? 0);
-
-    if (!key) return;
-
-    map.set(key, {
-      key,
-      value,
-      label: labels[key] || getLabel(key, item?.label || item?.name || key),
-      color: colors[key] || "#94a3b8",
-    });
-  });
-
-  return order
-    .map(
-      (key) =>
-        map.get(key) || {
-          key,
-          value: 0,
-          label: labels[key] || getLabel(key, key),
-          color: colors[key] || "#94a3b8",
-        },
-    )
-    .filter(
-      (item) =>
-        item.value > 0 || items.length === 0 || order.includes(item.key),
-    );
-};
-
-const buildWorkloadSeries = (items = []) => {
-  return items
-    .map((item) => {
-      const name =
-        item?.assigned_to__email ||
-        item?.assigned_to__name ||
-        item?.assigned_to_name ||
-        item?.name ||
-        item?.label;
-      const key = item?.assigned_to__id ?? name ?? "unassigned";
-      const label = name || "Unassigned";
-
-      return {
-        key,
-        label,
-        value: toNumber(item?.task_count ?? item?.count ?? 0),
-      };
-    })
-    .filter((item) => item.value > 0);
-};
-
-const sumValues = (items = []) =>
-  items.reduce((total, item) => total + toNumber(item?.value), 0);
-
-const buildConicGradient = (
-  items = [],
-  fallback = "rgba(148, 163, 184, 0.35)",
-) => {
-  const total = sumValues(items);
-  if (!total) return `conic-gradient(${fallback} 0 100%)`;
-
-  let start = 0;
-  const segments = items.map((item) => {
-    const share = (toNumber(item.value) / total) * 100;
-    const end = start + share;
-    const segment = `${item.color || fallback} ${start}% ${end}%`;
-    start = end;
-    return segment;
-  });
-
-  return `conic-gradient(${segments.join(", ")})`;
-};
-
-const getDisplayName = (user) => {
-  if (!user) return "there";
-  return user.name || user.full_name || user.username || user.email || "there";
-};
-
-function MetricCard({ icon: Icon, label, value, detail, accent = "#1392ec" }) {
-  return (
-    <div className="group relative overflow-hidden rounded-3xl border border-white/60 bg-white/85 p-5 shadow-[0_18px_45px_-28px_rgba(15,23,42,0.45)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/70">
-      <div className="absolute inset-0 pointer-events-none bg-linear-to-br from-white/70 via-transparent to-transparent dark:from-white/5" />
-      <div className="relative flex items-start justify-between gap-4">
-        <div>
-          <p className="text-xs font-bold uppercase tracking-[0.28em] text-slate-500 dark:text-slate-400">
-            {label}
-          </p>
-          <div className="mt-3 flex items-end gap-2">
-            <span className="text-3xl font-black tracking-tight text-slate-900 dark:text-white">
-              {value}
-            </span>
-          </div>
-          <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
-            {detail}
-          </p>
-        </div>
-        <div
-          className="rounded-2xl border border-white/70 p-3 shadow-sm dark:border-white/10"
-          style={{
-            background: `linear-gradient(135deg, ${accent}1f, ${accent}0d)`,
-          }}
-        >
-          <Icon className="h-6 w-6" style={{ color: accent }} />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function ChartPanel({ title, subtitle, children, icon: Icon }) {
-  return (
-    <section className="overflow-hidden rounded-[28px] border border-white/70 bg-white/85 shadow-[0_18px_45px_-28px_rgba(15,23,42,0.45)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/70">
-      <div className="flex items-start justify-between gap-4 border-b border-slate-200/80 px-5 py-4 dark:border-white/10 sm:px-6">
-        <div className="min-w-0">
-          <div className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.26em] text-slate-500 dark:text-slate-400">
-            <Icon className="h-4 w-4" />
-            <span>{title}</span>
-          </div>
-          <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
-            {subtitle}
-          </p>
-        </div>
-      </div>
-      <div className="p-5 sm:p-6">{children}</div>
-    </section>
-  );
-}
-
-function DonutChart({ items, total, centerLabel, centerValue }) {
-  return (
-    <div className="grid gap-5 lg:grid-cols-[220px_1fr] lg:items-center">
-      <div className="flex items-center justify-center">
-        <div
-          className="relative h-[220px] w-[220px] rounded-full p-3"
-          style={{ background: buildConicGradient(items) }}
-        >
-          <div className="absolute inset-10 flex flex-col items-center justify-center rounded-full bg-white text-center shadow-inner shadow-slate-900/10 dark:bg-slate-950 dark:shadow-black/40">
-            <span className="text-xs font-bold uppercase tracking-[0.28em] text-slate-500 dark:text-slate-400">
-              {centerLabel}
-            </span>
-            <span className="mt-2 text-4xl font-black text-slate-900 dark:text-white">
-              {centerValue}
-            </span>
-            <span className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-              {total} tasks total
-            </span>
-          </div>
-        </div>
-      </div>
-
-      <div className="space-y-3">
-        {items.length > 0 ? (
-          items.map((item) => {
-            const percent = total ? Math.round((item.value / total) * 100) : 0;
-            return (
-              <div key={item.key} className="space-y-2">
-                <div className="flex items-center justify-between gap-3 text-sm">
-                  <span className="font-semibold text-slate-700 dark:text-slate-200">
-                    {item.label}
-                  </span>
-                  <span className="font-bold text-slate-500 dark:text-slate-400">
-                    {item.value} ({percent}%)
-                  </span>
-                </div>
-                <div className="h-2 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
-                  <div
-                    className="h-full rounded-full"
-                    style={{
-                      width: `${Math.max(percent, 2)}%`,
-                      backgroundColor: item.color,
-                    }}
-                  />
-                </div>
-              </div>
-            );
-          })
-        ) : (
-          <div className="rounded-2xl border border-dashed border-slate-200 px-4 py-10 text-center text-sm text-slate-500 dark:border-slate-800 dark:text-slate-400">
-            No data yet. Create tasks to populate this graph.
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-function BarChart({ items, total, emptyLabel }) {
-  return (
-    <div className="space-y-4">
-      {items.length > 0 ? (
-        items.map((item) => {
-          const percent = total ? Math.round((item.value / total) * 100) : 0;
-          return (
-            <div key={item.key} className="space-y-2">
-              <div className="flex items-center justify-between gap-3 text-sm">
-                <span className="font-semibold text-slate-700 dark:text-slate-200">
-                  {item.label}
-                </span>
-                <span className="font-bold text-slate-500 dark:text-slate-400">
-                  {item.value}
-                </span>
-              </div>
-              <div className="h-3 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
-                <div
-                  className="h-full rounded-full transition-all"
-                  style={{
-                    width: `${Math.max(percent, 2)}%`,
-                    backgroundColor: item.color,
-                  }}
-                />
-              </div>
-            </div>
-          );
-        })
-      ) : (
-        <div className="rounded-2xl border border-dashed border-slate-200 px-4 py-10 text-center text-sm text-slate-500 dark:border-slate-800 dark:text-slate-400">
-          {emptyLabel}
-        </div>
-      )}
-    </div>
-  );
-}
-
-function TeamLoadCard({ items, isSolo }) {
-  if (isSolo) {
-    return (
-      <div className="space-y-4 rounded-3xl border border-dashed border-slate-200 bg-slate-50/70 p-5 dark:border-slate-800 dark:bg-slate-900/50">
-        <div className="flex items-center gap-2 text-sm font-bold text-slate-700 dark:text-slate-200">
-          <ShieldCheck className="h-4 w-4 text-emerald-500" />
-          Solo project focus
-        </div>
-        <p className="text-sm text-slate-500 dark:text-slate-400">
-          This workspace is owned by one person, so the dashboard emphasizes
-          progress, urgency, and delivery cadence instead of team balance.
-        </p>
-        <div className="grid gap-3 sm:grid-cols-3">
-          <div className="rounded-2xl bg-white px-4 py-3 shadow-sm dark:bg-slate-950">
-            <p className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-400">
-              Momentum
-            </p>
-            <p className="mt-2 text-2xl font-black text-slate-900 dark:text-white">
-              Live
-            </p>
-          </div>
-          <div className="rounded-2xl bg-white px-4 py-3 shadow-sm dark:bg-slate-950">
-            <p className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-400">
-              Cadence
-            </p>
-            <p className="mt-2 text-2xl font-black text-slate-900 dark:text-white">
-              Focused
-            </p>
-          </div>
-          <div className="rounded-2xl bg-white px-4 py-3 shadow-sm dark:bg-slate-950">
-            <p className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-400">
-              Owner
-            </p>
-            <p className="mt-2 text-2xl font-black text-slate-900 dark:text-white">
-              1
-            </p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="space-y-4">
-      {items.length > 0 ? (
-        items.map((item, index) => {
-          const color =
-            index % 3 === 0
-              ? "#38bdf8"
-              : index % 3 === 1
-                ? "#8b5cf6"
-                : "#10b981";
-          return (
-            <div
-              key={item.key}
-              className="space-y-2 rounded-2xl border border-slate-200/80 bg-slate-50/80 px-4 py-3 dark:border-white/10 dark:bg-slate-900/50"
-            >
-              <div className="flex items-center justify-between gap-3 text-sm">
-                <span className="truncate font-semibold text-slate-700 dark:text-slate-200">
-                  {item.label}
-                </span>
-                <span className="font-bold text-slate-500 dark:text-slate-400">
-                  {item.value} tasks
-                </span>
-              </div>
-              <div className="h-2 overflow-hidden rounded-full bg-slate-200/70 dark:bg-slate-800">
-                <div
-                  className="h-full rounded-full"
-                  style={{
-                    width: `${Math.max(item.value * 12, 10)}%`,
-                    backgroundColor: color,
-                  }}
-                />
-              </div>
-            </div>
-          );
-        })
-      ) : (
-        <div className="rounded-2xl border border-dashed border-slate-200 px-4 py-10 text-center text-sm text-slate-500 dark:border-slate-800 dark:text-slate-400">
-          No assigned work yet.
-        </div>
-      )}
-    </div>
-  );
-}
-
-function DashboardSkeleton() {
-  return (
-    <div className="space-y-6">
-      <div className="grid gap-4 lg:grid-cols-3">
-        <div className="h-32 rounded-3xl bg-white/70 dark:bg-white/5 animate-pulse" />
-        <div className="h-32 rounded-3xl bg-white/70 dark:bg-white/5 animate-pulse" />
-        <div className="h-32 rounded-3xl bg-white/70 dark:bg-white/5 animate-pulse" />
-      </div>
-      <div className="grid gap-6 xl:grid-cols-2">
-        <div className="h-[420px] rounded-[28px] bg-white/70 dark:bg-white/5 animate-pulse" />
-        <div className="h-[420px] rounded-[28px] bg-white/70 dark:bg-white/5 animate-pulse" />
-      </div>
-    </div>
-  );
-}
+import {
+  buildSeries,
+  buildWorkloadSeries,
+  getDisplayName,
+  PRIORITY_COLORS,
+  PRIORITY_LABELS,
+  PRIORITY_ORDER,
+  STATUS_COLORS,
+  STATUS_LABELS,
+  STATUS_ORDER,
+  sumValues,
+  toNumber,
+} from "../../utils/dashboardUtils";
+import {
+  BarChart,
+  ChartPanel,
+  DashboardSkeleton,
+  DonutChart,
+  MetricCard,
+  TeamLoadCard,
+} from "./DashboardSections";
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -474,14 +120,22 @@ export default function Dashboard() {
     [stats.workload_distribution],
   );
 
-  const totalTasks = sumValues(statusSeries);
-  const doneTasks =
-    statusSeries.find((item) => item.key === "done")?.value || 0;
-  const openTasks = Math.max(totalTasks - doneTasks, 0);
-  const progress = Math.round(toNumber(stats.total_progress));
-  const highPriorityTasks =
-    prioritySeries.find((item) => item.key === "high")?.value || 0;
-  const activeOwners = workloadSeries.length;
+  const dashboardSummary = useMemo(() => {
+    const totalTasks = sumValues(statusSeries);
+    const doneTasks =
+      statusSeries.find((item) => item.key === "done")?.value || 0;
+
+    return {
+      totalTasks,
+      doneTasks,
+      openTasks: Math.max(totalTasks - doneTasks, 0),
+      progress: Math.round(toNumber(stats.total_progress)),
+      highPriorityTasks:
+        prioritySeries.find((item) => item.key === "high")?.value || 0,
+      activeOwners: workloadSeries.length,
+    };
+  }, [prioritySeries, stats.total_progress, statusSeries, workloadSeries.length]);
+
   const displayName = getDisplayName(user);
 
   const summaryLine = isSoloProject
@@ -625,7 +279,7 @@ export default function Dashboard() {
               <MetricCard
                 icon={FolderKanban}
                 label="Total tasks"
-                value={totalTasks}
+                value={dashboardSummary.totalTasks}
                 detail={
                   projectId
                     ? `Across ${activeProject?.name || "this project"}`
@@ -636,8 +290,8 @@ export default function Dashboard() {
               <MetricCard
                 icon={CheckCircle2}
                 label="Completion"
-                value={`${progress}%`}
-                detail={`${doneTasks} tasks marked done`}
+                value={`${dashboardSummary.progress}%`}
+                detail={`${dashboardSummary.doneTasks} tasks marked done`}
                 accent="#10b981"
               />
               <MetricCard
@@ -650,8 +304,8 @@ export default function Dashboard() {
               <MetricCard
                 icon={Target}
                 label="Open work"
-                value={openTasks}
-                detail={`${highPriorityTasks} high-priority items`}
+                value={dashboardSummary.openTasks}
+                detail={`${dashboardSummary.highPriorityTasks} high-priority items`}
                 accent="#ef4444"
               />
             </section>
@@ -668,9 +322,9 @@ export default function Dashboard() {
               >
                 <DonutChart
                   items={statusSeries}
-                  total={totalTasks}
+                  total={dashboardSummary.totalTasks}
                   centerLabel="Progress"
-                  centerValue={`${progress}%`}
+                  centerValue={`${dashboardSummary.progress}%`}
                 />
               </ChartPanel>
 
@@ -710,7 +364,7 @@ export default function Dashboard() {
                         Priority pressure
                       </p>
                       <p className="mt-2 text-3xl font-black text-slate-900 dark:text-white">
-                        {highPriorityTasks}
+                        {dashboardSummary.highPriorityTasks}
                       </p>
                       <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
                         High-priority items in flight
@@ -721,7 +375,7 @@ export default function Dashboard() {
                         Owners with work
                       </p>
                       <p className="mt-2 text-3xl font-black text-slate-900 dark:text-white">
-                        {activeOwners}
+                        {dashboardSummary.activeOwners}
                       </p>
                       <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
                         Members currently assigned tasks
