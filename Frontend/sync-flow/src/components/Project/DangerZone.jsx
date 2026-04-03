@@ -16,9 +16,8 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useActiveProjectStore } from "../../stores/ActiveProject";
 import { useProjectRoleStore } from "../../stores/ProjectRoleStore";
-import useProjectSocket from "../../hooks/useProjectSocket";
 
-export function DangerZone({ projectId, currentUser }) {
+export function DangerZone({ projectId }) {
   const [showSoftDeleteDialog, setShowSoftDeleteDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [leaveProject, setLeaveProject] = useState(false);
@@ -27,40 +26,6 @@ export function DangerZone({ projectId, currentUser }) {
   const navigate = useNavigate();
   const resetActiveProject = useActiveProjectStore((state) => state.reset);
   const { isAdmin } = useProjectRoleStore();
-
-  // WebSocket — all currentUser accesses guarded with optional chaining
-  useProjectSocket(projectId, (data) => {
-    if (data.action === "project_deleted") {
-      toast.info("This project was deleted!");
-      resetActiveProject();
-      navigate("/dashboard");
-    }
-
-    if (
-      data.action === "member_removed" &&
-      currentUser?.id &&
-      data.target_user_id === currentUser.id
-    ) {
-      toast.info("You were removed from this project!");
-      resetActiveProject();
-      navigate("/dashboard");
-    }
-
-    if (data.action === "project_restored") {
-      toast.info("This project was restored!");
-      queryClient.invalidateQueries({ queryKey: ["projects"] });
-    }
-
-    if (
-      data.action === "leave_project" &&
-      currentUser?.id &&
-      data.target_user_id === currentUser.id
-    ) {
-      toast.info("You left the project!");
-      resetActiveProject();
-      navigate("/dashboard");
-    }
-  });
 
   // Leave / Soft-delete mutation
   const { mutate: handleSoftDelete, isPending: softDeleting } = useMutation({
@@ -104,7 +69,7 @@ export function DangerZone({ projectId, currentUser }) {
 
         {/* Header */}
         <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
-          <div className="p-1.5 sm:p-2 rounded-lg bg-red-100 dark:bg-red-800 flex-shrink-0">
+          <div className="p-1.5 sm:p-2 rounded-lg bg-red-100 dark:bg-red-800 shrink-0">
             <AlertCircle size={18} className="text-red-600 sm:size-5" />
           </div>
           <h3 className="font-semibold text-foreground dark:text-white text-sm sm:text-base">
@@ -130,7 +95,7 @@ export function DangerZone({ projectId, currentUser }) {
             font-medium transition-colors text-xs sm:text-sm
             active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <LogOut size={16} className="flex-shrink-0" />
+          <LogOut size={16} className="shrink-0" />
           <span>{softDeleting ? "Leaving..." : "Leave Project"}</span>
         </button>
 
@@ -145,7 +110,7 @@ export function DangerZone({ projectId, currentUser }) {
             font-medium transition-colors text-xs sm:text-sm
             active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <Trash size={16} className="flex-shrink-0" />
+          <Trash size={16} className="shrink-0" />
           <span>{softDeleting ? "Moving..." : "Move to Trash"}</span>
         </button>
 
@@ -160,7 +125,7 @@ export function DangerZone({ projectId, currentUser }) {
             text-white font-medium transition-colors text-xs sm:text-sm
             shadow-md active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <Trash2 size={16} className="flex-shrink-0" />
+          <Trash2 size={16} className="shrink-0" />
           <span>{deleting ? "Deleting..." : "Delete Permanently"}</span>
         </button>
       </div>

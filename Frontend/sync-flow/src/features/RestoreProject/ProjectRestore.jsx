@@ -6,6 +6,53 @@ import { toast } from 'react-toastify';
 import { useActiveProjectStore } from '../../stores/ActiveProject';
 import { useNavigate, useParams } from 'react-router-dom';
 
+const mergeRestoredProjectIntoProjectsCache = (oldData, restoredProject) => {
+  if (!oldData || !restoredProject || !Array.isArray(oldData.pages) || oldData.pages.length === 0) {
+    return oldData;
+  }
+
+  let found = false;
+  const nextPages = oldData.pages.map((page) => {
+    const results = page?.data?.results;
+    if (!Array.isArray(results)) return page;
+
+    const nextResults = results.map((project) => {
+      if (project.id === restoredProject.id) {
+        found = true;
+        return { ...project, ...restoredProject, is_archived: false };
+      }
+      return project;
+    });
+
+    return {
+      ...page,
+      data: {
+        ...page.data,
+        results: nextResults,
+      },
+    };
+  });
+
+  if (!found) {
+    const firstPage = nextPages[0];
+    const firstResults = firstPage?.data?.results;
+    if (Array.isArray(firstResults)) {
+      nextPages[0] = {
+        ...firstPage,
+        data: {
+          ...firstPage.data,
+          results: [{ ...restoredProject, is_archived: false }, ...firstResults],
+        },
+      };
+    }
+  }
+
+  return {
+    ...oldData,
+    pages: nextPages,
+  };
+};
+
 export default function ProjectRestore() {
   const [restoring, setRestoring] = useState(null);
   const [deleting, setDeleting] = useState(null);
@@ -45,11 +92,18 @@ useEffect(() => {
   // --- MUTATIONS ---
   const restoreMutation = useMutation({
     mutationFn: restoreProject,
-    onSuccess: (_, projectId) => {
+    onSuccess: (restoredData, projectId) => {
+      const restoredProject = restoredData?.project || restoredData;
+
       // Optimistic UI update
       queryClient.setQueryData(['archivedProjects'], (old) =>
         old ? old.filter((p) => p.id !== projectId) : []
       );
+
+      queryClient.setQueryData(['projects'], (old) =>
+        mergeRestoredProjectIntoProjectsCache(old, restoredProject)
+      );
+
       queryClient.invalidateQueries({ queryKey: ['projects'] });
       setRestoring(null);
       toast.success('Project restored to workspace');
@@ -123,7 +177,7 @@ useEffect(() => {
       </div>
 
       <header className="relative mb-12 max-w-3xl">
-        <h1 className="bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-4xl font-black tracking-tight text-transparent dark:from-white dark:to-gray-400 md:text-5xl">
+        <h1 className="bg-linear-to-r from-gray-900 to-gray-600 bg-clip-text text-4xl font-black tracking-tight text-transparent dark:from-white dark:to-gray-400 md:text-5xl">
           Project Archive
         </h1>
         <p className="mt-4 text-lg text-gray-600 dark:text-gray-400">
@@ -152,7 +206,7 @@ useEffect(() => {
                 {project.image ? (
                   <img src={project.image} alt={project.name} className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110" />
                 ) : (
-                  <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900">
+                  <div className="flex h-full w-full items-center justify-center bg-linear-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900">
                     <span className="text-5xl font-black text-gray-300 dark:text-gray-700">{project.name.charAt(0)}</span>
                   </div>
                 )}

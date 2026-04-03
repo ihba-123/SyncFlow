@@ -1,9 +1,11 @@
-import { useEffect } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef } from "react";
 import { useThemeStore } from "../stores/ThemeStore";
 
 export default function useTheme() {
   const theme = useThemeStore((state) => state.theme);
+  const hydrated = useThemeStore((state) => state.hydrated);
   const setTheme = useThemeStore((state) => state.setTheme);
+  const switchTimerRef = useRef(null);
 
   // Map your custom theme background colors
   const themeBackgrounds = {
@@ -11,7 +13,8 @@ export default function useTheme() {
     light: "white/5",
   };
 
-  useEffect(() => {
+  useLayoutEffect(() => {
+    if (!hydrated) return;
     const html = document.documentElement;
 
     if (theme === "dark") {
@@ -23,9 +26,34 @@ export default function useTheme() {
       const isDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
       html.classList.toggle("dark", isDark);
     }
-  }, [theme]);
+  }, [theme, hydrated]);
+
+  const setThemeSmooth = useCallback(
+    (nextTheme) => {
+      if (typeof window === "undefined") {
+        setTheme(nextTheme);
+        return;
+      }
+
+      const html = document.documentElement;
+      html.classList.add("theme-switching");
+
+      if (switchTimerRef.current) {
+        window.clearTimeout(switchTimerRef.current);
+      }
+
+      setTheme(nextTheme);
+
+      switchTimerRef.current = window.setTimeout(() => {
+        html.classList.remove("theme-switching");
+        switchTimerRef.current = null;
+      }, 180);
+    },
+    [setTheme]
+  );
 
   useEffect(() => {
+    if (!hydrated) return;
     let appliedTheme = theme;
 
     if (theme === "system" && typeof window !== "undefined") {
@@ -38,11 +66,11 @@ export default function useTheme() {
       "--background",
       themeBackgrounds[appliedTheme]
     );
-  }, [theme]);
+  }, [theme, hydrated]);
 
   // Listen to system changes if theme is system
   useEffect(() => {
-    if (theme !== "system") return;
+    if (!hydrated || theme !== "system") return;
 
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
     const handleChange = () => {
@@ -55,7 +83,7 @@ export default function useTheme() {
     mediaQuery.addEventListener("change", handleChange);
 
     return () => mediaQuery.removeEventListener("change", handleChange);
-  }, [theme]);
+  }, [theme, hydrated]);
 
-  return { theme, setTheme };
+  return { theme, setTheme: setThemeSmooth, hydrated };
 }

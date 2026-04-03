@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
   User,
   Users,
@@ -14,7 +14,7 @@ import { cn } from "../../utils/utils";
 import ProgressBar from "../../components/ui/ProgressBar";
 import { useProject } from "../../hooks/useProject";
 
-export function CreateProject() {
+export function CreateProject({ embedded = false, onClose }) {
   const queryClient = useQueryClient();
 
   const [is_solo, setIs_solo] = useState(null);
@@ -22,6 +22,7 @@ export function CreateProject() {
   const [name, setName] = useState("");
   const [image, setImage] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
+  const submitLockedRef = useRef(false);
 
   const { mutate, isPending } = useProject();
 
@@ -39,10 +40,14 @@ export function CreateProject() {
 
   const handleProject = (e) => {
     e.preventDefault();
+    if (submitLockedRef.current || isPending) return;
+
     if (!name.trim() || is_solo === null || !description.trim()) {
       toast.error("Please fill in all required fields");
       return;
     }
+
+    submitLockedRef.current = true;
 
     const formData = new FormData();
     formData.append("name", name.trim());
@@ -58,35 +63,52 @@ export function CreateProject() {
         setDescription("");
         setIs_solo(null);
         removeImage();
+        submitLockedRef.current = false;
       },
       onError: (error) => {
         toast.error(error?.response?.data?.message || "Failed to create project");
+        submitLockedRef.current = false;
       },
     });
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-8 transition-colors duration-500 bg-slate-50 dark:bg-[#03011073] relative overflow-hidden">
-      {/* Background Decor */}
-      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-500/10 dark:bg-blue-500/5 blur-[120px] rounded-full" />
+    <div className={embedded ? "relative flex items-center justify-center px-4 py-4 transition-colors duration-500" : "min-h-screen flex items-center justify-center px-4 py-8 transition-colors duration-500 bg-slate-50 dark:bg-[#03011073] relative overflow-hidden"}>
+      <div className="absolute top-[-10%] left-[-10%] h-[40%] w-[40%] rounded-full bg-blue-500/10 blur-[120px] dark:bg-blue-500/5" />
 
       {isPending && (
-        <div className="fixed top-0 left-0 w-full z-[9999]">
+        <div className="fixed left-0 top-0 z-9999 w-full">
           <ProgressBar apiLoading={true} />
         </div>
       )}
 
-      <div className="w-full max-w-xl z-10">
+      <div className="relative z-10 w-full max-w-xl">
         <form
           onSubmit={handleProject}
-          className="bg-white dark:bg-slate-900/60 backdrop-blur-3xl border border-slate-200 dark:border-white/10 rounded-[2.5rem] shadow-2xl p-6 md:p-10 flex flex-col gap-6 md:gap-8"
+          className="relative flex flex-col gap-6 rounded-4xl border border-slate-200/80 bg-white/90 p-6 shadow-[0_24px_70px_-32px_rgba(15,23,42,0.55)] backdrop-blur-3xl dark:border-white/10 dark:bg-slate-950/70 md:gap-8 md:p-8"
         >
+          <div className="pointer-events-none absolute inset-0 rounded-4xl bg-linear-to-br from-white/70 via-transparent to-transparent dark:from-white/5" />
+          <div className="absolute right-4 top-4 flex items-center gap-2">
+            <span className="rounded-full border border-emerald-200/80 bg-emerald-50/80 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.24em] text-emerald-700 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-300">
+              Create project
+            </span>
+            {onClose && (
+              <button
+                type="button"
+                onClick={onClose}
+                className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 shadow-sm transition-colors hover:bg-slate-100 hover:text-slate-900 dark:border-white/10 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
+                aria-label="Close create project dialog"
+              >
+                <X size={16} />
+              </button>
+            )}
+          </div>
           {/* Header */}
-          <div className="text-center md:text-left space-y-1">
-            <h1 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight uppercase">
+          <div className="relative space-y-1 text-center md:text-left">
+            <h1 className="text-3xl font-black tracking-tight text-slate-900 uppercase dark:text-white">
               Create <span className="text-blue-600 dark:text-blue-500">Project</span>
             </h1>
-            <p className="text-slate-600 dark:text-slate-400 text-sm font-bold">
+            <p className="text-sm font-bold text-slate-600 dark:text-slate-400">
               Initialize your next big idea.
             </p>
           </div>
@@ -129,6 +151,7 @@ export function CreateProject() {
               <input
                 value={name}
                 onChange={(e) => setName(e.target.value)}
+                disabled={isPending}
                 placeholder="Project Name..."
                 className="w-full h-14 pl-12 pr-4 rounded-2xl bg-slate-50 dark:bg-[#020617] text-slate-900 dark:text-white border border-slate-200 dark:border-white/10 focus:border-blue-500 focus:bg-white dark:focus:bg-black focus:ring-4 focus:ring-blue-500/10 outline-none transition-all font-bold placeholder:text-slate-400 dark:placeholder:text-slate-700"
               />
@@ -164,6 +187,7 @@ export function CreateProject() {
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
+              disabled={isPending}
               placeholder="Primary objectives..."
               className="w-full h-28 p-4 rounded-2xl bg-slate-50 dark:bg-[#020617] text-slate-900 dark:text-white border border-slate-200 dark:border-white/10 focus:border-blue-500 focus:bg-white dark:focus:bg-black focus:ring-4 focus:ring-blue-500/10 outline-none transition-all resize-none font-bold text-sm placeholder:text-slate-400 dark:placeholder:text-slate-700"
             />
@@ -174,7 +198,7 @@ export function CreateProject() {
             type="submit"
             disabled={isPending}
             className={cn(
-              "w-full h-14 rounded-2xl font-black text-xs uppercase tracking-[0.2em] flex items-center justify-center gap-3 transition-all active:scale-[0.97] shadow-xl",
+              "relative z-10 w-full h-14 rounded-2xl font-black text-xs uppercase tracking-[0.2em] flex items-center justify-center gap-3 transition-all active:scale-[0.97] shadow-xl",
               isPending
                 ? "bg-slate-200 dark:bg-slate-800 text-slate-400 cursor-not-allowed"
                 : is_solo === false 

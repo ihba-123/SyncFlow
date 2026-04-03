@@ -10,7 +10,6 @@ import { getProjectMembers } from "../../api/Project";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate, useParams } from "react-router-dom";
 import { useTeamList } from "../../features/team/TeamListLogic";
-import { useProject } from "../../hooks/useProject";
 import { FiUserPlus, FiEdit3 } from "react-icons/fi";
 import { ProjectHeaderSkeleton } from "../skeleton/ProjectHeaderSkeleton";
 import {
@@ -24,11 +23,12 @@ export function ProjectHeader() {
   const { data, isLoading: projectLoading } = useActiveProject();
   const { id } = useParams();
   const { data: teamData } = useTeamList(id);
-  const { is_solo } = useProject();
   const role = teamData?.user_role;
   const navigate = useNavigate();
 
   const values = data?.active_project || {};
+  const isSoloProject = values.is_solo;
+  const canInvite = role === "admin" && isSoloProject === false;
   
   // Fetch Members
   const {
@@ -99,7 +99,7 @@ export function ProjectHeader() {
                   </div>
 
                   {/* Desktop Action Button */}
-                  {role === "admin" && !is_solo && (
+                  {canInvite && (
                     <div className="hidden  md:block">
                       <button
                         onClick={userInvite}
@@ -168,7 +168,7 @@ export function ProjectHeader() {
                   </div>
 
                   {/* Mobile-only Action Button (Visible only on small screens) */}
-                  {role === "admin" && !is_solo && (
+                  {canInvite && (
                     <div className="w-full md:hidden">
                       <button
                         onClick={userInvite}

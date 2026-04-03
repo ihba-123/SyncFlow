@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Users2, ChevronRight, Upload, X } from "lucide-react";
 import { Button } from "@mui/material";
 import { useQueryClient } from "@tanstack/react-query";
@@ -13,8 +13,9 @@ export function TeamProject({ onClose }) {
   const [name, setName] = useState("");
   const [image, setImage] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
+  const submitLockedRef = useRef(false);
 
-  const { mutate, isLoading } = useProject();
+  const { mutate, isPending } = useProject();
 
   useEffect(() => {
     document.body.style.overflow = "hidden";
@@ -30,10 +31,15 @@ export function TeamProject({ onClose }) {
   };
 
   const handleProject = () => {
+    if (submitLockedRef.current || isPending) return;
+
     if (!name.trim() || !description.trim()) {
       toast.error("Required fields are missing");
       return;
     }
+
+    submitLockedRef.current = true;
+
     const formData = new FormData();
     formData.append("name", name.trim());
     formData.append("description", description.trim());
@@ -44,17 +50,21 @@ export function TeamProject({ onClose }) {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ["projects"] });
         toast.success("Team project initialized!");
+        submitLockedRef.current = false;
         onClose();
+      },
+      onError: () => {
+        submitLockedRef.current = false;
       },
     });
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-100 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-md animate-in fade-in" onClick={onClose} />
       
       <div className="relative w-full  rounded-sm max-w-xl max-h-[85vh] flex flex-col bg-white dark:bg-[#060b18] ow-2xl overflow-hidden border border-emerald-900/20 animate-in zoom-in-95">
-        <ProgressBar apiLoading={isLoading} className="absolute top-0 left-0 w-full z-50" />
+        <ProgressBar apiLoading={isPending} className="absolute top-0 left-0 w-full z-50" />
         
         <div className="p-6 border-b border-slate-400 dark:border-slate-800 flex justify-between items-center shrink-0">
           <div>
@@ -74,6 +84,7 @@ export function TeamProject({ onClose }) {
             <input
               onChange={(e) => setName(e.target.value)}
               value={name}
+              disabled={isPending}
               className="w-full h-11 px-4 rounded-sm bg-slate-50 dark:bg-slate-800/50 border border-slate-400 dark:border-slate-700 text-sm outline-none focus:border-emerald-500 transition-all"
               placeholder="Enter team project name..."
             />
@@ -107,14 +118,15 @@ export function TeamProject({ onClose }) {
               placeholder="Collective goals..."
               value={description}
               onChange={(e) => setDescription(e.target.value)}
+              disabled={isPending}
             />
           </div>
         </form>
 
         <div className="p-6 border-t border-slate-100 dark:border-slate-800  flex items-center justify-end gap-3 shrink-0">
           <button onClick={onClose} className="px-5 h-10 rounded-sm border  hover:bg-gray-800 cursor-pointer dark:text-white/50 text-[10px] font-black text-slate-400  uppercase">Cancel</button>
-          <Button onClick={handleProject} variant="contained" disabled={isLoading} className="px-6 h-10 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-[10px] rounded-xl shadow-lg shadow-emerald-600/20">
-            {isLoading ? "SYNCING..." : "DEPLOY_NETWORK"}
+          <Button onClick={handleProject} variant="contained" disabled={isPending} className="px-6 h-10 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-[10px] rounded-xl shadow-lg shadow-emerald-600/20">
+            {isPending ? "SYNCING..." : "DEPLOY_NETWORK"}
           </Button>
         </div>
       </div>    

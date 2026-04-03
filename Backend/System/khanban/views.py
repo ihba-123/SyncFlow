@@ -2,7 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import permissions, status
 from django.shortcuts import get_object_or_404
-from .serializers import TaskSerializer, CommentSerializer
+from .serializers import TaskSerializer, CommentSerializer, TaskAttachmentSerializer
 from .services.task_services import (
     create_task_service,
     update_or_reorder_task,
@@ -55,6 +55,7 @@ class TaskAPIView(APIView):
         serializer = TaskSerializer(tasks, many=True)
         return Response(serializer.data)
 
+
 # Separate APIView for Dashboard
 class TaskDashboardAPIView(APIView):
     permission_classes = [permissions.IsAuthenticated]
@@ -62,6 +63,8 @@ class TaskDashboardAPIView(APIView):
     def get(self, request, project_id):
         stats = get_dashboard_stats(project_id)
         return Response(stats)
+
+
 
 # Separate APIView for Comments
 class TaskCommentAPIView(APIView):
@@ -74,6 +77,8 @@ class TaskCommentAPIView(APIView):
             serializer.save(task=task, user=request.user)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
 
 # Separate APIView for Attachments
 class TaskAttachmentAPIView(APIView):
@@ -88,4 +93,5 @@ class TaskAttachmentAPIView(APIView):
         attachment = TaskAttachment.objects.create(
             task=task, uploaded_by=request.user, file=file
         )
-        return Response({"message": "File uploaded"}, status=201)
+        serializer = TaskAttachmentSerializer(attachment)
+        return Response(serializer.data, status=201)

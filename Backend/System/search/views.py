@@ -6,6 +6,9 @@ from .serializers import ProjectSearchSerializer, TaskSearchSerializer, MemberSe
 from team.models import Project
 from khanban.models import Task
 from authentication.models import User
+
+
+
 class SearchBaseView(APIView):
     permission_classes = [IsAuthenticated]
 

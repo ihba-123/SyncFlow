@@ -12,11 +12,16 @@ export const useThemeStore = create(
     persist(
         (set) => ({
             theme: systemTheme(),
+            hydrated: false,
             setTheme: (theme) => set({ theme }),
-            toggleTheme: () => set((state) => ({ theme: state.theme === "light" ? "dark" : "light" }))
+            toggleTheme: () => set((state) => ({ theme: state.theme === "light" ? "dark" : "light" })),
+            setHydrated: (hydrated) => set({ hydrated }),
         }),
         {
-            name: "theme-storage"
+            name: "theme-storage",
+            onRehydrateStorage: () => (state) => {
+                state?.setHydrated(true);
+            },
         }
 
     )

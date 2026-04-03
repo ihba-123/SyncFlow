@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { User, ChevronRight, Upload, X } from "lucide-react";
 import { Button } from "@mui/material";
 import { useQueryClient } from "@tanstack/react-query"; 
@@ -13,8 +13,9 @@ export function SoloProject({ onClose }) {
   const [name, setName] = useState("");
   const [image, setImage] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
+  const submitLockedRef = useRef(false);
 
-  const { mutate, isLoading } = useProject();
+  const { mutate, isPending } = useProject();
 
   // Lock scroll when modal is open
   useEffect(() => {
@@ -30,10 +31,14 @@ export function SoloProject({ onClose }) {
   };
 
   const handleProject = () => {
+    if (submitLockedRef.current || isPending) return;
+
     if (!name.trim() || !description.trim()) {
       toast.error("Required fields are missing");
       return;
     }
+
+    submitLockedRef.current = true;
 
     const formData = new FormData();
     formData.append("name", name.trim());
@@ -45,23 +50,25 @@ export function SoloProject({ onClose }) {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ["projects"] });
         toast.success("Solo project created successfully");
+        submitLockedRef.current = false;
         onClose();
       },
       onError: (err) => {
         toast.error(err?.response?.data?.message || "Sync failed");
+        submitLockedRef.current = false;
       }
     });
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-100 flex items-center justify-center p-4">
       <div 
         className="absolute inset-0 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-300" 
         onClick={onClose} 
       />
 
       <div className="relative w-full max-w-xl max-h-[85vh] flex flex-col bg-white dark:bg-[#0f172a] rounded-3xl shadow-2xl overflow-hidden border border-white/20 dark:border-slate-800 animate-in zoom-in-95 duration-200">
-        <ProgressBar apiLoading={isLoading} className="absolute top-0 left-0 w-full z-50" />
+        <ProgressBar apiLoading={isPending} className="absolute top-0 left-0 w-full z-50" />
         
         <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center shrink-0">
           <div>
@@ -83,6 +90,7 @@ export function SoloProject({ onClose }) {
             <input
               onChange={(e) => setName(e.target.value)}
               value={name}
+              disabled={isPending}
               className="w-full h-11 px-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-400 dark:border-slate-700 text-sm outline-none focus:border-blue-500 transition-all"
               placeholder="Enter name..."
             />
@@ -118,14 +126,15 @@ export function SoloProject({ onClose }) {
               placeholder="Asset objective..."
               value={description}
               onChange={(e) => setDescription(e.target.value)}
+              disabled={isPending}
             />
           </div>
         </form>
 
         <div className="p-6 border-t border-slate-100 dark:border-slate-800 flex items-center justify-end gap-3 shrink-0">
           <button onClick={onClose} className="px-5 h-10 rounded-xl text-[10px] font-black text-slate-400 hover:text-slate-600 uppercase">Abort</button>
-          <Button onClick={handleProject} variant="contained" disabled={isLoading} className="px-6 h-10 bg-blue-600 hover:bg-blue-700 text-white font-black text-[10px] rounded-xl">
-            {isLoading ? "SYNCING..." : "CREATE_ASSET"}
+          <Button onClick={handleProject} variant="contained" disabled={isPending} className="px-6 h-10 bg-blue-600 hover:bg-blue-700 text-white font-black text-[10px] rounded-xl">
+            {isPending ? "SYNCING..." : "CREATE_ASSET"}
           </Button>
         </div>
       </div>

@@ -24,5 +24,13 @@ export const useProject = () => {
     },
   });
 
-  return { mutate: mutation.mutate, isPending: mutation.isPending, project, is_solo , setProjectMeta};
+  return {
+    mutate: mutation.mutate,
+    mutateAsync: mutation.mutateAsync,
+    isPending: mutation.isPending,
+    isLoading: mutation.isPending,
+    project,
+    is_solo,
+    setProjectMeta,
+  };
 };

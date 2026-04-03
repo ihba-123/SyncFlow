@@ -1,5 +1,3 @@
-'use client'
-
 import React from 'react'
 import { 
   Activity as ActivityIcon, 
@@ -44,10 +42,11 @@ const activityTypeConfig = {
 
 export function ActivityBox() {
   const { id } = useParams()
+  const project_id = id;
 
   const { data, isLoading, isError } = useQuery({
-    queryKey: ['activity-log', id],
-    queryFn: () => activityLog(id),
+    queryKey: ['activity-log', project_id],
+    queryFn: () => activityLog(project_id),
   })
 
   if (isLoading) return <div className="h-[500px] w-full bg-slate-100/50 dark:bg-slate-800/50 animate-pulse rounded-3xl" />
@@ -56,14 +55,10 @@ export function ActivityBox() {
   const activities = data || []
 
   return (
-    /* Outer Container: 
-      - Sets a maximum height so it doesn't grow infinitely.
-      - On large screens, it sticks to the top.
-    */
     <div className="w-full lg:sticky lg:top-24 h-[500px] sm:h-[600px] lg:h-[calc(100vh-160px)] max-h-[800px]">
       <div className="flex flex-col h-full bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl overflow-hidden">
         
-        {/* Header - Fixed (Non-scrollable) */}
+        {/* Header */}
         <div className="flex-shrink-0 p-4 sm:p-6 border-b border-slate-100 dark:border-slate-800/50 bg-white dark:bg-slate-900 z-10">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -79,14 +74,13 @@ export function ActivityBox() {
                 </p>
               </div>
             </div>
-            <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.6)]" />
+            <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
           </div>
         </div>
 
-        {/* Scrollable Content Area */}
-        <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 custom-scrollbar hover:scrollbar-thumb-slate-300 dark:hover:scrollbar-thumb-slate-700 transition-colors">
+        {/* Scrollable Content Area with Modern Scrollbar */}
+        <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 custom-scrollbar">
           <div className="relative space-y-8 pb-4">
-            {/* Timeline Vertical Line */}
             <div className="absolute left-4 sm:left-5 top-2 bottom-2 w-[1.5px] bg-slate-100 dark:bg-slate-800" />
 
             {activities.length > 0 ? (
@@ -97,14 +91,13 @@ export function ActivityBox() {
                 const initials = activity.user?.slice(0, 2).toUpperCase() || '??'
 
                 return (
-                  <div key={activity.id || idx} className="group relative flex gap-4 items-start">
-                    {/* User Avatar & Action Icon */}
+                  <div key={activity.project_id || idx} className="group relative flex gap-4 items-start">
                     <div className="relative z-10 flex-shrink-0">
                       <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-xl bg-slate-900 dark:bg-slate-700 flex items-center justify-center text-[11px] font-bold text-white shadow-lg ring-4 ring-white dark:ring-slate-900 group-hover:scale-105 transition-transform duration-300">
                         {initials}
                       </div>
                       <div className={cn(
-                        "absolute -bottom-1 -right-1 p-1 rounded-md ring-2 ring-white dark:ring-slate-900 shadow-sm transition-transform group-hover:rotate-12",
+                        "absolute -bottom-1 -right-1 p-1 rounded-md ring-2 ring-white dark:ring-slate-900 shadow-sm",
                         config.bgColor,
                         config.color
                       )}>
@@ -112,7 +105,6 @@ export function ActivityBox() {
                       </div>
                     </div>
 
-                    {/* Information Box */}
                     <div className="flex-1 min-w-0 pt-0.5">
                       <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1 mb-1">
                         <span className="text-sm font-bold text-slate-800 dark:text-slate-200 truncate">
@@ -137,7 +129,7 @@ export function ActivityBox() {
                             )}
                           </p>
                         </div>
-                        <ChevronRight size={14} className="mt-0.5 text-slate-300 dark:text-slate-600 group-hover/arrow:translate-x-1 transition-all opacity-0 group-hover/arrow:opacity-100 flex-shrink-0" />
+                        <ChevronRight size={14} className="mt-0.5 text-slate-300 dark:text-slate-600 group-hover/arrow:translate-x-1 transition-all opacity-0 group-hover/arrow:opacity-100" />
                       </div>
                       
                       <span className="text-[10px] font-medium text-slate-400 dark:text-slate-600 mt-2 block">
@@ -148,34 +140,64 @@ export function ActivityBox() {
                 )
               })
             ) : (
-              <div className="flex flex-col items-center justify-center py-20 text-center">
-                <div className="p-4 rounded-full bg-slate-50 dark:bg-slate-800/50 text-slate-300 dark:text-slate-600 mb-3">
-                  <ActivityIcon size={32} />
-                </div>
-                <p className="text-sm font-medium text-slate-400">No recent activity</p>
+              <div className="flex flex-col items-center justify-center py-20 text-center text-slate-400">
+                <ActivityIcon size={32} className="mb-3 opacity-20" />
+                <p className="text-sm">No recent activity</p>
               </div>
             )}
           </div>
         </div>
 
-        {/* Footer Fade (Visual cue that there is more content) */}
+        {/* Footer Fade */}
         <div className="flex-shrink-0 h-8 bg-gradient-to-t from-white dark:from-slate-900 to-transparent pointer-events-none sticky bottom-0" />
       </div>
       
-      {/* Scrollbar Customization CSS (Add this to your globals.css or a style tag) */}
-      <style jsx global>{`
-        .custom-scrollbar::-webkit-scrollbar {
-          width: 5px;
+   
+      <style >{`
+        /* Container styling */
+        .custom-scrollbar {
+          scrollbar-width: thin;
+          scrollbar-color: rgba(203, 213, 225, 0.4) transparent;
         }
+
+        /* Webkit (Chrome, Safari, Edge) */
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 6px;
+        }
+
         .custom-scrollbar::-webkit-scrollbar-track {
           background: transparent;
         }
+
         .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: #e2e8f0;
-          border-radius: 10px;
+          background: rgba(203, 213, 225, 0); /* Invisible by default */
+          border-radius: 20px;
+          border: 2px solid transparent; /* Creates padding effect */
+          background-clip: content-box;
+          transition: background 0.3s ease;
         }
+
+        /* Thumb becomes visible on hover of the container */
+        .custom-scrollbar:hover::-webkit-scrollbar-thumb {
+          background-color: rgba(203, 213, 225, 0.7);
+        }
+
+        /* Thumb gets darker when being dragged */
+        .custom-scrollbar::-webkit-scrollbar-thumb:active {
+          background-color: rgba(148, 163, 184, 0.9);
+        }
+
+        /* Dark Mode adjustments */
         .dark .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: #1e293b;
+          background-color: rgba(51, 65, 85, 0);
+        }
+        
+        .dark .custom-scrollbar:hover::-webkit-scrollbar-thumb {
+          background-color: rgba(51, 65, 85, 0.7);
+        }
+
+        .dark .custom-scrollbar::-webkit-scrollbar-thumb:active {
+          background-color: rgba(71, 85, 105, 0.9);
         }
       `}</style>
     </div>

@@ -12,7 +12,7 @@ class Task(models.Model):
     STATUS_CHOICES = (
         ('todo', 'To Do'),
         ('in_progress', 'In Progress'),
-        ('review', 'Review'),  # Added Review Column
+        ('review', 'Review'), 
         ('done', 'Done'),
     )
     PRIORITY_CHOICES = (
@@ -35,6 +35,7 @@ class Task(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     order = models.DecimalField(max_digits=20, decimal_places=10, default=0, db_index=True)
     tags = models.CharField(max_length=255, blank=True, null=True)
+    objects = TaskQuerySet.as_manager()
 
     class Meta:
         indexes = [

@@ -12,7 +12,7 @@ class TaskSearchSerializer(serializers.ModelSerializer):
     project_name = serializers.CharField(source='project.name', read_only=True)
     class Meta:
         model = Task
-        fields = ['id', 'title', 'description', 'tags', 'status', 'priority', 'project_name' ]
+        fields = ['id', 'title', 'description', 'tags', 'status',  'priority', 'project_name' ]
 
 class MemberSearchSerializer(serializers.ModelSerializer):
     class Meta:
