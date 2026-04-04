@@ -21,8 +21,11 @@ class AttachmentView(APIView):
         status=status.HTTP_403_FORBIDDEN
       )
     serializer = MessageCreateSerializer(data=request.data)
-    if serializer.is_valid():
-          logger.info(f"User {request.user.email} sent attachment in Room ID: {room_id}")
+    if not serializer.is_valid():
+      logger.error(f"Attachment validation failed for {request.user.email}: {serializer.errors}")
+      return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    logger.info(f"User {request.user.email} sent attachment in Room ID: {room_id}")
     
     try:
        services = attachment_services(request.user , chat_room , serializer)

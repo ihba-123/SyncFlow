@@ -3,7 +3,7 @@ import { buildConicGradient } from "../../utils/dashboardUtils";
 
 export function MetricCard({ icon: Icon, label, value, detail, accent = "#1392ec" }) {
   return (
-    <div className="group relative overflow-hidden rounded-3xl border border-white/60 bg-white/85 p-5 shadow-[0_18px_45px_-28px_rgba(15,23,42,0.45)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/70">
+    <div className="group relative overflow-hidden rounded-sm border border-white/60 bg-white/85 p-5 shadow-[0_18px_45px_-28px_rgba(15,23,42,0.45)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/70">
       <div className="absolute inset-0 pointer-events-none bg-linear-to-br from-white/70 via-transparent to-transparent dark:from-white/5" />
       <div className="relative flex items-start justify-between gap-4">
         <div>
@@ -34,7 +34,7 @@ export function MetricCard({ icon: Icon, label, value, detail, accent = "#1392ec
 
 export function ChartPanel({ title, subtitle, children, icon: Icon }) {
   return (
-    <section className="overflow-hidden rounded-[28px] border border-white/70 bg-white/85 shadow-[0_18px_45px_-28px_rgba(15,23,42,0.45)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/70">
+    <section className="overflow-hidden rounded-sm border border-white/70 bg-white/85 shadow-[0_18px_45px_-28px_rgba(15,23,42,0.45)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/70">
       <div className="flex items-start justify-between gap-4 border-b border-slate-200/80 px-5 py-4 dark:border-white/10 sm:px-6">
         <div className="min-w-0">
           <div className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.26em] text-slate-500 dark:text-slate-400">
@@ -109,6 +109,7 @@ export function DonutChart({ items, total, centerLabel, centerValue }) {
   );
 }
 
+
 export function BarChart({ items, total, emptyLabel }) {
   return (
     <div className="space-y-4">
@@ -149,7 +150,7 @@ export function BarChart({ items, total, emptyLabel }) {
 export function TeamLoadCard({ items, isSolo }) {
   if (isSolo) {
     return (
-      <div className="space-y-4 rounded-3xl border border-dashed border-slate-200 bg-slate-50/70 p-5 dark:border-slate-800 dark:bg-slate-900/50">
+      <div className="space-y-4 rounded-sm border border-dashed border-slate-200 bg-slate-50/70 p-5 dark:border-slate-800 dark:bg-slate-900/50">
         <div className="flex items-center gap-2 text-sm font-bold text-slate-700 dark:text-slate-200">
           <ShieldCheck className="h-4 w-4 text-emerald-500" />
           Solo project focus
@@ -159,7 +160,7 @@ export function TeamLoadCard({ items, isSolo }) {
           progress, urgency, and delivery cadence instead of team balance.
         </p>
         <div className="grid gap-3 sm:grid-cols-3">
-          <div className="rounded-2xl bg-white px-4 py-3 shadow-sm dark:bg-slate-950">
+          <div className="rounded-sm bg-white px-4 py-3 shadow-sm dark:bg-slate-950">
             <p className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-400">
               Momentum
             </p>
@@ -167,7 +168,7 @@ export function TeamLoadCard({ items, isSolo }) {
               Live
             </p>
           </div>
-          <div className="rounded-2xl bg-white px-4 py-3 shadow-sm dark:bg-slate-950">
+          <div className="rounded-sm bg-white px-4 py-3 shadow-sm dark:bg-slate-950">
             <p className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-400">
               Cadence
             </p>
@@ -175,7 +176,7 @@ export function TeamLoadCard({ items, isSolo }) {
               Focused
             </p>
           </div>
-          <div className="rounded-2xl bg-white px-4 py-3 shadow-sm dark:bg-slate-950">
+          <div className="rounded-sm bg-white px-4 py-3 shadow-sm dark:bg-slate-950">
             <p className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-400">
               Owner
             </p>
@@ -201,7 +202,7 @@ export function TeamLoadCard({ items, isSolo }) {
           return (
             <div
               key={item.key}
-              className="space-y-2 rounded-2xl border border-slate-200/80 bg-slate-50/80 px-4 py-3 dark:border-white/10 dark:bg-slate-900/50"
+              className="space-y-2 rounded-sm border border-slate-200/80 bg-slate-50/80 px-4 py-3 dark:border-white/10 dark:bg-slate-900/50"
             >
               <div className="flex items-center justify-between gap-3 text-sm">
                 <span className="truncate font-semibold text-slate-700 dark:text-slate-200">

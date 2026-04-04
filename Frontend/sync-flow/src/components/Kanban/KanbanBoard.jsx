@@ -149,7 +149,6 @@ const reorderMutation = useMutation({
     if (variables?.taskId) {
       clearPendingTask(variables.taskId);
     }
-    queryClient.invalidateQueries({ queryKey: ["tasks", project_id] });
   },
 },);
 
@@ -193,7 +192,7 @@ const reorderMutation = useMutation({
 
   return (
     <DragDropContext onDragEnd={onDragEnd}>
-      <div className="h-full min-h-0 flex flex-col font-sans bg-linear-to-br from-slate-100 via-white to-indigo-100/50 text-slate-900 dark:from-[#0b1120] dark:via-[#0f172a] dark:to-[#131a32] dark:text-slate-100 transition-colors duration-200">
+      <div className="h-auto flex flex-col font-sans bg-linear-to-br from-slate-100 via-white to-indigo-100/50 text-slate-900 dark:from-[#0b1120] dark:via-[#0f172a] dark:to-[#131a32] dark:text-slate-100 transition-colors duration-200">
         <header className="flex items-center justify-between px-6 pt-5 pb-1 flex-wrap gap-3">
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-indigo-500" />
@@ -275,7 +274,7 @@ const reorderMutation = useMutation({
 
         <ProgressBar />
 
-        <main className="kanban-x-scroll flex-1 min-h-0 overflow-x-auto overflow-y-hidden px-6 pb-6 pt-3">
+        <main className="kanban-x-scroll min-h-0 overflow-x-auto overflow-y-hidden px-6 pb-6 pt-3">
           {totalTasks === 0 && (
             <div className="mb-3 rounded-xl border border-dashed border-slate-300 bg-white/60 px-4 py-2 text-center text-sm text-slate-600 dark:border-slate-700 dark:bg-slate-900/30 dark:text-slate-300">
               {hasActiveFilters
@@ -284,7 +283,7 @@ const reorderMutation = useMutation({
             </div>
           )}
 
-          <div className="flex h-full min-h-0 gap-4 w-max items-stretch">
+          <div className="flex min-h-0 w-max items-start gap-4">
             {cols.map((col) => (
               <KanbanColumn key={col.id} col={col} />
             ))}

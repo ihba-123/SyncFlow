@@ -5,6 +5,7 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
 from django.shortcuts import get_object_or_404
 from .models import ChatRoom, Message, User
+from .serializer import ChatUserSerializer
 from django.core import cache
 
 class ChatConsumer(AsyncWebsocketConsumer):
@@ -113,6 +114,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
             "status": event["status"]
         }))
 
+    async def profile_update_event(self, event):
+        await self.send(text_data=json.dumps({
+            "type": "profile_update",
+            "user_id": event["user_id"],
+            "profile": event["profile"]
+        }))
+
     # -----------------------------
     # DATABASE HELPERS
     # -----------------------------
@@ -133,30 +141,17 @@ class ChatConsumer(AsyncWebsocketConsumer):
             attachment=attachment,
             images=images,
         )
-        return {
-            "id": msg.id,
-            "sender": getattr(msg.sender, "username", msg.sender.email),
-            "content": msg.decrypted_content,
-            "attachment": msg.attachment.url if msg.attachment else None,
-            "images": msg.images.url if msg.images else None,
-            "timestamp": msg.timestamp.isoformat(),
-            "is_group": self.room.is_group,
-        }   
+        return ChatUserSerializer(msg).data
 
     @database_sync_to_async
     def get_unread_messages(self):
         unread_qs = Message.objects.filter(chat_room=self.room, is_read=False).exclude(sender=self.user).order_by("timestamp")
-        return [
-            {
-                "id": msg.id,
-                "sender": getattr(msg.sender, "username", msg.sender.email),
-                "content": msg.decrypted_content,
-                "attachment": msg.attachment.url if msg.attachment else None,
-                "images": msg.images.url if msg.images else None,
-                "timestamp": msg.timestamp.isoformat(),
-                "offline": True
-            } for msg in unread_qs
-        ]
+        unread_messages = []
+        for msg in unread_qs:
+            payload = ChatUserSerializer(msg).data
+            payload["offline"] = True
+            unread_messages.append(payload)
+        return unread_messages
 
     @database_sync_to_async
     def mark_unread_messages_as_read(self):

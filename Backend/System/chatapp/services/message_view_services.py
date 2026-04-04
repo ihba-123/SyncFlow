@@ -12,7 +12,7 @@ def message_list_view(room_id,user):
     if not chat_room.participants.filter(id=user.id).exists():
         raise PermissionError("You are not a participant of this chat room.")
     
-    messages = Message.objects.filter(chat_room=chat_room).order_by('timestamp')  # oldest first
+    messages = Message.objects.filter(chat_room=chat_room).order_by('-timestamp')  # newest first
     return messages
 
 

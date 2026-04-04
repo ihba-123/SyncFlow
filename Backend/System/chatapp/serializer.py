@@ -76,6 +76,7 @@ class ProfileUpdateSerializer(serializers.ModelSerializer):
     
 
 class PersonlDetailsSerializer(serializers.ModelSerializer):
+    user_id = serializers.IntegerField(source='user.id', read_only=True)
     name = serializers.CharField(source='user.name', read_only=True)
     bio = serializers.CharField(read_only=True)
     photo = serializers.SerializerMethodField()
@@ -83,7 +84,7 @@ class PersonlDetailsSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Profile
-        fields = ['id', 'name', 'bio', 'photo', 'is_online']
+        fields = ['id', 'user_id', 'name', 'bio', 'photo', 'is_online']
 
     def get_photo(self, obj):
         if obj.photo:
@@ -109,6 +110,29 @@ class ChatUserSerializer(serializers.ModelSerializer):
         fields = ['id', 'sender', 'content', 'attachment', 'timestamp', 'images']
         read_only_fields = ['id', 'timestamp']
 
+    def _build_cloudinary_url(self, field_value, resource_type="image"):
+        if not field_value:
+            return None
+
+        raw_value = str(field_value)
+        if raw_value.startswith("http://") or raw_value.startswith("https://"):
+            return raw_value
+
+        # Handle Cloudinary relative URLs like /image/upload/... or /raw/upload/...
+        if raw_value.startswith("/"):
+            cloud_name = cloudinary.config().cloud_name
+            if cloud_name:
+                return f"https://res.cloudinary.com/{cloud_name}{raw_value}"
+
+        try:
+            return cloudinary.utils.cloudinary_url(
+                raw_value,
+                resource_type=resource_type,
+                secure=True,
+            )[0]
+        except Exception:
+            return raw_value
+
     def get_sender(self, obj):
         # Always return sender’s Profile
         profile = getattr(obj.sender, 'profile', None)
@@ -122,11 +146,7 @@ class ChatUserSerializer(serializers.ModelSerializer):
     def get_attachment(self, obj):
         try:
             if obj.attachment:
-                return (
-                    obj.attachment.url
-                    if hasattr(obj.attachment, 'url')
-                    else cloudinary.utils.cloudinary_url(str(obj.attachment))[0]
-                )
+                return self._build_cloudinary_url(obj.attachment, resource_type="raw")
             return None
         except Exception:
             return None
@@ -134,11 +154,7 @@ class ChatUserSerializer(serializers.ModelSerializer):
     def get_images(self, obj):
         try:
             if obj.images:
-                return (
-                    obj.images.url
-                    if hasattr(obj.images, 'url')
-                    else cloudinary.utils.cloudinary_url(str(obj.images))[0]
-                )
+                return self._build_cloudinary_url(obj.images, resource_type="image")
             return None
         except Exception:
             return None

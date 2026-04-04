@@ -18,6 +18,7 @@ const ProjectDetail = () => {
   const activeProjectId = project_id || id; // Handle both param names
   const { data } = useTeamList(id);
   const role = data?.user_role;
+  const joinedMembers = data?.joined_members || [];
   const activeProject = useActiveProjectStore((s) => s.activeProject);
   const resetActiveProject = useActiveProjectStore((s) => s.reset);
   const isTeamProject = activeProject?.is_solo === false;
@@ -47,7 +48,7 @@ const ProjectDetail = () => {
   });
 
   return (
-    <div className="flex flex-col lg:flex-row gap-4 sm:gap-6 md:gap-8 p-2 sm:p-4 md:p-8 min-h-screen bg-[#f8fafc] dark:bg-[#020617]
+    <div className="flex flex-col lg:flex-row gap-4 sm:gap-6 md:gap-8 p-2 sm:p-4 md:p-8 min-h-0 bg-[#f8fafc] dark:bg-[#020617]
       dark:bg-[radial-gradient(at_top_left,rgba(56,189,248,0.05),transparent),radial-gradient(at_bottom_right,rgba(139,92,246,0.05),transparent)]"
     >
       {/* Main Content Area: Header + Kanban */}
@@ -57,7 +58,7 @@ const ProjectDetail = () => {
         </TooltipProvider>
 
         {/* Kanban Board Container */}
-        <div className="flex-1 w-[97%] bg-white/50 dark:bg-zinc-900/20 rounded border border-zinc-200 dark:border-zinc-800/50 overflow-hidden">
+        <div className="w-full bg-white/50 dark:bg-zinc-900/20 rounded border border-zinc-200 dark:border-zinc-800/50 overflow-hidden">
        
         <KanbanBoard />
         </div>
@@ -72,7 +73,13 @@ const ProjectDetail = () => {
             <DangerZone projectId={activeProjectId} />
           )}
         </div>
-          {isTeamProject && <GroupChatBox projectName="Project Team" />}
+          {isTeamProject && (
+            <GroupChatBox
+              projectName="Project Team"
+              projectId={activeProjectId}
+              members={joinedMembers}
+            />
+          )}
           <ActivityBox projectId={activeProjectId} />
 
       </div>

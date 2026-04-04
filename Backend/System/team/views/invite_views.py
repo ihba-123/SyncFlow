@@ -6,6 +6,7 @@ from rest_framework.throttling import UserRateThrottle
 from django.shortcuts import get_object_or_404
 from django.core.exceptions import ValidationError, PermissionDenied
 import logging
+import cloudinary
 
 from ..serializers import UserInviteSerializer, UseInviteSerializer, InviteDetailSerializer
 from ..models import Project, ProjectMember
@@ -95,6 +96,55 @@ class UseInviteView(APIView):
 class ListInvitesView(APIView):
     permission_classes = [IsAuthenticated]
 
+    def _profile_photo_url(self, profile):
+        """Safe photo URL extraction with fallback"""
+        if profile and profile.photo:
+            try:
+                url = profile.photo.url
+                # Ensure absolute URL with protocol
+                if url.startswith("http"):
+                    return url
+                # Handle Cloudinary relative URLs like /image/upload/... or /raw/upload/...
+                if url.startswith("/"):
+                    cloud_name = cloudinary.config().cloud_name
+                    if cloud_name:
+                        return f"https://res.cloudinary.com/{cloud_name}{url}"
+                # Build absolute URL if relative
+                return f"{self.request.build_absolute_uri('/')}{url.lstrip('/')}"
+            except Exception:
+                pass
+        return None
+
+    def _get_member_name(self, user, profile):
+        """
+        Multiple fallback chain for member display name
+        Priority: user.get_display_name() → first_name+last_name → email prefix → "Unknown"
+        """
+        # Try User.get_display_name() method if available
+        if hasattr(user, "get_display_name") and callable(user.get_display_name):
+            name = user.get_display_name()
+            if name and name.strip():
+                return name
+
+        # Try first_name + last_name
+        if user.first_name and user.last_name:
+            name = f"{user.first_name} {user.last_name}".strip()
+            if name:
+                return name
+
+        if user.first_name:
+            return user.first_name
+
+        if user.last_name:
+            return user.last_name
+
+        # Use email prefix as fallback
+        if user.email:
+            return user.email.split("@")[0]
+
+        # Last resort
+        return "Unknown"
+
     def get(self, request, project_id: int):
         project = get_object_or_404(Project, id=project_id)
         current_membership = get_object_or_404(ProjectMember, project=project, user=request.user)
@@ -107,18 +157,31 @@ class ListInvitesView(APIView):
         # Optimized Member Retrieval
         members = project.members.select_related("user").order_by("-joined_at")
         from chatapp.models import Profile
-        profiles = Profile.objects.filter(user_id__in=[m.user_id for m in members]).in_bulk(field_name="user_id")
+        
+        user_ids = [m.user_id for m in members]
+        profiles = Profile.objects.filter(user_id__in=user_ids).in_bulk(
+            field_name="user_id"
+        )
 
         joined_members = []
         for m in members:
-            p = profiles.get(m.user_id)
+            user = m.user
+            profile = profiles.get(m.user_id)
+
+            # Always ensure name is populated (never null/empty)
+            member_name = self._get_member_name(user, profile)
+
+            # Get safe photo URL
+            photo_url = self._profile_photo_url(profile)
+
             joined_members.append({
-                "id": m.user.id,
-                "email": m.user.email,
-                "name": p.display_name if p and getattr(p, 'display_name', None) else m.user.email.split("@")[0],
-                "photo": p.photo.url if p and p.photo else None,
+                "id": user.id,
+                "email": user.email,
+                "username": user.username or "",
+                "name": member_name,  # Always populated
+                "photo": photo_url,
                 "role": m.get_role_display(),
-                "is_online": p.is_online if p else False,
+                "is_online": profile.is_online if profile else False,
                 "joined_at": m.joined_at,
             })
 

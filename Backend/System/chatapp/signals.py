@@ -60,6 +60,42 @@ def set_default_profile_photo(sender,instance, created , **kwargs):
         logger.info(f"Default profile photo already set for Profile {instance.id}")
 
 
+# Broadcast profile updates to all chat groups this user is in
+@receiver(post_save, sender=Profile)
+def broadcast_profile_update(sender, instance, created, **kwargs):
+    if created:
+        return  # Skip on creation, only broadcast on updates
+    
+    from channels.layers import get_channel_layer
+    from asgiref.sync import async_to_sync
+    from .serializer import PersonlDetailsSerializer
+    
+    try:
+        channel_layer = get_channel_layer()
+        user = instance.user
+        
+        # Find all chat rooms this user is in and broadcast profile update
+        from .models import ChatRoom
+        chat_rooms = ChatRoom.objects.filter(participants=user).values_list('id', flat=True)
+        
+        # Serialize the updated profile
+        profile_data = PersonlDetailsSerializer(instance).data
+        
+        for room_id in chat_rooms:
+            async_to_sync(channel_layer.group_send)(
+                f"chat_{room_id}",
+                {
+                    "type": "profile_update_event",
+                    "user_id": user.id,
+                    "profile": profile_data,
+                }
+            )
+        
+        logger.info(f"Profile update broadcasted for user {user.id} to {len(list(chat_rooms))} rooms")
+    except Exception as e:
+        logger.error(f"Failed to broadcast profile update: {e}", exc_info=True)
+
+
     
 # Signal to add a member to the project chat when they are added to the project
 @receiver(post_save, sender=ProjectMember)

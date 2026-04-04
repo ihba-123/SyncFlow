@@ -23,6 +23,7 @@ class UserManager(BaseUserManager.from_queryset(UserQuerySet)):
 class User(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(max_length=255, unique=True)
     name = models.CharField(max_length=200)
+    username = models.CharField(max_length=200, unique=True, null=True, blank=True)
     is_active = models.BooleanField(default=True)
     is_admin = models.BooleanField(default=False)
     has_completed_onboarding = models.BooleanField(default=False)

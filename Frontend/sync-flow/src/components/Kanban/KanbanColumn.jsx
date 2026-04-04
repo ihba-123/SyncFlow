@@ -10,9 +10,9 @@ function KanbanColumn({ col }) {
     <div
       className="flex flex-col w-[280px] min-w-[260px] rounded-2xl overflow-hidden
       bg-white border border-slate-200
-      h-[58vh] min-h-[420px] max-h-[700px]
-      sm:h-[60vh] sm:min-h-[460px]
-      lg:h-[62vh] lg:min-h-[500px]
+      h-[52vh] min-h-[360px] max-h-[560px]
+      sm:h-[54vh] sm:min-h-[390px]
+      lg:h-[56vh] lg:min-h-[420px]
       dark:bg-[#131929] dark:border-slate-700/40
       shadow-[0_4px_18px_rgba(15,23,42,0.12)] dark:shadow-[0_4px_24px_rgba(0,0,0,0.5)]"
     >

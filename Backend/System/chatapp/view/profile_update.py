@@ -34,6 +34,7 @@ class ProfileUpdateView(generics.UpdateAPIView):
         try:
             with transaction.atomic():
                 serializer.save()
+                logger.info(f"Profile updated for user {request.user.id}")
         except Exception as e:
             logger.error(f"Profile update failed for user {request.user.id}: {str(e)}")
             return Response(

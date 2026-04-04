@@ -4,17 +4,12 @@ import { useNavigate } from "react-router-dom";
 import {
   Activity,
   ArrowRight,
-  BarChart3,
-  CheckCircle2,
   CircleDot,
   Clock3,
   FolderKanban,
-  Gauge,
   RefreshCw,
   ShieldCheck,
   Sparkles,
-  Target,
-  TrendingUp,
   Users2,
 } from "lucide-react";
 import { dashboardService } from "../../api/khanban_api";
@@ -36,13 +31,13 @@ import {
   toNumber,
 } from "../../utils/dashboardUtils";
 import {
-  BarChart,
-  ChartPanel,
   DashboardSkeleton,
-  DonutChart,
-  MetricCard,
-  TeamLoadCard,
 } from "./DashboardSections";
+import MetricCards from "../../components/DashboardComponent/MetricCards";
+import ChartComponent from "../../components/DashboardComponent/ChartComponent";
+import ChartPanelComponent from "../../components/DashboardComponent/ChartPanelComponent";
+import { useUserProfileStore } from "../../stores/UserProfileStore";
+import { useUserProfile } from "../../hooks/UserProfile";
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -52,7 +47,7 @@ export default function Dashboard() {
   const projectId = activeProject?.id;
   const isSoloProject = !!activeProject?.is_solo;
   const [showCreateProject, setShowCreateProject] = useState(false);
-
+  const data = useUserProfile((state) => state.name);
   useEffect(() => {
     if (!showCreateProject) return;
 
@@ -142,14 +137,14 @@ export default function Dashboard() {
     ? "Personal delivery dashboard for one owner."
     : "Team delivery dashboard with live workload visibility.";
 
-  const heroAccent = isSoloProject ? "#0ea5e9" : "#8b5cf6";
+
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-slate-50 text-slate-900 transition-colors duration-300 dark:bg-[#07111c] dark:text-white">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(56,189,248,0.18),transparent_34%),radial-gradient(circle_at_top_right,rgba(139,92,246,0.16),transparent_32%),radial-gradient(circle_at_bottom_left,rgba(16,185,129,0.12),transparent_30%)] dark:bg-[radial-gradient(circle_at_top_left,rgba(56,189,248,0.12),transparent_34%),radial-gradient(circle_at_top_right,rgba(139,92,246,0.12),transparent_32%),radial-gradient(circle_at_bottom_left,rgba(16,185,129,0.1),transparent_30%)]" />
 
       <main className="relative mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
-        <section className="rounded-4xl border border-white/70 bg-white/85 p-5 shadow-[0_22px_55px_-34px_rgba(15,23,42,0.55)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/70 sm:p-6">
+        <section className="rounded-md border border-white/70 bg-white/85 p-5 shadow-[0_22px_55px_-34px_rgba(15,23,42,0.55)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/70 sm:p-6">
           <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
             <div className="max-w-3xl space-y-4">
               <div className="inline-flex items-center gap-2 rounded-full border border-white/80 bg-white/80 px-3 py-1 text-[10px] font-black uppercase tracking-[0.28em] text-slate-500 dark:border-white/10 dark:bg-white/5 dark:text-slate-300">
@@ -158,7 +153,7 @@ export default function Dashboard() {
               </div>
               <div className="space-y-2">
                 <h1 className="text-3xl font-black tracking-tight text-slate-950 dark:text-white sm:text-4xl lg:text-5xl">
-                  Welcome back, {displayName}
+                  Welcome back, {data.name } !
                 </h1>
                 <p className="max-w-2xl text-sm leading-6 text-slate-500 dark:text-slate-400 sm:text-base">
                   {summaryLine}{" "}
@@ -184,7 +179,7 @@ export default function Dashboard() {
                   {isSoloProject ? "Solo project" : "Team project"}
                 </span>
                 {dashboardQuery.isFetching && (
-                  <span className="inline-flex items-center gap-2 rounded-full bg-emerald-500/10 px-3 py-1.5 text-emerald-600 dark:text-emerald-300">
+                  <span className="inline-flex items-center gap-2 rounded-sm bg-emerald-500/10 px-3 py-1.5 text-emerald-600 dark:text-emerald-300">
                     <Activity className="h-4 w-4 animate-pulse" />
                     Syncing live data
                   </span>
@@ -196,7 +191,7 @@ export default function Dashboard() {
               <button
                 type="button"
                 onClick={() => navigate("/dashboard/project")}
-                className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200/90 bg-white px-4 py-3 text-sm font-black tracking-wide text-slate-800 transition-all hover:-translate-y-0.5 hover:border-slate-300 hover:bg-slate-50 shadow-sm dark:border-white/10 dark:bg-slate-950/60 dark:text-white dark:hover:bg-slate-900"
+                className="inline-flex items-center justify-center gap-2 rounded-sm border border-slate-200/90 bg-white px-4 py-3 text-sm font-black tracking-wide text-slate-800 transition-all hover:-translate-y-0.5 hover:border-slate-300 hover:bg-slate-50 shadow-sm dark:border-white/10 dark:bg-slate-950/60 dark:text-white dark:hover:bg-slate-900"
               >
                 <FolderKanban className="h-4 w-4" />
                 Projects
@@ -204,7 +199,7 @@ export default function Dashboard() {
               <button
                 type="button"
                 onClick={() => setShowCreateProject(true)}
-                className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-900 bg-slate-900 px-4 py-3 text-sm font-black tracking-wide text-white shadow-[0_10px_30px_-16px_rgba(15,23,42,0.75)] transition-all hover:-translate-y-0.5 hover:bg-slate-800 dark:border-white/10 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-100"
+                className="inline-flex items-center justify-center gap-2 rounded-sm scale-100 cursor-pointer border border-slate-900 bg-slate-900 px-4 py-3 text-sm font-black tracking-wide text-white shadow-[0_10px_30px_-16px_rgba(15,23,42,0.75)] transition-all hover:-translate-y-0.5 hover:bg-slate-800 dark:border-white/10 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-100"
               >
                 <ArrowRight className="h-4 w-4" />
                 Create project
@@ -213,8 +208,11 @@ export default function Dashboard() {
           </div>
         </section>
 
+
+       
+       {/* //Shows different states: no project, loading, error, or the dashboard content */}
         {!projectId ? (
-          <section className="rounded-4xl border border-dashed border-slate-300/80 bg-white/80 p-8 text-center shadow-[0_18px_45px_-28px_rgba(15,23,42,0.35)] dark:border-white/10 dark:bg-slate-950/60">
+          <section className="rounded-sm border border-dashed border-slate-300/80 bg-white/80 p-8 text-center shadow-[0_18px_45px_-28px_rgba(15,23,42,0.35)] dark:border-white/10 dark:bg-slate-950/60">
             <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-900 text-white dark:bg-white dark:text-slate-900">
               <FolderKanban className="h-7 w-7" />
             </div>
@@ -267,7 +265,7 @@ export default function Dashboard() {
               <button
                 type="button"
                 onClick={() => navigate(`/projects/${projectId}`)}
-                className="inline-flex items-center gap-2 rounded-2xl border border-slate-200/90 bg-white px-4 py-3 text-sm font-black tracking-wide text-slate-800 shadow-sm transition-all hover:-translate-y-0.5 hover:border-slate-300 hover:bg-slate-50 dark:border-white/10 dark:bg-slate-950/60 dark:text-white dark:hover:bg-slate-900"
+                className="inline-flex items-center gap-2 rounded-sm border border-slate-200/90 bg-white px-4 py-3 text-sm font-black tracking-wide text-slate-800 shadow-sm transition-all hover:-translate-y-0.5 hover:border-slate-300 hover:bg-slate-50 dark:border-white/10 dark:bg-slate-950/60 dark:text-white dark:hover:bg-slate-900"
               >
                 Open project
               </button>
@@ -275,161 +273,20 @@ export default function Dashboard() {
           </section>
         ) : (
           <>
-            <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-              <MetricCard
-                icon={FolderKanban}
-                label="Total tasks"
-                value={dashboardSummary.totalTasks}
-                detail={
-                  projectId
-                    ? `Across ${activeProject?.name || "this project"}`
-                    : "No project selected"
-                }
-                accent={heroAccent}
-              />
-              <MetricCard
-                icon={CheckCircle2}
-                label="Completion"
-                value={`${dashboardSummary.progress}%`}
-                detail={`${dashboardSummary.doneTasks} tasks marked done`}
-                accent="#10b981"
-              />
-              <MetricCard
-                icon={TrendingUp}
-                label="7-day velocity"
-                value={toNumber(stats.velocity_last_7_days)}
-                detail="Tasks completed in the last 7 days"
-                accent="#f59e0b"
-              />
-              <MetricCard
-                icon={Target}
-                label="Open work"
-                value={dashboardSummary.openTasks}
-                detail={`${dashboardSummary.highPriorityTasks} high-priority items`}
-                accent="#ef4444"
-              />
-            </section>
 
-            <section className="grid gap-6 xl:grid-cols-[1.35fr_0.95fr]">
-              <ChartPanel
-                title="Status distribution"
-                subtitle={
-                  isSoloProject
-                    ? "How your personal workload is spread across stages."
-                    : "How the team's work is spread across the board."
-                }
-                icon={BarChart3}
-              >
-                <DonutChart
-                  items={statusSeries}
-                  total={dashboardSummary.totalTasks}
-                  centerLabel="Progress"
-                  centerValue={`${dashboardSummary.progress}%`}
-                />
-              </ChartPanel>
+          {/* // Passes the summary metrics to the MetricCards component for display */}
+           <MetricCards  dashboardSummary={dashboardSummary} totalTasks={dashboardSummary.totalTasks} progress={dashboardSummary.progress} doneTasks={dashboardSummary.doneTasks} velocity_last_7_days={stats.velocity_last_7_days} openTasks={dashboardSummary.openTasks} highPriorityTasks={dashboardSummary.highPriorityTasks} />
 
-              <ChartPanel
-                title="Live snapshot"
-                subtitle="Auto-refreshes every few seconds and on websocket updates."
-                icon={Gauge}
-              >
-                <div className="space-y-4">
-                  <div className="rounded-3xl border border-slate-200/80 bg-slate-50/90 p-4 dark:border-white/10 dark:bg-slate-900/50">
-                    <div className="flex items-center justify-between gap-3">
-                      <div>
-                        <p className="text-xs font-black uppercase tracking-[0.26em] text-slate-500 dark:text-slate-400">
-                          Workspace mode
-                        </p>
-                        <p className="mt-1 text-xl font-black text-slate-900 dark:text-white">
-                          {isSoloProject ? "Solo" : "Team"}
-                        </p>
-                      </div>
-                      <div
-                        className="rounded-2xl px-3 py-2 text-sm font-bold text-white"
-                        style={{
-                          background: `linear-gradient(135deg, ${heroAccent}, #1392ec)`,
-                        }}
-                      >
-                        Live
-                      </div>
-                    </div>
-                    <p className="mt-3 text-sm leading-6 text-slate-500 dark:text-slate-400">
-                      {summaryLine}
-                    </p>
-                  </div>
 
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    <div className="rounded-2xl border border-slate-200/80 bg-white p-4 dark:border-white/10 dark:bg-slate-950/50">
-                      <p className="text-[10px] font-black uppercase tracking-[0.24em] text-slate-400">
-                        Priority pressure
-                      </p>
-                      <p className="mt-2 text-3xl font-black text-slate-900 dark:text-white">
-                        {dashboardSummary.highPriorityTasks}
-                      </p>
-                      <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                        High-priority items in flight
-                      </p>
-                    </div>
-                    <div className="rounded-2xl border border-slate-200/80 bg-white p-4 dark:border-white/10 dark:bg-slate-950/50">
-                      <p className="text-[10px] font-black uppercase tracking-[0.24em] text-slate-400">
-                        Owners with work
-                      </p>
-                      <p className="mt-2 text-3xl font-black text-slate-900 dark:text-white">
-                        {dashboardSummary.activeOwners}
-                      </p>
-                      <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                        Members currently assigned tasks
-                      </p>
-                    </div>
-                  </div>
+          {/* // Passes the chart data and summary to the ChartComponent for rendering the charts and live snapshot */}
+           <ChartComponent dashboardSummary={dashboardSummary} dashboardQuery={dashboardQuery} totalTasks={dashboardSummary.totalTasks} progress={dashboardSummary.progress} doneTasks={dashboardSummary.doneTasks} velocity_last_7_days={stats.velocity_last_7_days} openTasks={dashboardSummary.openTasks} statusSeries={statusSeries} highPriorityTasks={dashboardSummary.highPriorityTasks} summaryLine={summaryLine} activeOwners={dashboardSummary.activeOwners} />
 
-                  <div className="flex items-center justify-between rounded-2xl border border-slate-200/80 bg-slate-50/90 px-4 py-3 text-sm dark:border-white/10 dark:bg-slate-900/50">
-                    <span className="text-slate-500 dark:text-slate-400">
-                      Last refresh
-                    </span>
-                    <span className="font-bold text-slate-900 dark:text-white">
-                      {dashboardQuery.dataUpdatedAt
-                        ? new Date(
-                            dashboardQuery.dataUpdatedAt,
-                          ).toLocaleTimeString([], {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })
-                        : "Just now"}
-                    </span>
-                  </div>
-                </div>
-              </ChartPanel>
-            </section>
 
-            <section className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
-              <ChartPanel
-                title="Priority mix"
-                subtitle="Where the board needs attention right now."
-                icon={Sparkles}
-              >
-                <BarChart
-                  items={prioritySeries}
-                  total={sumValues(prioritySeries)}
-                  emptyLabel="No priority data available yet."
-                />
-              </ChartPanel>
-
-              <ChartPanel
-                title={isSoloProject ? "Solo focus" : "Team load"}
-                subtitle={
-                  isSoloProject
-                    ? "A compact overview for single-owner projects."
-                    : "Distribution of assigned work across contributors."
-                }
-                icon={isSoloProject ? ShieldCheck : Users2}
-              >
-                <TeamLoadCard items={workloadSeries} isSolo={isSoloProject} />
-              </ChartPanel>
-            </section>
+          {/* // Renders the priority mix and team load charts using the ChartPanelComponent */}
+            <ChartPanelComponent prioritySeries={prioritySeries} workloadSeries={workloadSeries} isSoloProject={isSoloProject} />
 
             <section className="grid gap-4 md:grid-cols-3">
-              <div className="rounded-[28px] border border-white/70 bg-white/85 p-5 backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/70">
+              <div className="rounded-sm border border-white/70 bg-white/85 p-5 backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/70">
                 <div className="flex items-center gap-2 text-sm font-bold text-slate-700 dark:text-slate-200">
                   <Clock3 className="h-4 w-4 text-sky-500" />
                   Real-time updates
@@ -440,7 +297,7 @@ export default function Dashboard() {
                   quickly.
                 </p>
               </div>
-              <div className="rounded-[28px] border border-white/70 bg-white/85 p-5 backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/70">
+              <div className="rounded-sm border border-white/70 bg-white/85 p-5 backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/70">
                 <div className="flex items-center gap-2 text-sm font-bold text-slate-700 dark:text-slate-200">
                   <CircleDot className="h-4 w-4 text-emerald-500" />
                   Project mode
@@ -451,7 +308,7 @@ export default function Dashboard() {
                     : "Team mode emphasizes collaboration, ownership, and workload balance."}
                 </p>
               </div>
-              <div className="rounded-[28px] border border-white/70 bg-white/85 p-5 backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/70">
+              <div className="rounded-sm border border-white/70 bg-white/85 p-5 backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/70">
                 <div className="flex items-center gap-2 text-sm font-bold text-slate-700 dark:text-slate-200">
                   <RefreshCw className="h-4 w-4 text-violet-500" />
                   Sync health
@@ -462,7 +319,7 @@ export default function Dashboard() {
                     : "Snapshot is stable and ready for live updates."}
                 </p>
               </div>
-            </section>
+            </section>  
           </>
         )}
       </main>
