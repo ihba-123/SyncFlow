@@ -43,13 +43,25 @@ const TeamView = () => {
   const removeMutation = useMutation({
     mutationFn: ({ project_id, user_id }) => removeMember(project_id, user_id),
     
-    onSuccess: () => {
-      resetActiveProject();
-      localStorage.removeItem("active-project-storage"); // extra safety
-      queryClient.removeQueries({ queryKey: ["projects"] });
+    onSuccess: (_data, variables) => {
+      const removedUserId = Number(variables?.user_id);
+      const currentUserId = Number(authData?.id);
+      const removedCurrentUser =
+        Number.isFinite(removedUserId) &&
+        Number.isFinite(currentUserId) &&
+        removedUserId === currentUserId;
+
+      // Keep active project context when removing other members.
+      if (removedCurrentUser) {
+        resetActiveProject();
+        localStorage.removeItem("active-project-storage");
+        queryClient.invalidateQueries({ queryKey: ["activeProject"] });
+        navigate("/dashboard/project", { replace: true });
+      }
+
+      queryClient.invalidateQueries({ queryKey: ["projects"] });
       queryClient.invalidateQueries({ queryKey: ["projectDetails"] });
       queryClient.invalidateQueries({ queryKey: ["members", id] });
-      queryClient.invalidateQueries({ queryKey: ["activeProject"] });
       queryClient.invalidateQueries({ queryKey: ["archivedProjects"] });
       setOpenMenuId(null);
     },
@@ -145,7 +157,11 @@ const TeamView = () => {
           </h2>
 
           <div className="space-y-4">
-            {joined_members.map((member) => (
+            {joined_members.map((member) => {
+              const isCurrentUser = Number(member.id) === Number(authData?.id);
+              const isMemberOnline = Boolean(member.is_online) || isCurrentUser;
+
+              return (
               <div
                 key={member.id}
                 className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-5
@@ -165,7 +181,7 @@ const TeamView = () => {
                         className="h-full w-full object-cover"
                       />
                     </div>
-                    {member.is_online ? (
+                    {isMemberOnline ? (
                       <span
                         className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full
                         bg-emerald-500 border-2 border-white dark:border-[#0a0c14]"
@@ -281,7 +297,7 @@ const TeamView = () => {
                   )}
                 </div>
               </div>
-            ))}
+            )})}
           </div>
         </div>
 

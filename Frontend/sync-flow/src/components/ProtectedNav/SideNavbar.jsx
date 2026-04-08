@@ -55,7 +55,11 @@ export function Sidebar({ isExpanded, setIsExpanded, isMobile }) {
 
   const bottomItems = [
     { icon: ArchiveRestore, label: "Archive", to: "/project-archive" },
-    { icon: Settings, label: "Settings", to: "/settings" },
+    {
+      icon: Settings,
+      label: "Settings",
+      to: projectData ? `/projects/${projectData}/settings` : "/settings",
+    },
   ];
 
   const filteredNavItems = navItems.filter(

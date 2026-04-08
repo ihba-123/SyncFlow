@@ -68,11 +68,7 @@ const ProjectDetail = () => {
 
       {/* Sidebar: Danger Zone & Activity */}
       <div className="w-full lg:w-88 xl:w-100 2xl:w-md shrink-0 flex flex-col gap-4 sm:gap-6 md:gap-8">
-        <div className="lg:h-fit">
-          {role === "viewer" ? null : (
-            <DangerZone projectId={activeProjectId} />
-          )}
-        </div>
+     
           {isTeamProject && (
             <GroupChatBox
               projectName="Project Team"

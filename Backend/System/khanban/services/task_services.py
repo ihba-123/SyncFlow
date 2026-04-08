@@ -1,7 +1,9 @@
 from django.shortcuts import get_object_or_404
 from django.db import transaction, models
 from django.db.models import Q, Count
+from django.db.models.functions import TruncDate
 from django.utils.timezone import now, timedelta
+from django.utils.timezone import localdate
 from khanban.models import Task, TaskComment, TaskAttachment
 from team.models import ProjectMember, Project
 from khanban.utils.fraction_ordering import order_between
@@ -9,6 +11,33 @@ from khanban.serializers import TaskSerializer
 from khanban.utils.broadcast_helper import broadcast_task_update, create_activity_log
 from khanban.services.offline_services import save_for_offline_users
 from activitylog.activity.services import log_activity , ActivityAction
+
+
+def _build_daily_trend(queryset, field_name, start_date, days=7):
+    day_counts = {start_date + timedelta(days=index): 0 for index in range(days)}
+    date_field = f"{field_name}__date"
+
+    daily_rows = (
+        queryset.filter(**{f"{date_field}__gte": start_date, f"{date_field}__lte": start_date + timedelta(days=days - 1)})
+        .annotate(day=TruncDate(field_name))
+        .values("day")
+        .annotate(count=Count("id"))
+        .order_by("day")
+    )
+
+    for row in daily_rows:
+        day = row.get("day")
+        if day in day_counts:
+            day_counts[day] = row.get("count", 0)
+
+    return [
+        {
+            "date": day.isoformat(),
+            "label": day.strftime("%a"),
+            "value": day_counts[day],
+        }
+        for day in day_counts
+    ]
 
 # -------------------- CREATE TASK --------------------
 @transaction.atomic
@@ -150,17 +179,23 @@ def get_filtered_tasks(project_id, filters):
         queryset = queryset.filter(assigned_to_id=member)
     return queryset
 
+
 # -------------------- DASHBOARD STATS --------------------
 def get_dashboard_stats(project_id):
     tasks = Task.objects.filter(project_id=project_id)
     total_count = tasks.count()
     done_count = tasks.filter(status='done').count()
+    start_date = localdate() - timedelta(days=6)
+    created_trend = _build_daily_trend(tasks, "created_at", start_date)
+    completed_trend = _build_daily_trend(tasks.filter(status='done'), "updated_at", start_date)
 
     stats = {
         "status_distribution": tasks.values('status').annotate(count=Count('id')),
         "priority_distribution": tasks.values('priority').annotate(count=Count('id')),
         "total_progress": (done_count / total_count * 100) if total_count > 0 else 0,
         "velocity_last_7_days": tasks.filter(status='done', updated_at__gte=now()-timedelta(days=7)).count(),
-        "workload_distribution": tasks.values('assigned_to__id', 'assigned_to__email').annotate(task_count=Count('id'))
+        "workload_distribution": tasks.values('assigned_to__id', 'assigned_to__email').annotate(task_count=Count('id')),
+        "task_creation_trend_last_7_days": created_trend,
+        "task_completion_trend_last_7_days": completed_trend,
     }
     return stats

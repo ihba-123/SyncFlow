@@ -20,6 +20,7 @@ import TeamList from "./features/team/TeamList";
 import InvitePage from "./pages/dashboard/InvitePage";
 import Join_InvitePage from "./pages/dashboard/Join_InvitePage";
 import ProjectRestore from "./features/RestoreProject/ProjectRestore";
+import ProjectSettings from "./features/project/ProjectSettings";
 import { useProjectRole } from "./hooks/useProjectRole";
 import MessageUi from "./components/Message/MessageUi";
 const App = () => {
@@ -60,6 +61,9 @@ const App = () => {
           <Route path="/project-archive" element={<ProjectRestore/>} />
 
           <Route path="/projects/:id" element={<ProjectDetail />} />
+          <Route path="/projects/:id/settings" element={<ProjectSettings />} />
+          <Route path="/projects/:id/edit" element={<ProjectSettings />} />
+          <Route path="/settings" element={<ProjectSettings />} />
           <Route path="/projects/:project_id/invite" element={<InvitePage />} />
           <Route path="/teams/:id/Projectmembers" element={<TeamList />} />
           <Route path="/users/:id" element={<UserProfileEdit />} />

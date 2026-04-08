@@ -1,8 +1,9 @@
-export const STATUS_ORDER = ["todo", "in_progress", "inreview", "done"];
+export const STATUS_ORDER = ["todo", "in_progress", "review", "done"];
 export const STATUS_LABELS = {
   todo: "To Do",
   in_progress: "In Progress",
   inprogress: "In Progress",
+  review: "Review",
   inreview: "Review",
   done: "Done",
 };
@@ -11,6 +12,7 @@ export const STATUS_COLORS = {
   todo: "#60a5fa",
   in_progress: "#f59e0b",
   inprogress: "#f59e0b",
+  review: "#a855f7",
   inreview: "#a855f7",
   done: "#10b981",
 };
@@ -49,7 +51,12 @@ export const buildSeries = (items = [], order = [], colors = {}, labels = {}) =>
     const rawKey = normalizeKey(
       item?.status ?? item?.priority ?? item?.name ?? item?.label,
     );
-    const key = rawKey === "inprogress" ? "in_progress" : rawKey;
+    const key =
+      rawKey === "inprogress"
+        ? "in_progress"
+        : rawKey === "inreview"
+          ? "review"
+          : rawKey;
     const value = toNumber(item?.count ?? item?.task_count ?? item?.value ?? 0);
 
     if (!key) return;

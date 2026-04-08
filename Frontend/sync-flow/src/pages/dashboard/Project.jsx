@@ -7,9 +7,10 @@ import {
   Image as ImageIcon,
   ArrowRight,
 } from "lucide-react";
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { projectList } from "../../api/Project";
 import { useProjectStore } from "../../stores/ProjectType";
+import { useActiveProjectStore } from "../../stores/ActiveProject";
 import ProjectSkeleton from "../../components/skeleton/ProjectSkeleton";
 import { SoloProject } from "../../features/project/SoloProject";
 import { TeamProject } from "../../features/project/TeamProject";
@@ -20,7 +21,8 @@ const Project = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { is_solo, setIsSolo } = useProjectStore();
   const { mutateAsync: setActiveProjects, isLoading } = useSetActiveProject();
-  const saveMode = localStorage.getItem("projectViewMode");
+  const queryClient = useQueryClient();
+  const resetActiveProject = useActiveProjectStore((state) => state.reset);
   const [viewMode, setViewMode] = useState(() => {
     const savedMode = localStorage.getItem("projectViewMode");
     if (savedMode) return savedMode;
@@ -31,7 +33,8 @@ const Project = () => {
     const previousSavedMode = localStorage.getItem("projectViewMode");
 
     if (previousSavedMode && previousSavedMode !== viewMode) {
-      localStorage.removeItem("active-project-storage");
+      resetActiveProject();
+      queryClient.removeQueries({ queryKey: ["activeProject"] });
     }
 
     localStorage.setItem("projectViewMode", viewMode);
@@ -40,7 +43,7 @@ const Project = () => {
     if (is_solo !== shouldBeSolo) {
       setIsSolo(shouldBeSolo);
     }
-  }, [viewMode, setIsSolo, is_solo]);
+  }, [viewMode, resetActiveProject, queryClient, setIsSolo, is_solo]);
 
   const {
     data: projects,
@@ -79,32 +82,23 @@ const Project = () => {
 
   const navigate = useNavigate();
 
-  const projectDetail = async (e) => {
-    const card = e.target.closest(".group.cursor-pointer");
-    if (card) {
-      const projectName = card.querySelector("h3")?.textContent;
-      const project = projects?.find((p) => p.name === projectName);
+  const handleProjectSelect = async (project) => {
+    if (!project || isLoading) return;
 
-      if (project && !isLoading) {
-        try {
-          await setActiveProjects(project.id);
-
-          navigate(`/projects/${project.id}`);
-        } catch (error) {
-          console.error("Failed to sync project before navigation", error);
-        }
-      }
+    try {
+      await setActiveProjects(project.id);
+      navigate(`/projects/${project.id}`);
+    } catch (error) {
+      console.error("Failed to sync project before navigation", error);
     }
   };
 
   return (
     <div
-      onClick={projectDetail}
-      className="relative min-h-screen bg-slate-50 dark:bg-[#020617]  bg-[#f8fafc] dark:bg-[#020617]
-      dark:bg-[radial-gradient(at_top_left,_rgba(56,189,248,0.05),_transparent),radial-gradient(at_bottom_right,_rgba(139,92,246,0.05),_transparent)] text-slate-900 dark:text-white font-sans transition-colors duration-500 overflow-x-hidden"
+      className="relative min-h-screen bg-[#f8fafc] text-slate-900 transition-colors duration-500 overflow-x-hidden dark:bg-[#020617] dark:text-white dark:bg-[radial-gradient(at_top_left,rgba(56,189,248,0.05),transparent),radial-gradient(at_bottom_right,rgba(139,92,246,0.05),transparent)]"
     >
       {isLoading && (
-        <div className="fixed inset-0 z-[100] bg-black/20 backdrop-blur-sm flex items-center justify-center">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
         </div>
       )}
@@ -180,11 +174,7 @@ const Project = () => {
                   <GlassCard
                     key={project.id}
                     project={project}
-                    onClick={() => {
-                      setActiveProjects(project.id, {
-                        onSuccess: () => navigate(`/projects/${project.id}`),
-                      });
-                    }}
+                    onClick={() => handleProjectSelect(project)}
                   />
                 ),
               )}
@@ -200,8 +190,11 @@ const Project = () => {
 };
 
 // GlassCard component
-const GlassCard = ({ project }) => (
-  <div className="group cursor-pointer bg-white/90 dark:bg-white/[0.03] backdrop-blur-lg border border-black/30 dark:border-white/10 rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:border-blue-500 hover:shadow-2xl hover:shadow-blue-500/10 flex flex-col h-[350px]">
+const GlassCard = ({ project, onClick }) => (
+  <div
+    onClick={onClick}
+    className="group cursor-pointer bg-white/90 backdrop-blur-lg border border-black/30 rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:border-blue-500 hover:shadow-2xl hover:shadow-blue-500/10 flex flex-col h-[350px] dark:bg-white/3 dark:border-white/10"
+  >
     <div className="relative w-full h-[175px] bg-slate-100 dark:bg-slate-900 border-b border-slate-100 dark:border-white/5 flex items-center justify-center overflow-hidden">
       {project.image ? (
         <img
@@ -228,7 +221,7 @@ const GlassCard = ({ project }) => (
       <h3 className="text-md font-black text-slate-900 dark:text-white truncate uppercase tracking-tight">
         {project.name || "UNNAMED_ASSET"}
       </h3>
-      <p className="text-slate-500 dark:text-slate-400 text-[11px] leading-relaxed line-clamp-2 mt-1.5 mb-5 min-h-[2.5rem]">
+      <p className="text-slate-500 dark:text-slate-400 text-[11px] leading-relaxed line-clamp-2 mt-1.5 mb-5 min-h-10">
         {project.description || "No project metadata available."}
       </p>
       <div className="mt-auto pt-4 border-t border-slate-50 dark:border-white/5 flex items-center justify-between">

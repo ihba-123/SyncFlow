@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ChatHeader } from './ChatHeader';
 import { ChatItem } from './ChatItems';
 import { ChatSidebar } from './ChatSidebar'; // Make sure this exists
 import { useMediaQuery } from '../../hooks/useMobile';
 import { ChatWindow } from './ChatWindow';
+
 export default function Home() {
   const [selectedChatId, setSelectedChatId] = useState(null);
   const isMobile = useMediaQuery('(max-width: 768px)');
@@ -11,7 +12,6 @@ export default function Home() {
 
   useEffect(() => {
     setIsClient(true);
-    // Set default chat on desktop
     if (!isMobile && !selectedChatId) {
       setSelectedChatId('1');
     }
@@ -21,7 +21,6 @@ export default function Home() {
 
   return (
     <div className="flex h-screen bg-[#0b141a] overflow-hidden">
-      {/* Desktop/Tablet Sidebar */}
       <div className="hidden md:flex md:w-[260px] lg:w-[320px] flex-col border-r border-[#202d33]">
         <ChatSidebar
           selectedChatId={selectedChatId}
@@ -29,7 +28,6 @@ export default function Home() {
         />
       </div>
 
-      {/* Mobile: Chat List - Full width when no chat selected */}
       <div className={`md:hidden ${selectedChatId ? 'hidden' : 'flex'} w-full flex-col`}>
         <ChatSidebar
           selectedChatId={selectedChatId}
@@ -37,7 +35,6 @@ export default function Home() {
         />
       </div>
 
-      {/* Mobile: Chat Window - Full width when chat selected */}
       <div
         className={`md:hidden ${selectedChatId ? 'fixed inset-0 z-50' : 'hidden'} w-full flex flex-col bg-[#0b141a]`}
       >
@@ -50,9 +47,8 @@ export default function Home() {
         )}
       </div>
 
-      {/* Desktop/Tablet: Chat Window */}
       {selectedChatId ? (
-        <div className="hidden md:flex flex-1 flex-col">
+        <div className="hidden md:flex min-h-0 flex-1 flex-col">
           <ChatWindow
             chatId={selectedChatId}
             onBack={undefined}

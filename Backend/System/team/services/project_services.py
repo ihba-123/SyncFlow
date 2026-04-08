@@ -87,8 +87,11 @@ def project_update(*,user, project_id:int , data:dict , file=None )->Project:
 
     project.name = serializer.validated_data['name']
     project.description = serializer.validated_data['description']
+    remove_image = serializer.validated_data.get('remove_image', False)
 
-    if file and 'image' in file:
+    if remove_image:
+        project.image = None
+    elif file and 'image' in file:
         project.image = file['image']
     
     project.save()

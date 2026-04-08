@@ -48,7 +48,7 @@ export function ProjectHeader() {
   const hiddenCount = members.length - limit;
 
   const userInvite = () => navigate(`/projects/${id}/invite`);
-  const handleEdit = () => navigate(`/projects/${id}/edit`);
+  const handleEdit = () => navigate(`/projects/${id}/settings`);
 
   if (projectLoading || membersLoading) return <ProjectHeaderSkeleton />;
   if (membersError) return navigate("/dashboard");

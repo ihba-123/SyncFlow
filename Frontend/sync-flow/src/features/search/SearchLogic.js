@@ -126,7 +126,11 @@ export const SearchLogic = () => {
     }
 
     if (item.type === "task") {
-      navigate(`/tasks/${item.id}`);
+      if (item.project_id) {
+        navigate(`/projects/${item.project_id}`);
+      } else {
+        navigate("/dashboard/project");
+      }
       return;
     }
 

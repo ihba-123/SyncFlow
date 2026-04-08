@@ -60,6 +60,39 @@ export const updateProject = async (project_id) => {
   return res.data;
 }
 
+export const getProjectById = async (project_id) => {
+  if (!project_id || project_id === "undefined") {
+    throw new Error("project_id is required");
+  }
+
+  const res = await api.get(`projects/${project_id}/`);
+  return res.data;
+};
+
+export const updateProjectSettings = async (project_id, payload) => {
+  if (!project_id || project_id === "undefined") {
+    throw new Error("project_id is required");
+  }
+
+  const formData = new FormData();
+  formData.append("name", payload?.name ?? "");
+  formData.append("description", payload?.description ?? "");
+  formData.append("is_solo", String(Boolean(payload?.is_solo)));
+  formData.append("remove_image", String(Boolean(payload?.remove_image)));
+
+  if (!payload?.remove_image && payload?.image) {
+    formData.append("image", payload.image);
+  }
+
+  const res = await api.patch(`projects/${project_id}/update/`, formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+
+  return res.data;
+};
+
 //Remove memeber from project
 export const removeMember = async (project_id, user_id) => {
   const res = await api.post(`projects/${project_id}/remove/${user_id}/`, {

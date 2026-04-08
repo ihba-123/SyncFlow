@@ -82,7 +82,7 @@ export function MessageInput({ onSendMessage }) {
                   setMessage(message + emoji);
                   inputRef.current?.focus();
                 }}
-                className="text-xl hover:scale-110 transition-transform"
+                className="text-xl transition-transform hover:scale-110"
               >
                 {emoji}
               </button>

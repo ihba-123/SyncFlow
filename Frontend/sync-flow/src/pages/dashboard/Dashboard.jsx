@@ -30,9 +30,7 @@ import {
   sumValues,
   toNumber,
 } from "../../utils/dashboardUtils";
-import {
-  DashboardSkeleton,
-} from "./DashboardSections";
+import { DashboardSkeleton, ChartPanel, LineChart } from "./DashboardSections";
 import MetricCards from "../../components/DashboardComponent/MetricCards";
 import ChartComponent from "../../components/DashboardComponent/ChartComponent";
 import ChartPanelComponent from "../../components/DashboardComponent/ChartPanelComponent";
@@ -115,6 +113,22 @@ export default function Dashboard() {
     [stats.workload_distribution],
   );
 
+  const lineTrendSeries = useMemo(
+    () => [
+      {
+        key: "completed",
+        label: "Completed tasks",
+        color: "#38bdf8",
+        points: (stats.task_completion_trend_last_7_days || []).map((item) => ({
+          date: item.date,
+          label: item.label,
+          value: item.value,
+        })),
+      },
+    ],
+    [stats.task_completion_trend_last_7_days],
+  );
+
   const dashboardSummary = useMemo(() => {
     const totalTasks = sumValues(statusSeries);
     const doneTasks =
@@ -144,7 +158,7 @@ export default function Dashboard() {
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(56,189,248,0.18),transparent_34%),radial-gradient(circle_at_top_right,rgba(139,92,246,0.16),transparent_32%),radial-gradient(circle_at_bottom_left,rgba(16,185,129,0.12),transparent_30%)] dark:bg-[radial-gradient(circle_at_top_left,rgba(56,189,248,0.12),transparent_34%),radial-gradient(circle_at_top_right,rgba(139,92,246,0.12),transparent_32%),radial-gradient(circle_at_bottom_left,rgba(16,185,129,0.1),transparent_30%)]" />
 
       <main className="relative mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
-        <section className="rounded-md border border-white/70 bg-white/85 p-5 shadow-[0_22px_55px_-34px_rgba(15,23,42,0.55)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/70 sm:p-6">
+        <section className="rounded-md border border-white/70 bg-white/85 p-5 shadow-[0_22px_55px_-34px_rgba(15,23,42,0.55)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/40 sm:p-6">
           <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
             <div className="max-w-3xl space-y-4">
               <div className="inline-flex items-center gap-2 rounded-full border border-white/80 bg-white/80 px-3 py-1 text-[10px] font-black uppercase tracking-[0.28em] text-slate-500 dark:border-white/10 dark:bg-white/5 dark:text-slate-300">
@@ -284,6 +298,22 @@ export default function Dashboard() {
 
           {/* // Renders the priority mix and team load charts using the ChartPanelComponent */}
             <ChartPanelComponent prioritySeries={prioritySeries} workloadSeries={workloadSeries} isSoloProject={isSoloProject} />
+
+            <section className="grid gap-6 xl:grid-cols-1">
+              <ChartPanel
+                title="Activity trend"
+                subtitle="Daily completed tasks for the last 7 days."
+                icon={Activity}
+              >
+                <LineChart
+                  series={lineTrendSeries}
+                  title="Activity trend"
+                  xLabel="Days"
+                  yLabel="Tasks"
+                  emptyLabel="No activity trend data available yet."
+                />
+              </ChartPanel>
+            </section>
 
             <section className="grid gap-4 md:grid-cols-3">
               <div className="rounded-sm border border-white/70 bg-white/85 p-5 backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/70">
