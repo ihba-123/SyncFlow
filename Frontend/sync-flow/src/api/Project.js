@@ -69,6 +69,8 @@ export const getProjectById = async (project_id) => {
   return res.data;
 };
 
+
+//Update project settings
 export const updateProjectSettings = async (project_id, payload) => {
   if (!project_id || project_id === "undefined") {
     throw new Error("project_id is required");
@@ -92,6 +94,8 @@ export const updateProjectSettings = async (project_id, payload) => {
 
   return res.data;
 };
+
+
 
 //Remove memeber from project
 export const removeMember = async (project_id, user_id) => {

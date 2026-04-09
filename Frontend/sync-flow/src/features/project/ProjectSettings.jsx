@@ -292,7 +292,7 @@ export default function ProjectSettings() {
 
 {/* // Only show members tab if it's a team project */}
         {activeTab === "members" && (
-          <ProjectMemberSetting projectId={projectId} teamData={teamData} role={role} navigate={navigate} project={project} />
+          <ProjectMemberSetting  projectId={projectId} teamData={teamData} role={role} navigate={navigate} project={project} />
         )}
 
         {activeTab === "general" && <div className="space-y-6">

@@ -30,9 +30,10 @@ export const getMessageList = async (roomId, page = 1) => {
     return response.data;
 };
 
+
 export const sendAttachmentOrMessage = async ({ roomId, content = "", attachment = null, images = null }) => {
     const formData = new FormData();
-
+    
     if (content) {
         formData.append("content", content);
     }

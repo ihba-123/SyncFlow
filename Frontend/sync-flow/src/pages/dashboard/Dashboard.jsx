@@ -8,19 +8,14 @@ import {
   Clock3,
   FolderKanban,
   RefreshCw,
-  ShieldCheck,
-  Sparkles,
-  Users2,
 } from "lucide-react";
 import { dashboardService } from "../../api/khanban_api";
 import useProjectSocket from "../../hooks/useProjectSocket";
-import { useAuthStore } from "../../stores/AuthStore";
 import { useActiveProjectStore } from "../../stores/ActiveProject";
 import { CreateProject } from "../../features/project/CreateProject";
 import {
   buildSeries,
   buildWorkloadSeries,
-  getDisplayName,
   PRIORITY_COLORS,
   PRIORITY_LABELS,
   PRIORITY_ORDER,
@@ -30,18 +25,19 @@ import {
   sumValues,
   toNumber,
 } from "../../utils/dashboardUtils";
-import { DashboardSkeleton, ChartPanel, LineChart } from "./DashboardSections";
+import { ChartPanel } from "./DashboardSections";
+import { DashboardSkeleton } from "../../components/skeleton/DashboardSkeleton";
+import { LineChart } from "../../components/DashboardComponent/LineChart";
 import MetricCards from "../../components/DashboardComponent/MetricCards";
 import ChartComponent from "../../components/DashboardComponent/ChartComponent";
 import ChartPanelComponent from "../../components/DashboardComponent/ChartPanelComponent";
-import { useUserProfileStore } from "../../stores/UserProfileStore";
 import { useUserProfile } from "../../hooks/UserProfile";
+import WelcomeCard from "../../components/DashboardComponent/WelcomeCard";
 
 export default function Dashboard() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const activeProject = useActiveProjectStore((state) => state.activeProject);
-  const user = useAuthStore((state) => state.user);
   const projectId = activeProject?.id;
   const isSoloProject = !!activeProject?.is_solo;
   const [showCreateProject, setShowCreateProject] = useState(false);
@@ -143,88 +139,37 @@ export default function Dashboard() {
         prioritySeries.find((item) => item.key === "high")?.value || 0,
       activeOwners: workloadSeries.length,
     };
-  }, [prioritySeries, stats.total_progress, statusSeries, workloadSeries.length]);
+  }, [
+    prioritySeries,
+    stats.total_progress,
+    statusSeries,
+    workloadSeries.length,
+  ]);
 
-  const displayName = getDisplayName(user);
+  
 
   const summaryLine = isSoloProject
     ? "Personal delivery dashboard for one owner."
     : "Team delivery dashboard with live workload visibility.";
-
-
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-slate-50 text-slate-900 transition-colors duration-300 dark:bg-[#07111c] dark:text-white">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(56,189,248,0.18),transparent_34%),radial-gradient(circle_at_top_right,rgba(139,92,246,0.16),transparent_32%),radial-gradient(circle_at_bottom_left,rgba(16,185,129,0.12),transparent_30%)] dark:bg-[radial-gradient(circle_at_top_left,rgba(56,189,248,0.12),transparent_34%),radial-gradient(circle_at_top_right,rgba(139,92,246,0.12),transparent_32%),radial-gradient(circle_at_bottom_left,rgba(16,185,129,0.1),transparent_30%)]" />
 
       <main className="relative mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
-        <section className="rounded-md border border-white/70 bg-white/85 p-5 shadow-[0_22px_55px_-34px_rgba(15,23,42,0.55)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/40 sm:p-6">
-          <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-            <div className="max-w-3xl space-y-4">
-              <div className="inline-flex items-center gap-2 rounded-full border border-white/80 bg-white/80 px-3 py-1 text-[10px] font-black uppercase tracking-[0.28em] text-slate-500 dark:border-white/10 dark:bg-white/5 dark:text-slate-300">
-                <Sparkles className="h-3.5 w-3.5" />
-                Live workspace dashboard
-              </div>
-              <div className="space-y-2">
-                <h1 className="text-3xl font-black tracking-tight text-slate-950 dark:text-white sm:text-4xl lg:text-5xl">
-                  Welcome back, {data.name } !
-                </h1>
-                <p className="max-w-2xl text-sm leading-6 text-slate-500 dark:text-slate-400 sm:text-base">
-                  {summaryLine}{" "}
-                  {projectId
-                    ? `You're viewing ${activeProject?.name || "the active project"}.`
-                    : "Select a project to open its dashboard."}
-                </p>
-              </div>
-
-              <div className="flex flex-wrap items-center gap-3 text-sm text-slate-500 dark:text-slate-400">
-                <span className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1.5 dark:bg-white/5">
-                  <FolderKanban className="h-4 w-4" />
-                  {projectId
-                    ? activeProject?.name || `Project #${projectId}`
-                    : "No active project"}
-                </span>
-                <span className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1.5 dark:bg-white/5">
-                  {isSoloProject ? (
-                    <ShieldCheck className="h-4 w-4" />
-                  ) : (
-                    <Users2 className="h-4 w-4" />
-                  )}
-                  {isSoloProject ? "Solo project" : "Team project"}
-                </span>
-                {dashboardQuery.isFetching && (
-                  <span className="inline-flex items-center gap-2 rounded-sm bg-emerald-500/10 px-3 py-1.5 text-emerald-600 dark:text-emerald-300">
-                    <Activity className="h-4 w-4 animate-pulse" />
-                    Syncing live data
-                  </span>
-                )}
-              </div>
-            </div>
-
-            <div className="flex flex-wrap gap-3">
-              <button
-                type="button"
-                onClick={() => navigate("/dashboard/project")}
-                className="inline-flex items-center justify-center gap-2 rounded-sm border border-slate-200/90 bg-white px-4 py-3 text-sm font-black tracking-wide text-slate-800 transition-all hover:-translate-y-0.5 hover:border-slate-300 hover:bg-slate-50 shadow-sm dark:border-white/10 dark:bg-slate-950/60 dark:text-white dark:hover:bg-slate-900"
-              >
-                <FolderKanban className="h-4 w-4" />
-                Projects
-              </button>
-              <button
-                type="button"
-                onClick={() => setShowCreateProject(true)}
-                className="inline-flex items-center justify-center gap-2 rounded-sm scale-100 cursor-pointer border border-slate-900 bg-slate-900 px-4 py-3 text-sm font-black tracking-wide text-white shadow-[0_10px_30px_-16px_rgba(15,23,42,0.75)] transition-all hover:-translate-y-0.5 hover:bg-slate-800 dark:border-white/10 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-100"
-              >
-                <ArrowRight className="h-4 w-4" />
-                Create project
-              </button>
-            </div>
-          </div>
-        </section>
-
-
-       
-       {/* //Shows different states: no project, loading, error, or the dashboard content */}
+     
+    <WelcomeCard  
+      name={data}
+      summaryLine={summaryLine}
+      projectId={projectId}
+      activeProject={activeProject}
+      dashboardQuery={dashboardQuery}
+      isSoloProject={isSoloProject}
+      navigate={navigate}
+      setShowCreateProject={setShowCreateProject}
+      data={data}
+    />
+        {/* //Shows different states: no project, loading, error, or the dashboard content */}
         {!projectId ? (
           <section className="rounded-sm border border-dashed border-slate-300/80 bg-white/80 p-8 text-center shadow-[0_18px_45px_-28px_rgba(15,23,42,0.35)] dark:border-white/10 dark:bg-slate-950/60">
             <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-900 text-white dark:bg-white dark:text-slate-900">
@@ -287,18 +232,40 @@ export default function Dashboard() {
           </section>
         ) : (
           <>
+            {/* // Passes the summary metrics to the MetricCards component for display */}
+            <MetricCards
+              dashboardSummary={dashboardSummary}
+              totalTasks={dashboardSummary.totalTasks}
+              progress={dashboardSummary.progress}
+              doneTasks={dashboardSummary.doneTasks}
+              velocity_last_7_days={stats.velocity_last_7_days}
+              openTasks={dashboardSummary.openTasks}
+              highPriorityTasks={dashboardSummary.highPriorityTasks}
+            />
 
-          {/* // Passes the summary metrics to the MetricCards component for display */}
-           <MetricCards  dashboardSummary={dashboardSummary} totalTasks={dashboardSummary.totalTasks} progress={dashboardSummary.progress} doneTasks={dashboardSummary.doneTasks} velocity_last_7_days={stats.velocity_last_7_days} openTasks={dashboardSummary.openTasks} highPriorityTasks={dashboardSummary.highPriorityTasks} />
+            {/* // Passes the chart data and summary to the ChartComponent for rendering the charts and live snapshot */}
+            <ChartComponent
+              dashboardSummary={dashboardSummary}
+              dashboardQuery={dashboardQuery}
+              totalTasks={dashboardSummary.totalTasks}
+              progress={dashboardSummary.progress}
+              doneTasks={dashboardSummary.doneTasks}
+              velocity_last_7_days={stats.velocity_last_7_days}
+              openTasks={dashboardSummary.openTasks}
+              statusSeries={statusSeries}
+              highPriorityTasks={dashboardSummary.highPriorityTasks}
+              summaryLine={summaryLine}
+              activeOwners={dashboardSummary.activeOwners}
+            />
 
+            {/* // Renders the priority mix and team load charts using the ChartPanelComponent */}
+            <ChartPanelComponent
+              prioritySeries={prioritySeries}
+              workloadSeries={workloadSeries}
+              isSoloProject={isSoloProject}
+            />
 
-          {/* // Passes the chart data and summary to the ChartComponent for rendering the charts and live snapshot */}
-           <ChartComponent dashboardSummary={dashboardSummary} dashboardQuery={dashboardQuery} totalTasks={dashboardSummary.totalTasks} progress={dashboardSummary.progress} doneTasks={dashboardSummary.doneTasks} velocity_last_7_days={stats.velocity_last_7_days} openTasks={dashboardSummary.openTasks} statusSeries={statusSeries} highPriorityTasks={dashboardSummary.highPriorityTasks} summaryLine={summaryLine} activeOwners={dashboardSummary.activeOwners} />
-
-
-          {/* // Renders the priority mix and team load charts using the ChartPanelComponent */}
-            <ChartPanelComponent prioritySeries={prioritySeries} workloadSeries={workloadSeries} isSoloProject={isSoloProject} />
-
+            {/* // Renders the activity trend line chart using the ChartPanel component and LineChart */}
             <section className="grid gap-6 xl:grid-cols-1">
               <ChartPanel
                 title="Activity trend"
@@ -349,7 +316,7 @@ export default function Dashboard() {
                     : "Snapshot is stable and ready for live updates."}
                 </p>
               </div>
-            </section>  
+            </section>
           </>
         )}
       </main>

@@ -4,7 +4,6 @@ const ProjectMemberSetting = ({ projectId, teamData, role, navigate, project }) 
   return (
           <div className="rounded-2xl border border-slate-200 bg-white/90 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/80 lg:col-span-2">
             <h2 className="flex items-center gap-2 text-lg font-bold text-slate-800 dark:text-slate-100">
-              <Users className="h-5 w-5 text-sky-500" />
               Team & Access Settings
             </h2>
             <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">

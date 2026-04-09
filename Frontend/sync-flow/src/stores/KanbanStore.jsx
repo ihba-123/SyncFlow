@@ -65,8 +65,17 @@ export const useKanban = create((set, get) => ({
         tasks: c.tasks.filter((t) => t.id !== normalizedTask.id),
       }));
 
+      // Delete payloads only carry id + deleted flag; removing from all columns is enough.
+      if (normalizedTask.deleted === true) {
+        return { cols: nextCols };
+      }
+
+      if (!normalizedTask.status) {
+        return { cols: nextCols };
+      }
+
       const targetCol = nextCols.find((c) => c.id === normalizedTask.status);
-      if (!targetCol) return state;
+      if (!targetCol) return { cols: nextCols };
 
       targetCol.tasks = [...targetCol.tasks, normalizedTask].sort((a, b) =>
         (a.order || "").localeCompare(b.order || "")

@@ -1,6 +1,7 @@
 import React from 'react'
 import { Sparkles, ShieldCheck, Users2, BarChart3 } from "lucide-react";
-import { BarChart, ChartPanel, TeamLoadCard } from '../../pages/dashboard/DashboardSections';
+import { BarChart, ChartPanel } from '../../pages/dashboard/DashboardSections';
+import { TeamLoadCard } from './TeamLoadCard';
 import { sumValues } from '../../utils/dashboardUtils';
 
 const ChartPanelComponent = ({ prioritySeries, workloadSeries, isSoloProject }) => {

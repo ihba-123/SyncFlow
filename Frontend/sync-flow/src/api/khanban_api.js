@@ -14,6 +14,7 @@ const toAbsoluteUrl = (value) => {
   }
 };
 
+
 const normalizeAttachment = (attachment) => {
   if (!attachment) return null;
   const name = attachment.name || attachment.file_name || attachment.filename || "file";
@@ -28,6 +29,7 @@ const normalizeAttachment = (attachment) => {
   };
 };
 
+// Normalize task data to ensure consistent attachment structure
 const normalizeTask = (task) => {
   const rawAttachments = task?.attachments ?? task?.files ?? [];
   const attachments = Array.isArray(rawAttachments)
@@ -41,6 +43,7 @@ const normalizeTask = (task) => {
 };
 
 
+// KHANBAN API
 export const khanbanService = {
   // GET TASKS
   getTasks: async (project_id, filters = {}) => {
@@ -113,10 +116,10 @@ export const dashboardService = async (project_id) => {
 
 
 // TASK COMMENT
-export const commentService = async (task_id, project_id, content) => {
-  const res = await api.post(`projects/${project_id}/tasks/${task_id}/comments/`, { content });
-  return res.data;
-};
+// export const commentService = async (task_id, project_id, content) => {
+//   const res = await api.post(`projects/${project_id}/tasks/${task_id}/comments/`, { content });
+//   return res.data;
+// };
 
 
 
