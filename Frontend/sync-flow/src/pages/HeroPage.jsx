@@ -2,8 +2,11 @@ import React from "react";
 import { motion } from "framer-motion";
 import { Zap, ArrowRight } from "lucide-react";
 import { Button } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 
 export default function Hero() {
+  const navigate = useNavigate();
+
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -79,6 +82,7 @@ export default function Hero() {
           <Button
             size="large"
             variant="contained"
+            onClick={() => navigate("/login")}
             sx={{
               backgroundColor: "#000000",
               color: "#ffffff",
@@ -110,18 +114,13 @@ export default function Hero() {
           className="relative mx-auto mt-12 max-w-3xl"
           variants={itemVariants}
         >
-          <div className="glass-light rounded-2xl p-8 flex justify-center items-center sm:p-12">
-            <div className="bg-gradient-to-br from-blue-100 via-purple-50 to-indigo-50 rounded-xl w-full max-w-2xl h-68 sm:h-64 lg:h-96 flex items-center justify-center shadow-inner">
-              <motion.div
-                className="text-center"
-                animate={{ y: [0, -10, 0] }}
-                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-              >
-                <div className="inline-block mb-4">
-                  <Zap size={48} className="text-purple-500 mx-auto" />
-                </div>
-                <p className="text-gray-600">Dashboard Preview</p>
-              </motion.div>
+          <div className="glass-light rounded-2xl overflow-hidden p-0">
+            <div className="w-full h-68 sm:h-64 lg:h-96 overflow-hidden">
+              <img
+                src="/image.png"
+                alt="SyncFlow dashboard preview"
+                className="block h-full w-full object-fill"
+              />
             </div>
           </div>
           <div className="absolute -bottom-4 left-0 right-0 h-32 bg-gradient-to-t from-white via-white/60 to-transparent -z-10 blur-2xl"></div>

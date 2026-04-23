@@ -24,6 +24,16 @@ class ProjectCollaborationConsumer(AsyncWebsocketConsumer):
     async def project_update(self, event):
         # We wrap this in a try/except or use .get() for production safety
         payload = event.get("data", {})
+        if "type" not in payload:
+            payload["type"] = "project_update"
         
         # Sends the actual JSON to the WebSocket
+        await self.send(text_data=json.dumps(payload))
+
+    async def task_update(self, event):
+        payload = {"type": "task_update", "task": event.get("task", {})}
+        await self.send(text_data=json.dumps(payload))
+
+    async def activity_log(self, event):
+        payload = {"type": "activity_log", "log": event.get("log", {})}
         await self.send(text_data=json.dumps(payload))

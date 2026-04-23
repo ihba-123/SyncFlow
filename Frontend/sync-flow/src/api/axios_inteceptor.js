@@ -19,14 +19,21 @@ const processQueue = (error) => {
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
-    const originalRequest = error.config;
+    const originalRequest = error.config || {};
+    const requestUrl = originalRequest.url || "";
+    const isAuthEndpoint =
+      requestUrl.includes("login/") ||
+      requestUrl.includes("register/") ||
+      requestUrl.includes("logout/") ||
+      requestUrl.includes("profile/") ||
+      requestUrl.includes("chat-profile/") ||
+      requestUrl.includes("refresh-token/");
 
     
     if (error.response?.status === 401 && !originalRequest._retry) {
-      
-      if (originalRequest.url?.includes("refresh-token")) {
+      if (isAuthEndpoint) {
         useAuthStore.getState().clearUser();
-        return Promise.reject(error); // real error
+        return Promise.reject(error);
       }
       
      
@@ -56,7 +63,7 @@ api.interceptors.response.use(
     }
 
     if (error.response?.status === 401 && originalRequest._retry) {
-      return;
+      return Promise.reject(error);
     }
 
     return Promise.reject(error);

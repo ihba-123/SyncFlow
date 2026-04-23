@@ -6,12 +6,14 @@ import { useActiveProjectStore } from "../stores/ActiveProject";
 
 export const useProjectRole = () => {
   const { activeProject } = useActiveProjectStore();
-  const { data } = useTeamList(activeProject?.id);
-  const { data: authData } = useAuth();
+  const { data: authData, is_Authenticated } = useAuth();
+  const { data } = useTeamList(
+    is_Authenticated ? activeProject?.id : null
+  );
   const { setRole } = useProjectRoleStore();
 
   useEffect(() => {
-    if (!data || !authData) return;
+    if (!is_Authenticated || !data || !authData || !activeProject?.id) return;
 
     const joined = data.joined_members || [];
 
@@ -22,5 +24,5 @@ export const useProjectRole = () => {
     if (myRole) {
       setRole(myRole, activeProject.id);
     }
-  }, [data, authData, activeProject, setRole]);
+  }, [data, authData, activeProject, is_Authenticated, setRole]);
 };

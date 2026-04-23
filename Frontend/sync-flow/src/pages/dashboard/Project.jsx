@@ -54,7 +54,9 @@ const Project = () => {
   } = useInfiniteQuery({
     queryKey: ["projects"],
     queryFn: ({ pageParam = 1 }) => projectList(pageParam),
-     refetchInterval: 3000,
+    refetchInterval: false,
+    refetchOnWindowFocus: true,
+    staleTime: 30000,
     getNextPageParam: (lastPage) => {
       if (!lastPage.data.next) return undefined;
       return new URL(lastPage.data.next).searchParams.get("page");

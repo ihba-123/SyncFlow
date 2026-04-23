@@ -62,11 +62,11 @@ export default function Dashboard() {
     queryKey: ["project-dashboard", projectId],
     queryFn: () => dashboardService(projectId),
     enabled: Boolean(projectId),
-    refetchInterval: 5000,
-    refetchIntervalInBackground: true,
+    refetchInterval: false,
+    refetchIntervalInBackground: false,
     refetchOnWindowFocus: true,
     refetchOnReconnect: true,
-    staleTime: 2000,
+    staleTime: 30000,
     retry: 1,
   });
 

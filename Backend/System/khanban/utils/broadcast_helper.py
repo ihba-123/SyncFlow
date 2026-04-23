@@ -16,6 +16,10 @@ def broadcast_task_update(project_id, task_data):
                 f"kanban_{project_id}",
                 {"type": "task_update", "task": task_data}
             )
+            async_to_sync(channel_layer.group_send)(
+                f"project_{project_id}",
+                {"type": "task_update", "task": task_data}
+            )
     except Exception as e:
         logger.error(f"Failed to broadcast task update: {e}")
 
@@ -34,18 +38,23 @@ def broadcast_activity_log(project_id, log):
     try:
         channel_layer = get_channel_layer()
         if channel_layer:
+            payload = {
+                "type": "activity_log",
+                "log": {
+                    "id": log.id,
+                    "user": log.user.email if log.user else "System",
+                    "action": log.action,
+                    "details": log.details,
+                    "created_at": log.created_at.isoformat()
+                }
+            }
             async_to_sync(channel_layer.group_send)(
                 f"kanban_{project_id}",
-                {
-                    "type": "activity_log",
-                    "log": {
-                        "id": log.id,
-                        "user": log.user.email if log.user else "System",
-                        "action": log.action,
-                        "details": log.details,
-                        "created_at": log.created_at.isoformat()
-                    }
-                }
+                payload
+            )
+            async_to_sync(channel_layer.group_send)(
+                f"project_{project_id}",
+                payload
             )
     except Exception as e:
         logger.error(f"Failed to broadcast activity log: {e}")

@@ -105,7 +105,7 @@ export default function TaskModal() {
   // ── Mutations ──────────────────────────────────────────
   const createMutation = useMutation({
     mutationFn: (data) => khanbanService.createTask(project_id, data),
-    onSuccess: async (newTask) => {
+    onSuccess: (newTask) => {
       const optimisticTask = {
         ...newTask,
         attachments: buildOptimisticAttachments(),
@@ -123,20 +123,24 @@ export default function TaskModal() {
 
       closeModal();
 
-      // Upload in background, then refresh canonical server payload.
-      await handleUploads(newTask.id);
-      queryClient.invalidateQueries({ queryKey: ["tasks", project_id] });
+      // Upload in background without blocking save UX.
+      void handleUploads(newTask.id).finally(() => {
+        queryClient.invalidateQueries({ queryKey: ["tasks", project_id] });
+      });
     },
     onError: (err) => console.error("Create Error:", err.response?.data)
   });
 
   const updateMutation = useMutation({
     mutationFn: ({ taskId, data }) => khanbanService.updateTask(project_id, taskId, data),
-    onSuccess: async (updatedTask) => {
+    onSuccess: (updatedTask) => {
       upsertTaskFromServer(updatedTask);
-      await handleUploads(updatedTask.id);
-      queryClient.invalidateQueries({ queryKey: ["tasks", project_id] });
       closeModal();
+
+      // Keep attachment uploads async to avoid slow Save button experience.
+      void handleUploads(updatedTask.id).finally(() => {
+        queryClient.invalidateQueries({ queryKey: ["tasks", project_id] });
+      });
     },
     onError: (err) => console.error("Update Error:", err.response?.data)
   });

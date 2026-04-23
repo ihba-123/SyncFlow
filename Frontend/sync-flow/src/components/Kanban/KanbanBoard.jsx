@@ -236,20 +236,7 @@ const reorderMutation = useMutation({
               <option value="low">Low</option>
             </select>
 
-            {!isSoloProject && (
-              <select
-                value={assignedFilter}
-                onChange={(e) => setAssignedFilter(e.target.value)}
-                className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 outline-none focus:border-indigo-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
-              >
-                <option value="">All Assignees</option>
-                {assigneeOptions.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            )}
+            
 
             {hasActiveFilters && (
               <button

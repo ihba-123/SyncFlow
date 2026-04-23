@@ -50,7 +50,7 @@ export function Sidebar({ isExpanded, setIsExpanded, isMobile }) {
 
   navItems.push(
     { icon: Folder, label: "Projects", to: "/dashboard/project" },
-    { icon: MessageSquare, label: "Messages", to: "/messages" },
+    // { icon: MessageSquare, label: "Messages", to: "/messages" },
   );
 
   const bottomItems = [

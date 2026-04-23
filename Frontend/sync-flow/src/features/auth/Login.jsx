@@ -30,6 +30,7 @@ export default function Login() {
       if (data) {
         if (data.email) message = data.email[0];
         else if (data.password) message = data.password[0];
+        else if (data.detail) message = data.detail;
         else if (typeof data === "string") message = data;
       }
       toast.error(message);

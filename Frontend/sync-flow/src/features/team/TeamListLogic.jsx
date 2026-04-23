@@ -5,10 +5,11 @@ export const useTeamList = (id) => {
   return useQuery({
     queryKey: ["members", id],
     queryFn: () => getProjectMembers(id),
-    refetchInterval: 3000,
-    refetchIntervalInBackground: true,
-
-  staleTime: 0,
+    enabled: Boolean(id),
+    refetchInterval: 15000,
+    refetchIntervalInBackground: false,
+    refetchOnWindowFocus: true,
+    staleTime: 10000,
   });
 };
 

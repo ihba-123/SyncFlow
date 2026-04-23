@@ -3,174 +3,121 @@ import { motion } from "framer-motion";
 export function HowItWorks() {
   const steps = [
     {
-      number: "01",
-      title: "Create Your Workspace",
-      description:
-        "Set up your first project and invite team members to collaborate in seconds.",
+      number: 1,
+      title: "Create Project",
+      description: "Set goals and launch your workspace instantly.",
+      image: "/images/create-project.png",
     },
     {
-      number: "02",
-      title: "Organize Tasks",
-      description:
-        "Break down projects into tasks, set priorities, and assign them to team members.",
+      number: 2,
+      title: "Add Tasks",
+      description: "Break work into small, focused action items.",
+      image: "/images/add-tasks.png",
     },
     {
-      number: "03",
-      title: "Collaborate in Real-Time",
-      description:
-        "Work together with built-in comments, file sharing, and activity tracking.",
+      number: 3,
+      title: "Assign Team Members",
+      description: "Assign owners and align everyone clearly.",
+      image: "/images/assign-team-members.png",
     },
     {
-      number: "04",
+      number: 4,
       title: "Track Progress",
-      description:
-        "Monitor project health with dashboards and analytics that drive accountability.",
-    },
-    {
-      number: "05",
-      title: "Deliver Results",
-      description:
-        "Celebrate wins and continuously improve with insights from completed projects.",
+      description: "Follow delivery with live progress insights.",
+      image: "/images/track-progress.png",
     },
   ];
 
-  const itemVariants = {
-    hidden: { opacity: 0, x: -20 },
-    visible: (i) => ({
+  const cardVariants = {
+    hidden: { opacity: 0, y: 24 },
+    visible: (index) => ({
       opacity: 1,
-      x: 0,
-      transition: { delay: i * 0.1 },
+      y: 0,
+      transition: { duration: 0.5, delay: index * 0.1 },
     }),
   };
 
   return (
     <section
       id="how-it-works"
-      className="relative py-20 px-4 sm:px-6 lg:px-8 overflow-hidden"
-      style={{
-        background: "linear-gradient(135deg, #dbeafe 0%, #e6d9ff 45%, #f5f3ff 100%)",
-      }}
+      className="relative overflow-hidden bg-white px-4 py-16 sm:px-6 lg:px-8"
     >
-      {/* Matching blurred accent circles from Hero */}
-      <div className="absolute top-0 right-0 w-96 h-96 bg-purple-400 rounded-full filter blur-3xl opacity-30 -z-10"></div>
-      <div className="absolute bottom-0 left-0 w-80 h-80 bg-blue-400 rounded-full filter blur-3xl opacity-25 -z-10"></div>
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-indigo-300 rounded-full filter blur-3xl opacity-15 -z-10"></div>
+      <div className="pointer-events-none absolute inset-0">
+        <div className="absolute left-8 top-16 h-36 w-36 rounded-full bg-indigo-100/65 blur-3xl" />
+        <div className="absolute bottom-12 right-8 h-44 w-44 rounded-full bg-blue-100/65 blur-3xl" />
+      </div>
 
-      <div className="max-w-7xl mx-auto relative z-10">
-        {/* Section Header */}
+      <div className="relative z-10 mx-auto max-w-7xl">
         <motion.div
-          className="text-center mb-16"
+          className="mb-12 text-center"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
+          transition={{ duration: 0.5 }}
           viewport={{ once: true }}
         >
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 text-gray-800">
-            Simple Workflow, Powerful Results
+          <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-blue-700">
+            How It Works
+          </p>
+          <h2 className="mb-3 text-xl font-semibold text-slate-900 sm:text-2xl lg:text-3xl">
+            A simple flow your team can follow
           </h2>
-          <p className="text-lg text-gray-600 text-balance max-w-2xl mx-auto">
-            Get started in minutes and see the difference SyncFlow makes in your
-            team's productivity.
+          <p className="mx-auto max-w-2xl text-sm text-slate-600 sm:text-base">
+            Four clear steps from setup to execution.
           </p>
         </motion.div>
 
-        {/* Timeline */}
-        <div className="relative">
-          {/* Desktop Timeline */}
-          <div className="hidden md:block">
-            <div className="flex flex-col gap-8">
-              {steps.map((step, index) => (
-                <motion.div
-                  key={index}
-                  className="flex gap-8 items-start"
-                  custom={index}
-                  initial="hidden"
-                  whileInView="visible"
-                  variants={itemVariants}
-                  viewport={{ once: true }}
-                >
-                  {index % 2 === 0 ? (
-                    <>
-                      {/* Left side content */}
-                      <div className="flex-1 text-right">
-                        <div className="glass-light rounded-xl p-6 text-right">
-                          <h3 className="text-xl font-semibold mb-2 text-gray-800">
-                            {step.title}
-                          </h3>
-                          <p className="text-gray-600">{step.description}</p>
-                        </div>
-                      </div>
+        <div className="relative mx-auto max-w-6xl space-y-6 sm:space-y-8">
+          <div className="absolute left-1/2 top-0 hidden h-full w-px -translate-x-1/2 bg-linear-to-b from-transparent via-blue-200 to-transparent lg:block" />
 
-                      {/* Center line & number */}
-                      <div className="flex flex-col items-center">
-                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-gray-300 to-black flex items-center justify-center text-white font-bold text-lg shadow-lg">
-                          {step.number}
-                        </div>
-                        {index < steps.length - 1 && (
-                          <div className="w-1 h-16 bg-gradient-to-b from-gray-900 to-gray-400 mt-4"></div>
-                        )}
-                      </div>
+          {steps.map((step, index) => {
+            const textFirst = index % 2 === 0;
 
-                      <div className="flex-1"></div>
-                    </>
-                  ) : (
-                    <>
-                      <div className="flex-1"></div>
-
-                      <div className="flex flex-col items-center">
-                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-black to-gray-300 flex items-center justify-center text-white font-bold text-lg shadow-lg">
-                          {step.number}
-                        </div>
-                        {index < steps.length - 1 && (
-                          <div className="w-1 h-16 bg-gradient-to-b from-gray-400 to-gray-900 mt-4"></div>
-                        )}
-                      </div>
-
-                      <div className="flex-1">
-                        <div className="glass-light rounded-xl p-6">
-                          <h3 className="text-xl font-semibold mb-2 text-gray-800">
-                            {step.title}
-                          </h3>
-                          <p className="text-gray-600">{step.description}</p>
-                        </div>
-                      </div>
-                    </>
-                  )}
-                </motion.div>
-              ))}
-            </div>
-          </div>
-
-          {/* Mobile Timeline */}
-          <div className="md:hidden flex flex-col gap-6">
-            {steps.map((step, index) => (
-              <motion.div
-                key={index}
-                className="flex gap-4"
+            return (
+              <motion.article
+                key={step.number}
                 custom={index}
+                variants={cardVariants}
                 initial="hidden"
                 whileInView="visible"
-                variants={itemVariants}
                 viewport={{ once: true }}
+                className="grid items-center gap-5 lg:grid-cols-2 lg:gap-8"
               >
-                <div className="flex flex-col items-center">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-gray-300 to-black flex items-center justify-center text-white font-bold text-sm shadow-lg flex-shrink-0">
-                    {step.number}
-                  </div>
-                  {index < steps.length - 1 && (
-                    <div className="w-1 h-12 bg-gradient-to-b from-gray-400 to-gray-900 mt-2"></div>
-                  )}
+                <div className={textFirst ? "lg:order-1" : "lg:order-2"}>
+                  <motion.div
+                    className="relative rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_10px_26px_rgb(15,23,42,0.07)] sm:p-6"
+                    initial={{ opacity: 0, x: textFirst ? -18 : 18 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.45 }}
+                    viewport={{ once: true }}
+                  >
+                    <div className="mb-3 inline-flex h-8 w-8 items-center justify-center rounded-full bg-linear-to-br from-blue-500 to-indigo-600 text-xs font-semibold text-white shadow-sm">
+                      {step.number}
+                    </div>
+                    <h3 className="text-base font-semibold text-slate-900 sm:text-lg">{step.title}</h3>
+                    <p className="mt-2 text-xs leading-relaxed text-slate-600 sm:text-sm">{step.description}</p>
+                  </motion.div>
                 </div>
 
-                <div className="glass-light rounded-xl p-4 flex-1 pb-6">
-                  <h3 className="text-lg font-semibold mb-2 text-gray-800">
-                    {step.title}
-                  </h3>
-                  <p className="text-gray-600 text-sm">{step.description}</p>
+                <div className={textFirst ? "lg:order-2" : "lg:order-1"}>
+                  <motion.div
+                    className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_10px_26px_rgb(15,23,42,0.07)]"
+                    initial={{ opacity: 0, x: textFirst ? 18 : -18 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.45 }}
+                    viewport={{ once: true }}
+                  >
+                    <motion.img
+                      src={step.image}
+                      alt={step.title}
+                      className="h-52 w-full object-cover sm:h-64"
+                      animate={{ y: [0, -5, 0] }}
+                      transition={{ duration: 4 + index, repeat: Infinity, ease: "easeInOut" }}
+                    />
+                  </motion.div>
                 </div>
-              </motion.div>
-            ))}
-          </div>
+              </motion.article>
+            );
+          })}
         </div>
       </div>
     </section>

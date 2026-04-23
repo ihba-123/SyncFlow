@@ -6,8 +6,6 @@ import {
   AvatarImage,
 } from "../../components/ui/Avatar";
 import { useActiveProject } from "../../hooks/useActiveProject";
-import { getProjectMembers } from "../../api/Project";
-import { useQuery } from "@tanstack/react-query";
 import { useNavigate, useParams } from "react-router-dom";
 import { useTeamList } from "../../features/team/TeamListLogic";
 import { FiUserPlus, FiEdit3 } from "react-icons/fi";
@@ -22,26 +20,18 @@ import {
 export function ProjectHeader() {
   const { data, isLoading: projectLoading } = useActiveProject();
   const { id } = useParams();
-  const { data: teamData } = useTeamList(id);
-  const role = teamData?.user_role;
+  const {
+    data: membersData,
+    isLoading: membersLoading,
+    error: membersError,
+  } = useTeamList(id);
+  const role = membersData?.user_role;
   const navigate = useNavigate();
 
   const values = data?.active_project || {};
   const isSoloProject = values.is_solo;
   const canInvite = role === "admin" && isSoloProject === false;
   
-  // Fetch Members
-  const {
-    data: membersData,
-    isLoading: membersLoading,
-    error: membersError,
-  } = useQuery({
-    queryKey: ["projectMembers", id],
-    queryFn: () => getProjectMembers(id),
-    enabled: !!id,
-    refetchInterval: 5000,
-  });
-
   const members = membersData?.joined_members || [];
   const limit = 3;
   const visibleMembers = members.slice(0, limit);
