@@ -3,6 +3,8 @@ import { MessageCircle, MoreVertical, Plus, Users, X, Check } from 'lucide-react
 import { SearchBar } from './SearchBar';
 import { ChatItem } from './ChatItems';
 import { useChatStore } from '../../stores/ChatStore';
+import { showError } from '../../services/toastService';
+import { getErrorMessage } from '../../utils/errorMessages';
 
 export function ChatSidebar({ selectedChatId, onSelectChat }) {
   const [searchQuery, setSearchQuery] = useState('');
@@ -35,7 +37,6 @@ export function ChatSidebar({ selectedChatId, onSelectChat }) {
     };
 
     try {
-      console.log("Sending to Django:", payload);
       // Example: const response = await api.post('/chats/create/', payload);
       
       // Reset UI on success
@@ -43,7 +44,7 @@ export function ChatSidebar({ selectedChatId, onSelectChat }) {
       setNewGroupName('');
       setIsMenuOpen(false);
     } catch (error) {
-      console.error("Failed to create group", error);
+      showError(getErrorMessage(error, "Failed to create group."));
     }
   };
 

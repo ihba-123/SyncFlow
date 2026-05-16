@@ -246,7 +246,7 @@ export const EditProfile = () => {
                 <button
                   onClick={handleCancel}
                   disabled={isSaving}
-                  className="px-3 py-0.5 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 font-medium rounded-sm transition-all duration-200 hover:scale-105 disabled:opacity-70 border border-gray-300 dark:border-gray-600"
+                  className="px-3 py-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 font-medium rounded-sm transition-all duration-200 hover:scale-105 disabled:opacity-70 border border-gray-300 dark:border-gray-600"
                 >
                   Cancel
                 </button>

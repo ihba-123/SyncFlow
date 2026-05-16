@@ -1,43 +1,44 @@
 import { useEffect, useRef } from "react";
+import useBackendAvailability from "./useBackendAvailability";
+import { getAccessToken } from "../utils/authToken";
 
 const useProjectSocket = (projectId, onMessage) => {
   const socketRef = useRef(null);
   const intentionalCloseRef = useRef(false);
   const onMessageRef = useRef(onMessage);
+  const { isAvailable } = useBackendAvailability();
+  const token = getAccessToken();
 
   useEffect(() => {
     onMessageRef.current = onMessage;
   }, [onMessage]);
 
   useEffect(() => {
-    // Guard: Don't attempt connection if ID is missing or invalid
-    if (!projectId || projectId === "undefined") return;
+    // Guard: Don't attempt connection if ID or auth token is missing.
+    if (!projectId || projectId === "undefined" || !isAvailable || !token) return;
 
-    const url = `ws://localhost:8000/ws/projects/${projectId}/`;
-    const ws = new WebSocket(url);
+    const url = new URL(`ws://localhost:8000/ws/projects/${projectId}/`);
+    url.searchParams.set("token", token);
+    const ws = new WebSocket(url.toString());
     socketRef.current = ws;
     intentionalCloseRef.current = false;
 
-    ws.onopen = () => {
-      console.log(` Connected to project ${projectId}`);
-    };
+    ws.onopen = () => {};
 
     ws.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
         if (onMessageRef.current) onMessageRef.current(data);
-      } catch (err) {
-        console.error(" WS Parsing Error:", err);
+      } catch {
+        return;
       }
     };
 
-    ws.onclose = (e) => {
-      console.log(` Disconnected from project ${projectId}`, e.reason);
-    };
+    ws.onclose = () => {};
 
-    ws.onerror = (error) => {
+    ws.onerror = () => {
       if (!intentionalCloseRef.current) {
-        console.error(` WebSocket error for project ${projectId}:`, error);
+        ws.close();
       }
 
     };
@@ -57,7 +58,7 @@ const useProjectSocket = (projectId, onMessage) => {
         }
       }
     };
-  }, [projectId]);
+  }, [projectId, isAvailable, token]);
 };
 
 export default useProjectSocket;

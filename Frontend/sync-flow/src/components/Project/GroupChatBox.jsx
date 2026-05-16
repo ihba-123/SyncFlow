@@ -1,5 +1,5 @@
 import { useMemo, useRef, useEffect, useState } from "react";
-import { Users2, Paperclip, SendHorizontal, ChevronDown, MessageCircle } from "lucide-react";
+import { Users2, Paperclip, SendHorizontal, ChevronDown, MessageCircle, LoaderCircle } from "lucide-react";
 import { useAuthStore } from "../../stores/AuthStore";
 import { sendAttachmentOrMessage } from "../../api/chat_api";
 import { buildMemberIndex, resolveSender, getUserAvatar, getUserDisplayName, toAbsoluteAssetUrl, isImageFile } from "../../utils/chat-utils";
@@ -184,7 +184,9 @@ export function GroupChatBox({ projectName = "Group Chat", projectId, members = 
           <input type="file" ref={fileInputRef} className="hidden" onChange={(e) => setAttachedFile(e.target.files?.[0] || null)} />
           <button type="button" onClick={() => fileInputRef.current?.click()} className="p-2 text-slate-500 dark:text-slate-300"><Paperclip size={18} /></button>
           <textarea value={draft} onChange={(e) => setDraft(e.target.value)} className="flex-1 bg-transparent text-sm text-slate-700 outline-none placeholder:text-slate-400 dark:text-slate-100 dark:placeholder:text-slate-400" placeholder="Type a message..." rows={1} />
-          <button type="submit" disabled={!canSend} className="p-2 bg-sky-500 rounded-xl text-white disabled:cursor-not-allowed disabled:opacity-50"><SendHorizontal size={18} /></button>
+          <button type="submit" disabled={!canSend} aria-busy={isSending} className="p-2 bg-sky-500 rounded-xl text-white disabled:cursor-not-allowed disabled:opacity-50">
+            {isSending ? <LoaderCircle size={18} className="animate-spin" /> : <SendHorizontal size={18} />}
+          </button>
         </div>
       </form>
     </div>

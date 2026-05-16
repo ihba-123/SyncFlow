@@ -20,6 +20,7 @@ const ProjectDetail = () => {
   const role = data?.user_role;
   const joinedMembers = data?.joined_members || [];
   const activeProject = useActiveProjectStore((s) => s.activeProject);
+  const setActiveProject = useActiveProjectStore((s) => s.setActiveProject);
   const resetActiveProject = useActiveProjectStore((s) => s.reset);
   const isTeamProject = activeProject?.is_solo === false;
   const queryClient = useQueryClient();
@@ -30,6 +31,7 @@ const ProjectDetail = () => {
 
     const isArchiveEvent = action === "project_archived" || action === "project_trashed";
     const isDeleteEvent = action === "project_deleted" || action === "project_permanently_deleted";
+    const isImageUpdateEvent = action === "image_uploaded" || action === "project_updated";
 
     if (isArchiveEvent || isDeleteEvent) {
       queryClient.invalidateQueries({ queryKey: ["projects"] });
@@ -44,6 +46,20 @@ const ProjectDetail = () => {
         );
         navigate("/dashboard", { replace: true });
       }
+      return;
+    }
+
+    if (isImageUpdateEvent && payload?.image_url) {
+      if (String(activeProject?.id) === String(activeProjectId)) {
+        setActiveProject({
+          ...(activeProject || {}),
+          image: payload.image_url,
+        });
+      }
+
+      queryClient.invalidateQueries({ queryKey: ["activeProject"] });
+      queryClient.invalidateQueries({ queryKey: ["projects"] });
+      queryClient.invalidateQueries({ queryKey: ["project-settings", activeProjectId] });
     }
   });
 

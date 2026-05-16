@@ -5,7 +5,11 @@ class ProjectCollaborationConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         # 1. Get Project ID from URL
         self.project_id = self.scope['url_route']['kwargs']['project_id']
-        self.room_group_name = f"project_{self.project_id}"
+        # Allow a global/list subscription via path 'all' which maps to group 'projects'
+        if str(self.project_id) == 'all':
+            self.room_group_name = 'projects'
+        else:
+            self.room_group_name = f"project_{self.project_id}"
         
         # 2. Check if user is authenticated (added for safety)
         if self.scope["user"].is_anonymous:

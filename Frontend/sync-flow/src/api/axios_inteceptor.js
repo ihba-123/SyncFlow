@@ -1,5 +1,6 @@
 import axios from "axios";
 import { useAuthStore } from "../stores/AuthStore";
+import { clearAccessToken, setAccessToken } from "../utils/authToken";
 
 const api = axios.create({
   baseURL: "http://localhost:8000/api/",
@@ -24,6 +25,8 @@ api.interceptors.response.use(
     const isAuthEndpoint =
       requestUrl.includes("login/") ||
       requestUrl.includes("register/") ||
+      requestUrl.includes("google-oauth/") ||
+      requestUrl.includes("password-reset/") ||
       requestUrl.includes("logout/") ||
       requestUrl.includes("profile/") ||
       requestUrl.includes("chat-profile/") ||
@@ -33,6 +36,7 @@ api.interceptors.response.use(
     if (error.response?.status === 401 && !originalRequest._retry) {
       if (isAuthEndpoint) {
         useAuthStore.getState().clearUser();
+        clearAccessToken();
         return Promise.reject(error);
       }
       
@@ -50,12 +54,16 @@ api.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        await api.post("refresh-token/");
+        const refreshResponse = await api.post("refresh-token/");
+        if (refreshResponse?.data?.access) {
+          setAccessToken(refreshResponse.data.access);
+        }
         processQueue(null);
         return api(originalRequest);
       } catch (refreshError) {
         processQueue(refreshError);
         useAuthStore.getState().clearUser();
+        clearAccessToken();
         return Promise.reject(refreshError);
       } finally {
         isRefreshing = false;

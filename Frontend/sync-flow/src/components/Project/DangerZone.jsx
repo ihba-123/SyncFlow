@@ -105,7 +105,7 @@ export function DangerZone({ projectId }) {
           disabled={softDeleting}
           className="w-full mb-2 sm:mb-3 h-11 flex items-center justify-center gap-2
             px-3 sm:px-4 py-2 rounded-lg sm:rounded-xl
-            bg-red-700 hover:bg-red-500
+            bg-red-600 hover:bg-red-500
             text-white dark:text-orange-200
             font-medium transition-colors text-xs sm:text-sm
             active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -120,7 +120,7 @@ export function DangerZone({ projectId }) {
           disabled={deleting}
           className="w-full h-11 flex items-center justify-center gap-2
             px-3 sm:px-4 py-2 rounded-lg sm:rounded-xl
-            bg-red-600 hover:bg-red-700
+            bg-red-900 hover:bg-red-700
             dark:bg-red-700 dark:hover:bg-red-800
             text-white font-medium transition-colors text-xs sm:text-sm
             shadow-md active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"

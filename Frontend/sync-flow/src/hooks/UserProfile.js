@@ -21,7 +21,7 @@ export const useUserProfile = () => {
     onError: (err) => {
       if (err.response?.status !== 401) {
         clearProfile();
-        console.error(err);
+        return;
       }
     },
   });

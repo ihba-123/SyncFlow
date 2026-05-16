@@ -1,21 +1,16 @@
 import { useRef, useState } from "react";
-import {
-  User,
-  Users,
-  Upload,
-  X,
-  Loader2,
-  Folder,
-  ArrowRight,
-} from "lucide-react";
+import { User, Users, Upload, X, Loader2, Folder, ArrowRight } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { cn } from "../../utils/utils";
 import ProgressBar from "../../components/ui/ProgressBar";
 import { useProject } from "../../hooks/useProject";
+import GameButton from "../../components/ui/GameButton";
 
 export function CreateProject({ embedded = false, onClose }) {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   const [is_solo, setIs_solo] = useState(null);
   const [description, setDescription] = useState("");
@@ -56,7 +51,7 @@ export function CreateProject({ embedded = false, onClose }) {
     if (image) formData.append("image", image);
 
     mutate(formData, {
-      onSuccess: () => {
+      onSuccess: (data) => {
         queryClient.invalidateQueries({ queryKey: ["projects"] });
         toast.success("Project created successfully!");
         setName("");
@@ -64,6 +59,15 @@ export function CreateProject({ embedded = false, onClose }) {
         setIs_solo(null);
         removeImage();
         submitLockedRef.current = false;
+
+        // Navigate to the newly created project
+        if (data?.data?.id) {
+          setTimeout(() => {
+            navigate(`/projects/${data.data.id}`);
+          }, 500);
+        }
+
+        if (onClose) onClose();
       },
       onError: (error) => {
         toast.error(error?.response?.data?.message || "Failed to create project");
@@ -73,8 +77,18 @@ export function CreateProject({ embedded = false, onClose }) {
   };
 
   return (
-    <div className={embedded ? "relative flex items-center justify-center px-4 py-4 transition-colors duration-500" : "min-h-screen flex items-center justify-center px-4 py-8 transition-colors duration-500 bg-slate-50 dark:bg-[#03011073] relative overflow-hidden"}>
-      <div className="absolute top-[-10%] left-[-10%] h-[40%] w-[40%] rounded-full bg-blue-500/10 blur-[120px] dark:bg-blue-500/5" />
+    <div
+      className={
+        embedded
+          ? "relative flex items-center justify-center px-4 py-4 transition-colors duration-500"
+          : "min-h-screen flex items-center justify-center px-4 py-8 transition-colors duration-500 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-950 relative overflow-hidden"
+      }
+    >
+      {/* Background decoration */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-0 right-1/4 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 left-1/4 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl" />
+      </div>
 
       {isPending && (
         <div className="fixed left-0 top-0 z-9999 w-full">
@@ -82,98 +96,117 @@ export function CreateProject({ embedded = false, onClose }) {
         </div>
       )}
 
-      <div className="relative z-10 w-full max-w-xl">
+      <div className="relative z-10 w-full max-w-lg">
         <form
           onSubmit={handleProject}
-          className="relative flex flex-col gap-6 rounded-4xl border border-slate-200/80 bg-white/90 p-6 shadow-[0_24px_70px_-32px_rgba(15,23,42,0.55)] backdrop-blur-3xl dark:border-white/10 dark:bg-slate-950/70 md:gap-8 md:p-8"
+          className="relative flex flex-col gap-6 border border-gray-200/50 dark:border-gray-700/50 bg-white/95 dark:bg-gray-900/95 p-6 shadow-lg backdrop-blur-xl rounded-xl md:p-7"
         >
-          <div className="pointer-events-none absolute inset-0 rounded-4xl bg-linear-to-br from-white/70 via-transparent to-transparent dark:from-white/5" />
-          <div className="absolute right-4 top-4 flex items-center gap-2">
-            <span className="rounded-full border border-emerald-200/80 bg-emerald-50/80 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.24em] text-emerald-700 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-300">
-              Create project
-            </span>
+          {/* Header with close button */}
+          <div className="flex items-start justify-between">
+            <div className="space-y-1">
+              <h1 className="text-3xl font-900 text-gray-900 dark:text-white">
+                Create Project
+              </h1>
+              <p className="text-xs font-500 text-gray-600 dark:text-gray-400">
+                Start your next big idea
+              </p>
+            </div>
             {onClose && (
               <button
                 type="button"
                 onClick={onClose}
-                className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 shadow-sm transition-colors hover:bg-slate-100 hover:text-slate-900 dark:border-white/10 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
+                className="inline-flex h-8 w-8 items-center justify-center border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all hover:scale-105 active:scale-95"
                 aria-label="Close create project dialog"
               >
                 <X size={16} />
               </button>
             )}
           </div>
-          {/* Header */}
-          <div className="relative space-y-1 text-center md:text-left">
-            <h1 className="text-3xl font-black tracking-tight text-slate-900 uppercase dark:text-white">
-              Create <span className="text-blue-600 dark:text-blue-500">Project</span>
-            </h1>
-            <p className="text-sm font-bold text-slate-600 dark:text-slate-400">
-              Initialize your next big idea.
-            </p>
-          </div>
 
-          {/* Toggle Selector - Solo (Blue) vs Team (Purple) */}
-          <div className="bg-slate-100 dark:bg-black/20 p-1.5 rounded-2xl flex border border-slate-200 dark:border-white/5 shadow-inner">
-            <button
-              type="button"
-              onClick={() => setIs_solo(true)}
-              className={cn(
-                "flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-xs font-black transition-all duration-300 uppercase tracking-widest",
-                is_solo === true 
-                  ? "bg-blue-600 text-white shadow-lg shadow-blue-500/40 scale-[1.02]" 
-                  : "text-slate-500 dark:text-slate-400 hover:text-blue-600 hover:bg-white dark:hover:bg-slate-800"
-              )}
-            >
-              <User size={16} /> Solo
-            </button>
-            <button
-              type="button"
-              onClick={() => setIs_solo(false)}
-              className={cn(
-                "flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-xs font-black transition-all duration-300 uppercase tracking-widest",
-                is_solo === false 
-                  ? "bg-purple-600 text-white shadow-lg shadow-purple-500/40 scale-[1.02]" 
-                  : "text-slate-500 dark:text-slate-400 hover:text-purple-600 hover:bg-white dark:hover:bg-slate-800"
-              )}
-            >
-              <Users size={16} /> Team
-            </button>
+          {/* Solo vs Team Toggle */}
+          <div className="space-y-2">
+            <label className="text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+              Project Type
+            </label>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => setIs_solo(true)}
+                className={cn(
+                  "relative flex items-center justify-center gap-2 py-3 px-3 font-bold text-xs transition-all duration-300 border rounded-lg",
+                  is_solo === true
+                    ? "bg-gray-900 dark:bg-white text-white dark:text-gray-900 border-gray-900 dark:border-white shadow-lg"
+                    : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
+                )}
+              >
+                <User size={16} />
+                <span>Solo</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setIs_solo(false)}
+                className={cn(
+                  "relative flex items-center justify-center gap-2 py-3 px-3 font-bold text-xs transition-all duration-300 border rounded-lg",
+                  is_solo === false
+                    ? "bg-gray-900 dark:bg-white text-white dark:text-gray-900 border-gray-900 dark:border-white shadow-lg"
+                    : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
+                )}
+              >
+                <Users size={16} />
+                <span>Team</span>
+              </button>
+            </div>
           </div>
 
           {/* Project Name */}
           <div className="space-y-2">
-            <label className="text-[11px] font-black text-slate-700 dark:text-slate-300 uppercase tracking-[0.2em] ml-1">
-              Project Identification <span className="text-red-500">*</span>
+            <label className="text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+              Project Name <span className="text-red-500">*</span>
             </label>
             <div className="relative group">
-              <Folder className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-600 group-focus-within:text-blue-600 transition-colors" size={20} />
+              <Folder
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-600 group-focus-within:text-gray-900 dark:group-focus-within:text-white transition-colors"
+                size={16}
+              />
               <input
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 disabled={isPending}
-                placeholder="Project Name..."
-                className="w-full h-14 pl-12 pr-4 rounded-2xl bg-slate-50 dark:bg-[#020617] text-slate-900 dark:text-white border border-slate-200 dark:border-white/10 focus:border-blue-500 focus:bg-white dark:focus:bg-black focus:ring-4 focus:ring-blue-500/10 outline-none transition-all font-bold placeholder:text-slate-400 dark:placeholder:text-slate-700"
+                placeholder="Enter project name"
+                className="w-full py-2.5 pl-10 pr-3 text-sm bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700 focus:border-gray-900 dark:focus:border-white focus:bg-white dark:focus:bg-gray-800 outline-none transition-all font-500 placeholder:text-gray-500 dark:placeholder:text-gray-500 rounded-lg"
               />
             </div>
           </div>
 
           {/* Image Upload */}
           <div className="space-y-2">
-            <label className="text-[11px] font-black text-slate-700 dark:text-slate-300 uppercase tracking-[0.2em] ml-1">Cover Art</label>
+            <label className="text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+              Cover Image
+            </label>
             {!imagePreview ? (
-              <label className="h-28 border-2 border-dashed border-slate-300 dark:border-white/10 rounded-2xl flex flex-col items-center justify-center cursor-pointer bg-slate-50 dark:bg-[#020617]/50 hover:bg-white dark:hover:bg-[#020617] transition-all group overflow-hidden">
-                <Upload className="text-slate-400 dark:text-slate-700 group-hover:text-blue-600 mb-1 transition-colors" size={20} />
-                <span className="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest">Select Media Asset</span>
-                <input type="file" className="hidden" accept="image/*" onChange={handleImageChange} />
+              <label className="relative flex flex-col items-center justify-center py-8 px-3 border-2 border-dashed border-gray-300 dark:border-gray-600 bg-gray-50/50 dark:bg-gray-800/50 cursor-pointer hover:border-gray-400 dark:hover:border-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all group overflow-hidden rounded-lg">
+                <Upload className="text-gray-400 dark:text-gray-600 group-hover:text-gray-600 dark:group-hover:text-gray-400 mb-1 transition-colors" size={20} />
+                <span className="text-xs font-bold text-gray-600 dark:text-gray-400">
+                  Click to upload
+                </span>
+                <input
+                  type="file"
+                  className="hidden"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                />
               </label>
             ) : (
-              <div className="relative h-32 rounded-2xl overflow-hidden border border-slate-200 dark:border-white/10 group">
-                <img src={imagePreview} className="w-full h-full object-cover" alt="Preview" />
-                <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                   <button type="button" onClick={removeImage} className="bg-white text-red-600 p-2 rounded-full hover:scale-110 transition-transform">
-                     <X size={16} />
-                   </button>
+              <div className="relative overflow-hidden border border-gray-200 dark:border-gray-700 group rounded-lg">
+                <img src={imagePreview} className="w-full h-32 object-cover" alt="Preview" />
+                <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                  <button
+                    type="button"
+                    onClick={removeImage}
+                    className="bg-white text-red-600 p-2 hover:bg-gray-100 transition-all active:scale-90"
+                  >
+                    <X size={18} />
+                  </button>
                 </div>
               </div>
             )}
@@ -181,43 +214,30 @@ export function CreateProject({ embedded = false, onClose }) {
 
           {/* Description */}
           <div className="space-y-2">
-            <label className="text-[11px] font-black text-slate-700 dark:text-slate-300 uppercase tracking-[0.2em] ml-1">
-              Descriptions <span className="text-red-500">*</span>
+            <label className="text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+              Description <span className="text-red-500">*</span>
             </label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               disabled={isPending}
-              placeholder="Primary objectives..."
-              className="w-full h-28 p-4 rounded-2xl bg-slate-50 dark:bg-[#020617] text-slate-900 dark:text-white border border-slate-200 dark:border-white/10 focus:border-blue-500 focus:bg-white dark:focus:bg-black focus:ring-4 focus:ring-blue-500/10 outline-none transition-all resize-none font-bold text-sm placeholder:text-slate-400 dark:placeholder:text-slate-700"
+              placeholder="Describe your project..."
+              className="w-full py-2.5 px-3 h-24 text-sm bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700 focus:border-gray-900 dark:focus:border-white focus:bg-white dark:focus:bg-gray-800 outline-none transition-all resize-none font-500 placeholder:text-gray-500 dark:placeholder:text-gray-500 rounded-lg"
             />
           </div>
 
           {/* Submit Button */}
-          <button
+          <GameButton
             type="submit"
-            disabled={isPending}
-            className={cn(
-              "relative z-10 w-full h-14 rounded-2xl font-black text-xs uppercase tracking-[0.2em] flex items-center justify-center gap-3 transition-all active:scale-[0.97] shadow-xl",
-              isPending
-                ? "bg-slate-200 dark:bg-slate-800 text-slate-400 cursor-not-allowed"
-                : is_solo === false 
-                  ? "bg-purple-600 hover:bg-purple-700 text-white shadow-purple-500/25" 
-                  : "bg-blue-600 hover:bg-blue-700 text-white shadow-blue-500/25"
-            )}
+            variant="primary"
+            size="lg"
+            fullWidth
+            loading={isPending}
+            disabled={isPending || is_solo === null}
           >
-            {isPending ? (
-              <div className="flex items-center gap-2">
-                <Loader2 className="h-5 w-5 animate-spin" />
-                <span>Creating...</span>
-              </div>
-            ) : (
-              <div className="flex items-center gap-2">
-                <span>Create {is_solo === false ? 'Team' : 'Solo'} Project</span>
-                <ArrowRight size={18} />
-              </div>
-            )}
-          </button>
+            {is_solo === false ? "Create Team Project" : "Create Solo Project"}
+            <ArrowRight size={18} />
+          </GameButton>
         </form>
       </div>
     </div>

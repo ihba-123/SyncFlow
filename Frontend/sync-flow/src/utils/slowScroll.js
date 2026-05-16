@@ -1,11 +1,26 @@
-export const slowScrollTo = (id) => {
+let activeAnimationFrame = null;
+
+export const slowScrollTo = (id, offset = 96) => {
   const target = document.getElementById(id);
   if (!target) return;
 
+  const targetY = target.getBoundingClientRect().top + window.scrollY;
+  const end = Math.max(0, targetY - offset);
+
+  if (activeAnimationFrame) {
+    cancelAnimationFrame(activeAnimationFrame);
+    activeAnimationFrame = null;
+  }
+
+  // Prefer native smooth scrolling when available.
+  if ("scrollBehavior" in document.documentElement.style) {
+    window.scrollTo({ top: end, behavior: "smooth" });
+    return;
+  }
+
   const start = window.scrollY;
-  const end = target.offsetTop;
   const distance = end - start;
-  const duration = 900;
+  const duration = 700;
 
   let startTime = null;
 
@@ -23,8 +38,13 @@ export const slowScrollTo = (id) => {
 
     window.scrollTo(0, start + distance * ease);
 
-    if (progress < 1) requestAnimationFrame(animation);
+    if (progress < 1) {
+      activeAnimationFrame = requestAnimationFrame(animation);
+      return;
+    }
+
+    activeAnimationFrame = null;
   };
 
-  requestAnimationFrame(animation);
+  activeAnimationFrame = requestAnimationFrame(animation);
 };

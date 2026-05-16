@@ -1,131 +1,104 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { Zap, ArrowRight } from "lucide-react";
-import { Button } from "@mui/material";
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+      delayChildren: 0.1,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.8, ease: "easeOut" },
+  },
+};
 
 export default function Hero() {
-  const navigate = useNavigate();
-
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1,
-        delayChildren: 0.2,
-      },
-    },
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.8, ease: "easeOut" },
-    },
-  };
-
   return (
-    <section
+    <header
       id="Hero"
-      className="relative min-h-screen flex items-center justify-center pt-30 pb-12 px-4 sm:px-6 lg:px-8 overflow-hidden"
-      style={{
-        background: "linear-gradient(135deg, #dbeafe 0%, #e6d9ff 45%, #f5f3ff 100%)",
-      }}
+      className="relative overflow-hidden bg-gradient-to-br from-white via-slate-50 to-slate-100 min-h-[100svh] flex items-start lg:items-center justify-center pt-32 sm:pt-36 lg:pt-16 pb-10"
     >
-      {/* Enhanced soft blur accents for more visible depth */}
-      <div className="absolute top-0 right-0 w-96 h-96 bg-purple-400 rounded-full filter blur-3xl opacity-30 -z-10"></div>
-      <div className="absolute bottom-0 left-0 w-80 h-80 bg-blue-400 rounded-full filter blur-3xl opacity-25 -z-10"></div>
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-indigo-300 rounded-full filter blur-3xl opacity-15 -z-10"></div>
-
-      <motion.div
-        className="max-w-4xl mx-auto text-center z-10"
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
-      >
-        <motion.div
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-light mb-8 w-fit mx-auto"
-          variants={itemVariants}
-        >
-          <Zap size={16} className="text-yellow-500" />
-          <span className="text-sm text-gray-700">
-            Now available for your personal projects
-          </span>
-        </motion.div>
-
-        <motion.h1
-          className="text-4xl sm:text-5xl lg:text-6xl font-bold text-balance mb-6 leading-tight text-gray-800"
-          variants={itemVariants}
-        >
-          Organize, Collaborate, and{" "}
-          <span className="bg-gradient-to-r from-gray-600 via-gray-800 to-gray-900 bg-clip-text text-transparent">
-            Deliver Faster
-          </span>
-        </motion.h1>
-
-        <motion.p
-          className="text-sm sm:text-xl text-gray-700 text-balance mb-8 max-w-2xl mx-auto leading-relaxed"
-          variants={itemVariants}
-        >
-          SyncFlow is the modern project management platform that brings clarity
-          to confusion. Streamline workflows, boost team collaboration, and achieve
-          your goals effortlessly.
-        </motion.p>
-
-        <motion.div
-          className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12"
-          variants={itemVariants}
-        >
-          <Button
-            size="large"
-            variant="contained"
-            onClick={() => navigate("/login")}
-            sx={{
-              backgroundColor: "#000000",
-              color: "#ffffff",
-              "&:hover": {
-                backgroundColor: "#1a1a1a",
-              },
-            }}
+      <div className="absolute -top-20 -right-20 w-[900px] h-[900px] rounded-full bg-slate-200/35 blur-3xl -z-10 animate-pulse" />
+      <div className="absolute -bottom-32 -left-32 w-[700px] h-[700px] rounded-full bg-slate-300/20 blur-3xl -z-10" />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+        <motion.div className="grid grid-cols-1 lg:grid-cols-2 gap-10 sm:gap-12 items-center" variants={containerVariants} initial="hidden" animate="visible">
+          <motion.div
+            variants={itemVariants}
+            className="text-center lg:text-left space-y-6"
           >
-            Get Started Free
-            <ArrowRight size={18} className="ml-2" />
-          </Button>
-          <Button
-            size="large"
-            variant="outlined"
-            sx={{
-              borderColor: "#374151",
-              color: "#000000",
-              "&:hover": {
-                borderColor: "#1f2937",
-                backgroundColor: "#f3f4f6",
-              },
-            }}
-          >
-            Watch Demo
-          </Button>
-        </motion.div>
+            <motion.div variants={itemVariants}>
+              <p className="mb-4 inline-block rounded-full bg-slate-100 px-4 py-2 text-xs font-bold uppercase tracking-widest text-slate-600 border border-slate-200">
+                ✨ v2.0 Now Live
+              </p>
+            </motion.div>
 
-        <motion.div
-          className="relative mx-auto mt-12 max-w-3xl"
-          variants={itemVariants}
-        >
-          <div className="glass-light rounded-2xl overflow-hidden p-0">
-            <div className="w-full h-68 sm:h-64 lg:h-96 overflow-hidden">
+            <motion.h1 variants={itemVariants} className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-slate-900 leading-tight">
+              Manage tasks faster,
+              <span className="block text-slate-700">
+                without switching tools
+              </span>
+            </motion.h1>
+
+            <motion.p variants={itemVariants} className="max-w-2xl text-base sm:text-lg text-slate-600 leading-relaxed">
+              SyncFlow brings your team, projects, and context together in one fast, minimalist interface. Built for high-performance teams who value focus.
+            </motion.p>
+
+            <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-4 pt-4 justify-center lg:justify-start">
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                <Link
+                  to="/signup"
+                  className="inline-flex items-center justify-center rounded-full bg-slate-900 px-6 py-3.5 text-sm font-bold text-white shadow-xl shadow-slate-900/25 hover:bg-slate-800 transition-all duration-300"
+                >
+                  Get Started Free →
+                </Link>
+              </motion.div>
+
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                <Link
+                  to="/demo"
+                  className="inline-flex items-center justify-center rounded-full border-2 border-slate-200 bg-white/80 backdrop-blur-sm px-6 py-3.5 text-sm font-semibold text-slate-700 shadow-md hover:shadow-lg hover:border-slate-300 transition-all duration-300"
+                >
+                  View Demo
+                </Link>
+              </motion.div>
+            </motion.div>
+          </motion.div>
+
+          <motion.div variants={itemVariants} className="flex items-center justify-center lg:justify-end">
+            <motion.div
+              className="w-full max-w-md lg:max-w-lg"
+              animate={{ y: [0, -10, 0] }}
+              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+            >
               <img
-                src="/image.png"
-                alt="SyncFlow dashboard preview"
-                className="block h-full w-full object-fill"
+                src="/images/landing-mockup.png"
+                alt="App preview"
+                className="w-full h-auto object-cover"
+                onError={(e) => {
+                  e.currentTarget.onerror = null;
+                  e.currentTarget.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="760" viewBox="0 0 1200 760"><rect width="100%" height="100%" fill="%23f8fafc"/><g fill="%23e6eef8"><rect x="40" y="40" width="1120" height="680" rx="20"/></g><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="%2398a2b3" font-size="28">App preview (add /public/images/landing-mockup.png)</text></svg>';
+                }}
               />
-            </div>
-          </div>
-          <div className="absolute -bottom-4 left-0 right-0 h-32 bg-gradient-to-t from-white via-white/60 to-transparent -z-10 blur-2xl"></div>
+            </motion.div>
+          </motion.div>
         </motion.div>
-      </motion.div>
-    </section>
+      </div>
+    </header>
   );
 }

@@ -4,7 +4,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "../ui/Popover";
 import { cn } from "../../utils/utils";
 import Logout from "../../features/auth/Logout";
 import { useUserProfile } from "../../hooks/UserProfile";
-import { Users } from "lucide-react";
+import { Users, Key } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/Auth";
 
@@ -17,6 +17,11 @@ const Avatars = ({ isExpanded, setIsExpanded, isMobile }) => {
     setOpen(false);
     if (isMobile) setIsExpanded(false);
     navigate("/dashboard/profile");
+  };
+  const handleChangePasswordClick = () => {
+    setOpen(false);
+    if (isMobile) setIsExpanded(false);
+    navigate("/dashboard/change-password");
   };
   return (
     <div className="pt-4 z-100">
@@ -60,7 +65,7 @@ const Avatars = ({ isExpanded, setIsExpanded, isMobile }) => {
           side="top"
           align={isExpanded ? "start" : "center"}
           sideOffset={12}
-          className="w-44 h-auto z-100 p-3 bg-background/95 backdrop-blur-md rounded-2xl border border-black/20 dark:border-white/10 shadow-2xl"
+          className="w-54 ml-5 h-auto z-100 p-3 bg-background/95 backdrop-blur-md rounded-sm border border-black/20 dark:border-white/10 shadow-2xl"
         >
           <div className="space-y-1">
             <button
@@ -70,6 +75,14 @@ const Avatars = ({ isExpanded, setIsExpanded, isMobile }) => {
               <Users className="w-4 h-4" />
               Profile
             </button>
+
+              <button
+                onClick={handleChangePasswordClick}
+                className="w-full flex items-center -ml-2.5 justify-center gap-1 px-4 py-3 text-sm font-medium text-gray-800 dark:text-gray-200 hover:text-gray-600 cursor-pointer rounded-lg transition-colors"
+              >
+                <Key className="w-4 h-4" />
+                Change Password
+              </button>
 
             <div>
               <div className="h-px bg-gradient-to-r from-transparent via-gray-800 dark:via-indigo-400/30 to-transparent" />

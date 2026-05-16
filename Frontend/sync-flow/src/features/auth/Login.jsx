@@ -4,13 +4,15 @@ import { Mail, Lock, ArrowRight, Eye, EyeOff } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import TextField from "@mui/material/TextField";
 import IconButton from "@mui/material/IconButton";
-import Button from "@mui/material/Button";
 import InputAdornment from "@mui/material/InputAdornment";
 import Checkbox from "@mui/material/Checkbox";
-import { FormControlLabel, CircularProgress } from "@mui/material";
+import { FormControlLabel, Divider } from "@mui/material";
 import { login } from "../../api/auth";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
+import GoogleAuthButton from "../../components/auth/GoogleAuthButton";
+import { setAccessToken } from "../../utils/authToken";
+import GameButton from "../../components/ui/GameButton";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -20,6 +22,10 @@ export default function Login() {
   const loginMutation = useMutation({
     mutationFn: login,
     onSuccess:  (res) => {
+      const accessToken = res?.data?.access;
+      if (accessToken) {
+        setAccessToken(accessToken);
+      }
       navigate("/dashboard");
       toast.success("Login Successful");
     },
@@ -70,13 +76,13 @@ export default function Login() {
     <div className="relative w-full flex justify-center items-center overflow-hidden">
       
       <motion.div
-        className="absolute w-72 h-72 sm:w-96 sm:h-96 bg-gradient-to-br from-gray-200/30 to-gray-100/30 rounded-full blur-3xl"
+        className="absolute w-72 h-72 sm:w-96 sm:h-96 bg-linear-to-br from-gray-200/30 to-gray-100/30 rounded-full blur-3xl"
         animate={{ x: [0, 50, -50, 0], y: [0, 30, -30, 0] }}
         transition={{ duration: 8, repeat: Infinity }}
         style={{ top: "-10%", left: "-10%" }}
       />
       <motion.div
-        className="absolute w-72 h-72 sm:w-96 sm:h-96 bg-gradient-to-br from-gray-300/20 to-gray-200/20 rounded-full blur-3xl"
+        className="absolute w-72 h-72 sm:w-96 sm:h-96 bg-linear-to-br from-gray-300/20 to-gray-200/20 rounded-full blur-3xl"
         animate={{ x: [0, -50, 50, 0], y: [0, -30, 30, 0] }}
         transition={{ duration: 10, repeat: Infinity }}
         style={{ bottom: "-10%", right: "-10%" }}
@@ -161,41 +167,40 @@ export default function Login() {
 
             {motionDiv(
               <div className="flex flex-col sm:flex-row items-center justify-between text-sm">
-                <FormControlLabel control={<Checkbox />} label="Remember me" />
+                <Link
+                  to="/forgot-password"
+                  className="text-gray-900 font-semibold hover:underline"
+                >
+                  Forgot Password?
+                </Link>
               </div>,
               3
             )}
 
             {motionDiv(
-              <Button
+              <GameButton
                 type="submit"
                 fullWidth
-                variant="contained"
+                variant="primary"
+                size="lg"
+                loading={loginMutation.isPending}
                 disabled={loginMutation.isPending}
-                sx={{
-                  background: "linear-gradient(to right, #1f2937, #000)",
-                  py: "10px",
-                  borderRadius: "8px",
-                  "&:hover": {
-                    background: "linear-gradient(to right, #374151, #111)",
-                  },
-                }}
               >
-                {loginMutation.isPending ? (
-                  <>
-                    <CircularProgress
-                      size={20}
-                      sx={{ color: "white", mr: 1 }}
-                    />
-                  </>
-                ) : (
-                  <>
-                    Sign In <ArrowRight size={20} style={{ marginLeft: 8 }} />
-                  </>
-                )}
-              </Button>
+                Sign In <ArrowRight size={20} />
+              </GameButton>,
+              4
             )}
           </form>
+
+            <div className="my-5 flex items-center gap-3">
+              <Divider className="flex-1" />
+              <span className="text-xs font-semibold uppercase tracking-[0.2em] text-gray-500">
+                Or
+              </span>
+              <Divider className="flex-1" />
+            </div>
+
+            <GoogleAuthButton label="Sign in with Google" navigateTo="/dashboard" />
 
           {motionDiv(
             <p className="text-center text-sm text-gray-600 mt-6">

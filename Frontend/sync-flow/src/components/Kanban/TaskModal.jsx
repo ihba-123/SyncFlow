@@ -4,6 +4,8 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { khanbanService, attachmentService } from "../../api/khanban_api";
 import AttachmentUploader from "./AttachmentUploader";
 import { useActiveProjectStore } from "../../stores/ActiveProject";
+import { showError } from "../../services/toastService";
+import { getErrorMessage } from "../../utils/errorMessages";
 
 const PRIORITY_OPTIONS = [
   { value: "high", label: "High" },
@@ -128,7 +130,7 @@ export default function TaskModal() {
         queryClient.invalidateQueries({ queryKey: ["tasks", project_id] });
       });
     },
-    onError: (err) => console.error("Create Error:", err.response?.data)
+    onError: (err) => showError(getErrorMessage(err, "Unable to create the task."))
   });
 
   const updateMutation = useMutation({
@@ -142,7 +144,7 @@ export default function TaskModal() {
         queryClient.invalidateQueries({ queryKey: ["tasks", project_id] });
       });
     },
-    onError: (err) => console.error("Update Error:", err.response?.data)
+    onError: (err) => showError(getErrorMessage(err, "Unable to update the task."))
   });
 
   const deleteMutation = useMutation({

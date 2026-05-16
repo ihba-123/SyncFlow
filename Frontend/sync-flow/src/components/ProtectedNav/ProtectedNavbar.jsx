@@ -1,133 +1,133 @@
-import { Moon, Sun, Menu, TvMinimal, Plus, X } from "lucide-react";
+import { Moon, Sun, Menu, Monitor, X } from "lucide-react";
 import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "../../utils/utils";
 import useTheme from "../../hooks/useTheme";
 import SearchUI from "../../features/search/SearchUI";
+
 export function ProtectedNavbar({ isExpanded, setIsExpanded, isMobile }) {
   const { theme, setTheme } = useTheme();
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
   const toggleMobileMenu = () => setIsExpanded((prev) => !prev);
-  
+
   const handleSelect = (mode) => {
     setTheme(mode);
     setDropdownOpen(false);
   };
 
-  const renderIcon = () => {
-    switch (theme) {
-      case "dark":
-        return <Moon className="w-5 h-5" />;
-      case "light":
-        return <Sun className="w-5 h-5" />;
-      case "system":
-        return <TvMinimal className="w-5 h-5" />;
-      default:
-        return <Moon className="w-5 h-5" />;
-    }
+  const themeOptions = [
+    { icon: Sun, label: "Light", value: "light" },
+    { icon: Moon, label: "Dark", value: "dark" },
+    { icon: Monitor, label: "System", value: "system" },
+  ];
+
+  const getCurrentIcon = () => {
+    const option = themeOptions.find(opt => opt.value === theme);
+    return option?.icon || Moon;
   };
 
-  const renderName = () => {
-    switch (theme) {
-      case "dark":
-        return "Dark";
-      case "light":
-        return "Light";
-      case "system":
-        return "System";
-      default:
-        return "";
-    }
-  };
+  const CurrentIcon = getCurrentIcon();
 
   return (
     <header
       className={cn(
-        "fixed top-0 right-0 h-14   bg-card/10 backdrop-blur-sm   transition-all duration-300 z-50",
+        "fixed top-0 right-0 h-14 bg-white/40 dark:bg-gray-950/40 backdrop-blur-md border-b border-gray-200/30 dark:border-gray-800/30 transition-all duration-300 z-50",
         !isMobile && (isExpanded ? "left-64" : "left-16"),
         isMobile && "left-0 w-full"
       )}
     >
-      <div className="flex items-center  justify-between h-full px-4 md:px-6">
-        
+      <div className="flex items-center justify-between h-full px-4 md:px-6">
         <div className="flex items-center gap-4">
           {isMobile && (
-            <button
-              variant="ghost"
-              size="icon"
+            <motion.button
+              whileTap={{ scale: 0.9 }}
               onClick={toggleMobileMenu}
-              className="hover:bg-accent/50 relative z-10"
+              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
             >
               {isExpanded ? (
-                <X className="w-5 text-black dark:text-white h-5" />
+                <X className="w-5 text-gray-900 dark:text-white" />
               ) : (
-                <Menu className="w-5 text-black dark:text-white h-5" />
+                <Menu className="w-5 text-gray-900 dark:text-white" />
               )}
-            </button>
+            </motion.button>
           )}
-
-          <div className="flex items-center gap-3">
-            <span className="font-extrabold font-sans  text-black dark:text-foreground hidden sm:block">
-              SyncFlow
-            </span>
-          </div>
         </div>
 
-       
-        <div className="flex items-center gap-4 relative">
-        
-          <div className="relative flex gap-4.5 items-center justify-center">
-           
-            <div>
-              <SearchUI />
-            </div>
-            <div>
-             
-            </div>
+        <div className="flex items-center gap-3">
+          <SearchUI />
 
-            <button
-              variant="ghost"
-              size="icon"
-              className="border dark:hover:text-white hover:bg-white/5 border-primary
-              text-black/80 hover:text-black justify-center rounded-sm cursor-pointer dark:text-white/80 dark:border-primary flex items-center gap-2 px-5 h-9 w-24 py-2"
-              onClick={() => setDropdownOpen((prev) => !prev)}
+          {/* Theme Toggle Button */}
+          <div className="relative">
+            <motion.button
+              whileTap={{ scale: 0.92 }}
+              onClick={() => setDropdownOpen(!dropdownOpen)}
+              className={cn(
+                "flex items-center gap-2 px-3 py-2 rounded-lg font-medium text-sm transition-all",
+                "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200",
+                "hover:bg-gray-200 dark:hover:bg-gray-700",
+                dropdownOpen && "bg-gray-200 dark:bg-gray-700"
+              )}
             >
-              <span className="text-xl font-normal dark:text-[#66B2FF]">
-                {renderIcon()}
-              </span>
-              <span className="text-[15px] font-normal dark:text-[#66B2FF]">
-                {renderName()}
-              </span>
-            </button>
+              <motion.div
+                key={theme}
+                initial={{ scale: 0.8, opacity: 0, rotate: -90 }}
+                animate={{ scale: 1, opacity: 1, rotate: 0 }}
+                exit={{ scale: 0.8, opacity: 0, rotate: 90 }}
+                transition={{ type: "spring", stiffness: 200, damping: 15, duration: 0.4 }}
+              >
+                <CurrentIcon className="w-4 h-4" />
+              </motion.div>
+              <span className="hidden sm:inline capitalize">{theme}</span>
+            </motion.button>
 
-            {dropdownOpen && (
-              <div className="absolute dark:text-[#66B2FF] border right-4 mt-50 w-32   bg-gray-200 dark:bg-gray-900 rounded-sm text-[13px]  border-black/10 dark:border-white/10 shadow-lg z-50">
-                <button
-                  className="flex items-center gap-2 text-sm w-full px-4 py-2 hover:bg-accent/20"
-                  onClick={() => handleSelect("dark")}
+            {/* Dropdown */}
+            <AnimatePresence>
+              {dropdownOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: -8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  transition={{ duration: 0.15 }}
+                  className="absolute right-0 mt-2 w-40 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50"
                 >
-                  <Moon className="w-5  h-7" /> Dark
-                </button>
-                <div className="py-1">
-                  <div className="h-px bg-gradient-to-r   text-sm from-transparent via-gray-800 dark:via-indigo-400/30 to-transparent" />
-                </div>
-                <button
-                  className="flex items-center gap-2 w-full  text-sm px-4 py-2 hover:bg-accent/20"
-                  onClick={() => handleSelect("light")}
-                >
-                  <Sun className="w-4 h-4" /> Light
-                </button>
-                <div className="py-1">
-                  <div className="h-px bg-gradient-to-r from-transparent via-gray-800 dark:via-indigo-400/30 to-transparent" />
-                </div>
-                <button
-                  className="flex items-center gap-2 w-full  text-sm px-4 py-2 hover:bg-accent/20"
-                  onClick={() => handleSelect("system")}
-                >
-                  <TvMinimal className="w-4 h-4" /> System
-                </button>
-              </div>
-            )}
+                  <div className="p-1 space-y-0.5">
+                    {themeOptions.map((option) => {
+                      const Icon = option.icon;
+                      const isActive = theme === option.value;
+                      return (
+                        <motion.button
+                          key={option.value}
+                          whileHover={{ x: 2 }}
+                          onClick={() => handleSelect(option.value)}
+                          className={cn(
+                            "w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-sm transition-all",
+                            isActive
+                              ? "bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900"
+                              : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                          )}
+                        >
+                          <motion.div
+                            initial={{ rotate: -90, scale: 0.8 }}
+                            animate={{ rotate: 0, scale: 1 }}
+                            transition={{ type: "spring", stiffness: 200, damping: 15, duration: 0.3 }}
+                          >
+                            <Icon className="w-3.5 h-3.5" />
+                          </motion.div>
+                          <span>{option.label}</span>
+                          {isActive && (
+                            <motion.div
+                              layoutId="activeIndicator"
+                              className="ml-auto w-1.5 h-1.5 rounded-full bg-current"
+                            />
+                          )}
+                        </motion.button>
+                      );
+                    })}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
       </div>

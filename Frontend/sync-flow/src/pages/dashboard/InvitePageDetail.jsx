@@ -11,7 +11,6 @@ const InvitePageDetail = ({
   Check,
   datas,
 }) => {
-  console.log(datas);
   return (
     <div>
       <AnimatePresence>
@@ -29,7 +28,7 @@ const InvitePageDetail = ({
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="relative w-full max-w-sm bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-white/10 rounded-[32px] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.2)] overflow-hidden"
+              className="relative w-full max-w-sm bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-white/10 rounded-4xl shadow-[0_32px_64px_-16px_rgba(0,0,0,0.2)] overflow-hidden"
             >
               <div className="p-8 space-y-8">
                 <div className="space-y-2">

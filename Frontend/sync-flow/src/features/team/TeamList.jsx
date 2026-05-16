@@ -8,6 +8,8 @@ import { useProjectRoleStore } from "../../stores/ProjectRoleStore";
 import { useActiveProjectStore } from "../../stores/ActiveProject";
 import { removeMember } from "../../api/Project";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { showError } from "../../services/toastService";
+import { getErrorMessage } from "../../utils/errorMessages";
 
 const TeamView = () => {
   const [showToast, setShowToast] = useState(false);
@@ -67,7 +69,7 @@ const TeamView = () => {
     },
 
     onError: (error) => {
-      console.error("Remove failed:", error);
+      showError(getErrorMessage(error, "Failed to remove the team member."));
     },
   });
 
@@ -86,7 +88,7 @@ const TeamView = () => {
       setShowToast(true);
       setTimeout(() => setShowToast(false), 2000);
     } catch (err) {
-      console.error("Copy failed:", err);
+      showError(getErrorMessage(err, "Unable to copy invite token."));
     }
   };
 
@@ -118,7 +120,7 @@ const TeamView = () => {
   return (
     <div
       className="min-h-screen -mt-5  bg-[#f8fafc] dark:bg-[#020617]
-      dark:bg-[radial-gradient(at_top_left,_rgba(56,189,248,0.05),_transparent),radial-gradient(at_bottom_right,_rgba(139,92,246,0.05),_transparent)] text-slate-900  dark:text-slate-100"
+      dark:bg-[radial-gradient(at_top_left,rgba(56,189,248,0.05),transparent),radial-gradient(at_bottom_right,rgba(139,92,246,0.05),transparent)] text-slate-900  dark:text-slate-100"
     >
       {/* Toast notification */}
       {showToast && (
@@ -132,7 +134,7 @@ const TeamView = () => {
         </div>
       )}
       <div className="fixed inset-0 pointer-events-none hidden dark:block">
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-950/30 via-transparent to-indigo-950/20" />
+        <div className="absolute inset-0 bg-linear-to-br from-blue-950/30 via-transparent to-indigo-950/20" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_15%_20%,rgba(59,130,246,0.08)_0%,transparent_40%)]" />
       </div>
 
@@ -141,7 +143,7 @@ const TeamView = () => {
           <div className="hover:underline decoration-dotted underline-offset-8 text-blue-600 dark:text-blue-300">
             <h1
               className=" text-5xl font-extrabold sm:text-3xl md:text-4xl  tracking-tight
-            bg-gradient-to-r from-blue-600 to-gray-600
+            bg-linear-to-r from-blue-600 to-gray-600
             dark:from-blue-100 dark:to-indigo-200 
             bg-clip-text text-transparent"
             >
@@ -167,7 +169,7 @@ const TeamView = () => {
                 className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-5
                   rounded-2xl bg-white border border-slate-300
                   shadow-sm hover:shadow-md transition
-                  dark:bg-white/[0.03] dark:border-white/5 dark:hover:shadow-blue-900/10 p-4 sm:p-5"
+                  dark:bg-white/3 dark:border-white/5 dark:hover:shadow-blue-900/10 p-4 sm:p-5"
               >
                 <div className="flex items-center gap-4">
                   <div className="relative">
@@ -314,7 +316,7 @@ const TeamView = () => {
                   key={invite.id}
                   className="rounded-2xl bg-white border border-slate-300
                   shadow-sm hover:shadow-md transition
-                  dark:bg-white/[0.04] dark:border-white/6 p-4 sm:p-6"
+                  dark:bg-white/4 dark:border-white/6 p-4 sm:p-6"
                 >
                   <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                     <div>

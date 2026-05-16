@@ -6,6 +6,10 @@ export const login = async (data) => {
   return api.post("login/", data);
 };
 
+export const googleLogin = async (idToken) => {
+  return api.post("google-oauth/", { id_token: idToken });
+};
+
 // Registration
 export const Registration = async (data) => {
   return api.post("register/", data);
@@ -37,6 +41,11 @@ export const deleteProfile = async() => {
   const res = await api.patch("chat-profile/delete/")
     return res.photo;
 }
+
+export const changePassword = async (payload) => {
+  const res = await api.post("change-password/", payload);
+  return res.data;
+};
 
 // export const onBoard = async() => {
 //   const res = await api.post("onboard/")

@@ -3,12 +3,16 @@ import { useParams, useNavigate } from "react-router-dom";
 import { joinLink } from "../../api/invite_join";
 import { useAuth } from "../../hooks/Auth";
 import { useSetActiveProject } from "../../hooks/useSetActiveProject";
+import { useQueryClient } from "@tanstack/react-query";
+import { showError } from "../../services/toastService";
+import { getErrorMessage } from "../../utils/errorMessages";
 
 const JoinInvitePage = () => {
   const { token } = useParams();
   const navigate = useNavigate();
   const { is_Authenticated } = useAuth();
   const setActiveProjectMutation = useSetActiveProject();
+  const queryClient = useQueryClient();
   const joinAttempted = useRef(false);
 
   const [loading, setLoading] = useState(false);
@@ -29,7 +33,7 @@ const JoinInvitePage = () => {
         // Navigate to project page
         navigate(`/projects/${data.project_id}`, { replace: true });
       } catch (err) {
-        console.error("Failed to join project:", err);
+        showError(getErrorMessage(err, "This invitation link is invalid or has expired."));
         setError(
           err?.response?.data?.error ||
           err?.response?.data?.detail ||
@@ -59,6 +63,7 @@ const JoinInvitePage = () => {
         await setActiveProjectMutation.mutateAsync(data.project_id);
         navigate(`/projects/${data.project_id}`, { replace: true });
       } catch (err) {
+        showError(getErrorMessage(err, "Invalid invite."));
         setError(err?.response?.data?.detail || "Invalid invite.");
       } finally {
         setLoading(false);

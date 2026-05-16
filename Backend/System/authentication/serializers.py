@@ -3,6 +3,7 @@ from rest_framework import serializers
 from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth import authenticate
 from chatapp.models import Profile
+
 class RegisterSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(required=True)
     password = serializers.CharField(write_only=True, required=True, min_length=8)
@@ -70,3 +71,66 @@ class UserProfileSerializer(serializers.ModelSerializer):
         model = User
         fields = ("id", "email", "name" ,"has_completed_onboarding")
         read_only_fields = ("id",)
+
+
+class GoogleOAuthSerializer(serializers.Serializer):
+    id_token = serializers.CharField(required=True, trim_whitespace=True)
+
+    def validate_id_token(self, value):
+        token = value.strip()
+        if not token:
+            raise serializers.ValidationError("Google id_token is required")
+        return token
+
+
+class ChangePasswordSerializer(serializers.Serializer):
+    old_password = serializers.CharField(write_only=True, required=True)
+    new_password = serializers.CharField(write_only=True, required=True, min_length=8)
+    new_password2 = serializers.CharField(write_only=True, required=True, min_length=8)
+
+    def validate_old_password(self, value):
+        request = self.context.get('request')
+        user = getattr(request, 'user', None)
+        if user is None or not user.check_password(value):
+            raise serializers.ValidationError("Old password is incorrect")
+        return value
+
+    def validate(self, attrs):
+        if attrs.get('new_password') != attrs.get('new_password2'):
+            raise serializers.ValidationError({"new_password": "New passwords do not match"})
+        validate_password(attrs.get('new_password'))
+        return attrs
+
+    def save(self, **kwargs):
+        request = self.context.get('request')
+        user = request.user
+        user.set_password(self.validated_data['new_password'])
+        user.save()
+        return user
+    
+
+
+
+class RequestOTPSerializer(serializers.Serializer):
+    email = serializers.EmailField(required=True)
+
+    def validate_email(self, value):
+        return value
+
+
+class ResetPasswordSerializer(serializers.Serializer):
+    email = serializers.EmailField(required=True)
+    otp = serializers.CharField(write_only=True, required=True, min_length=6, max_length=6)
+    new_password = serializers.CharField(write_only=True, required=True, min_length=8)
+
+    def validate_email(self, value):
+        if not User.objects.filter(email=value).exists():
+            raise serializers.ValidationError("User with this email does not exist")
+        return value
+
+    def validate_new_password(self, value):
+        validate_password(value)
+        return value
+    
+
+

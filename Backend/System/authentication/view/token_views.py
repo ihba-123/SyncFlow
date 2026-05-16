@@ -6,12 +6,6 @@ from authentication.utils.set_refiresh import set_refresh_cookie , set_access_co
 from authentication.services.token_service import refresh_access_token_service
 from django.utils.decorators import method_decorator
 from authentication.throttles import RefreshRateThrottle
-#import cookies
-
-
-import logging
-
-logger = logging.getLogger(__name__)
 
 class RefreshTokenView(APIView):
     permission_classes = [AllowAny]
@@ -20,7 +14,6 @@ class RefreshTokenView(APIView):
     @method_decorator(ensure_csrf_cookie)
     def post(self, request):
         refresh_token = request.COOKIES.get("refresh_token")
-        print("Refresh token:", str(refresh_token))
 
         data, status_code = refresh_access_token_service(refresh_token)
 

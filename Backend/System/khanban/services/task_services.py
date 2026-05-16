@@ -1,10 +1,10 @@
 from django.shortcuts import get_object_or_404
-from django.db import transaction, models
+from django.db import transaction
 from django.db.models import Q, Count
 from django.db.models.functions import TruncDate
 from django.utils.timezone import now, timedelta
 from django.utils.timezone import localdate
-from khanban.models import Task, TaskComment, TaskAttachment
+from khanban.models import Task
 from team.models import ProjectMember, Project
 from khanban.utils.fraction_ordering import order_between
 from khanban.serializers import TaskSerializer
@@ -13,31 +13,6 @@ from khanban.services.offline_services import save_for_offline_users
 from activitylog.activity.services import log_activity , ActivityAction
 
 
-def _build_daily_trend(queryset, field_name, start_date, days=7):
-    day_counts = {start_date + timedelta(days=index): 0 for index in range(days)}
-    date_field = f"{field_name}__date"
-
-    daily_rows = (
-        queryset.filter(**{f"{date_field}__gte": start_date, f"{date_field}__lte": start_date + timedelta(days=days - 1)})
-        .annotate(day=TruncDate(field_name))
-        .values("day")
-        .annotate(count=Count("id"))
-        .order_by("day")
-    )
-
-    for row in daily_rows:
-        day = row.get("day")
-        if day in day_counts:
-            day_counts[day] = row.get("count", 0)
-
-    return [
-        {
-            "date": day.isoformat(),
-            "label": day.strftime("%a"),
-            "value": day_counts[day],
-        }
-        for day in day_counts
-    ]
 
 # -------------------- CREATE TASK --------------------
 @transaction.atomic
@@ -178,6 +153,34 @@ def get_filtered_tasks(project_id, filters):
     if member:
         queryset = queryset.filter(assigned_to_id=member)
     return queryset
+
+
+
+def _build_daily_trend(queryset, field_name, start_date, days=7):
+    day_counts = {start_date + timedelta(days=index): 0 for index in range(days)}
+    date_field = f"{field_name}__date"
+
+    daily_rows = (
+        queryset.filter(**{f"{date_field}__gte": start_date, f"{date_field}__lte": start_date + timedelta(days=days - 1)})
+        .annotate(day=TruncDate(field_name))
+        .values("day")
+        .annotate(count=Count("id"))
+        .order_by("day")
+    )
+
+    for row in daily_rows:
+        day = row.get("day")
+        if day in day_counts:
+            day_counts[day] = row.get("count", 0)
+
+    return [
+        {
+            "date": day.isoformat(),
+            "label": day.strftime("%a"),
+            "value": day_counts[day],
+        }
+        for day in day_counts
+    ]
 
 
 # -------------------- DASHBOARD STATS --------------------

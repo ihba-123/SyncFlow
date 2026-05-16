@@ -17,6 +17,8 @@ import { inviteLink } from "../../api/invite_join";
 import { useParams } from "react-router-dom";
 import { useProject } from "../../hooks/useProject";
 import { toast } from "react-toastify";
+import { showError } from "../../services/toastService";
+import { getErrorMessage } from "../../utils/errorMessages";
 
 const InvitePage = () => {
   const [selectedRole, setSelectedRole] = useState("member");
@@ -42,8 +44,7 @@ const InvitePage = () => {
       setShowModal(true);
     },
     onError: (err) => {
-      // Improved error logging to see backend validation messages
-      console.error("Invite error:", err.response?.data || err.message);
+      showError(getErrorMessage(err, "Unable to create invite link."));
     },
   });
 
@@ -52,7 +53,7 @@ const InvitePage = () => {
     const targetId = project_id || project?.id;
 
     if (!targetId) {
-      console.error("No project ID found in URL or Context");
+      showError("No project selected for the invite link.");
       return;
     }
 
@@ -204,7 +205,8 @@ const InvitePage = () => {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
-            className="fixed bottom-10 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-[#020617] border border-slate-700 rounded-full px-5 py-2.5 shadow-xl z-[100]"
+            style={{ zIndex: 100 }}
+            className="fixed bottom-10 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-[#020617] border border-slate-700 rounded-full px-5 py-2.5 shadow-xl"
           >
             <CheckCircle2 className="w-4 h-4 text-cyan-400" />
             <span className="text-sm font-medium text-white whitespace-nowrap">

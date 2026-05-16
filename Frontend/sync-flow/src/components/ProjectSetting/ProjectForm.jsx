@@ -1,7 +1,7 @@
-import { Camera, Save } from "lucide-react";
+import { Camera, Save, Loader2 } from "lucide-react";
 import React from "react";
 
-const ProjectForm = ({ form, setForm, canEdit, saveMutation, previewUrl, handleSubmit, handleImageChange, handleRemoveImage, handleResetChanges , imageFile , isDirty }) => {
+const ProjectForm = ({ form, setForm, canEdit, saveMutation, previewUrl, handleSubmit, handleImageChange, handleRemoveImage, handleResetChanges , imageFile , isDirty, imageLoading = false }) => {
   return (
     <div>
       <form
@@ -45,7 +45,7 @@ const ProjectForm = ({ form, setForm, canEdit, saveMutation, previewUrl, handleS
               Project Image
             </label>
             <div className="flex items-center gap-4">
-              <div className="h-20 w-20 overflow-hidden rounded-sm border border-slate-300 bg-slate-100 dark:border-slate-700 dark:bg-slate-800">
+              <div className="relative h-20 w-20 overflow-hidden rounded-sm border border-slate-300 bg-slate-100 dark:border-slate-700 dark:bg-slate-800">
                 {previewUrl ? (
                   <img
                     src={previewUrl}
@@ -55,6 +55,14 @@ const ProjectForm = ({ form, setForm, canEdit, saveMutation, previewUrl, handleS
                 ) : (
                   <div className="flex h-full w-full items-center justify-center text-slate-400">
                     No image
+                  </div>
+                )}
+                {imageLoading && (
+                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 bg-black/45 text-white">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span className="text-[9px] font-semibold uppercase tracking-[0.14em] text-white/90">
+                      Uploading
+                    </span>
                   </div>
                 )}
               </div>

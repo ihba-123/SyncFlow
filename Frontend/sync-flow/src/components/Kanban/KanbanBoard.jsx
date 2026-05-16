@@ -7,6 +7,8 @@ import { khanbanService } from "../../api/khanban_api";
 import { useKanbanSocket } from "../../hooks/useKanbanSocket";
 import { useActiveProjectStore } from "../../stores/ActiveProject";
 import { useThemeStore } from "../../stores/ThemeStore";
+import { showError } from "../../services/toastService";
+import { getErrorMessage } from "../../utils/errorMessages";
 import KanbanColumn from "./KanbanColumn";
 import ProgressBar from "./ProgressBar";
 import TaskModal from "./TaskModal";
@@ -137,7 +139,7 @@ const reorderMutation = useMutation({
     });
   },
   onError: (err, variables) => {
-    console.error("Reorder failed:", err);
+    showError(getErrorMessage(err, "Unable to reorder the task."));
     if (variables?.previousCols) {
       setCols(variables.previousCols);
     }

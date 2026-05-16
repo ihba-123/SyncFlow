@@ -4,6 +4,7 @@ from .view.friendrequest_views import FriendRequestView
 from .view.friend_update_views import FriendRequestUpdateView
 from .view.message_list_view import MessageListView
 from .view.attachment_views import AttachmentView
+from .view.attachment_proxy_view import MessageAttachmentProxyView
 from .view.online_user_views import OnlineUsersView
 from .view.user_detail_views import UserDetailView
 from .view.profile_update import ProfileUpdateView
@@ -17,6 +18,7 @@ urlpatterns = [
     path('chatrooms/create/', ChatRoomCreateView.as_view(), name='chatroom-create'),
     path('message-list/<int:room_id>/', MessageListView.as_view(), name='message-list'),
     path('chat/<int:room_id>/messages/', AttachmentView.as_view(), name='chat-attachment'),
+    path('chat/messages/<int:message_id>/attachment/', MessageAttachmentProxyView.as_view(), name='chat-message-attachment'),
     
     path('friendrequests/', FriendRequestView.as_view(), name='friend-request'),
     path('friendrequests/update/<int:request_id>/', FriendRequestUpdateView.as_view(), name='friend-request'),

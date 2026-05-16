@@ -5,15 +5,16 @@ import { Link, useNavigate } from "react-router-dom";
 import {
   TextField,
   IconButton,
-  Button,
   InputAdornment,
   Checkbox,
   FormControlLabel,
-  CircularProgress,
+  Divider,
 } from "@mui/material";
 import { useMutation } from "@tanstack/react-query";
 import { Registration } from "../../api/auth";
 import { toast } from "react-toastify";
+import GoogleAuthButton from "../../components/auth/GoogleAuthButton";
+import GameButton from "../../components/ui/GameButton";
 
 
 // Motion wrapper for staggered animations
@@ -242,36 +243,28 @@ export default function Signup() {
 
             {/* Submit Button */}
             <MotionItem delay={6}>
-              <Button
+              <GameButton
                 type="submit"
                 fullWidth
-                variant="contained"
+                variant="primary"
+                size="lg"
+                loading={registerMutation.isPending}
                 disabled={registerMutation.isPending}
-                sx={{ 
-                  mt: 1,
-                  py: 1.8,
-                  borderRadius: 2,
-                  textTransform: "none",
-                  fontSize: "1.05rem",
-                  fontWeight: 600,
-                  background: "linear-gradient(to right, #1f2937, #000000)",
-                  "&:hover": {
-                    background: "linear-gradient(to right, #374151, #111111)",
-                  },
-                }}
               >
-                {registerMutation.isPending ? (
-                  <>
-                    <CircularProgress size={20} sx={{ color: "white", mr: 1 }}  />
-                  </>
-                ) : (
-                  <>  
-                    Sign Up <ArrowRight size={20} style={{ marginLeft: 8 }} />
-                  </>
-                )}
-              </Button>
+                Sign Up <ArrowRight size={20} />
+              </GameButton>
             </MotionItem>
           </form>
+
+          <div className="my-6 flex items-center gap-3">
+            <Divider className="flex-1" />
+            <span className="text-xs font-semibold uppercase tracking-[0.2em] text-gray-500">
+              Or
+            </span>
+            <Divider className="flex-1" />
+          </div>
+
+          <GoogleAuthButton label="Continue with Google" navigateTo="/dashboard" />
 
           <MotionItem delay={7}>
             <p className="text-center text-sm text-gray-600 mt-8">

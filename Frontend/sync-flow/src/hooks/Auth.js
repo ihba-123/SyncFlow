@@ -13,9 +13,6 @@ export const useAuth = () => {
       setUser(data);
     },
     onError: (err) => {
-      if (err.response?.status !== 401) {
-        console.error(err);
-      }
       clearUser();
     },
     staleTime: 5 * 60 * 1000,

@@ -95,34 +95,21 @@ export function Sidebar({ isExpanded, setIsExpanded, isMobile }) {
               isExpanded ? "justify-start" : "justify-center w-full",
             )}
           >
-            {isExpanded ? (
-              <div className="flex items-center gap-3 px-2">
-                <div className="w-10 h-10 rounded-lg bg-gradient-to-br dark:from-indigo-500/20 to-white flex items-center justify-center backdrop-blur-sm border border-indigo-400/20">
-                  <img src="/sync.png" alt="Logo" className="w-10 h-8" />
-                </div>
-                <span className="text-lg font-semibold text-black/60 dark:text-white">
-                  SyncFlow
-                </span>
-              </div>
-            ) : (
-              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-gray-200 to-white flex items-center justify-center backdrop-blur-sm border border-indigo-400/20">
-                <img src="/sync.png" alt="Logo" className="w-10 h-8" />
-              </div>
-            )}
+           
           </div>
 
           {!isMobile && (
             <button
               onClick={() => setIsExpanded(!isExpanded)}
               className={cn(
-                "absolute  -right-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full border border-gray-500/70 dark:border-indigo-400/30",
+                "absolute right-1  top-1/2 -translate-y-1/2 w-8 h-8 rounded-full border border-gray-500/70 dark:border-indigo-400/30",
                 "bg-background/80 backdrop-blur-sm flex items-center justify-center hover:bg-indigo-500/20 transition-all duration-300 z-10",
               )}
             >
               {isExpanded ? (
-                <ChevronLeft className="w-4 h-4 text-gray-800 dark:text-gray-300" />
+                <ChevronLeft className="w-6 h-6 text-gray-800 dark:text-gray-300" />
               ) : (
-                <ChevronRight className="w-4 h-4 text-gray-800 dark:text-gray-300" />
+                <ChevronRight className="w-6 h-6 text-gray-800 dark:text-gray-300" />
               )}
             </button>
           )}

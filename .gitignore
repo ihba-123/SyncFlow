@@ -1,0 +1,54 @@
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+*.DS_Store
+
+# Environment variables - NEVER commit these
+Backend/.env
+Backend/.env.local
+Backend/.env.development
+Backend/.env.production
+Frontend/sync-flow/.env
+Frontend/sync-flow/.env.development
+Frontend/sync-flow/.env.production
+.env.example
+
+# Virtual Environments
+venv/
+.venv/
+env/
+ENV/
+Backend/venv/
+Frontend/sync-flow/node_modules/
+
+# Build outputs
+Backend/dist/
+Frontend/sync-flow/dist/
+*.egg-info/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Node cache
+npm-debug.log
+yarn-debug.log
+
+# Database files
+*.db
+db.sqlite3
+
+# Temporary files
+*.tmp
+.cache/
+temp/
+*.log
+
+# OS files
+Thumbs.db
+.DS_Store

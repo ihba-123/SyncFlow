@@ -3,6 +3,8 @@ import { useKanban } from "../../stores/KanbanStore";
 import { attachmentService } from "../../api/khanban_api"; // Your API service
 import { useParams } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
+import { showError } from "../../services/toastService";
+import { getErrorMessage } from "../../utils/errorMessages";
 
 // ── Stable key for attachments ───────────────────────────────
 const attKey = (att) => (att.file ? `${att.name}-${att.file.size}` : att.name);
@@ -40,7 +42,7 @@ export default function AttachmentUploader({ attachments = [], onChange, taskId,
       onChange((prev) => [...prev, newAttachment]);
     },
     onError: (err) => {
-      console.error("Attachment upload failed:", err);
+      showError(getErrorMessage(err, "Attachment upload failed."));
     },
   });
 

@@ -5,9 +5,11 @@ import {  Settings2} from "lucide-react";
 import { toast } from "react-toastify";
 import { getProjectById, updateProjectSettings } from "../../api/Project";
 import { useActiveProjectStore } from "../../stores/ActiveProject";
+import useProjectSocket from "../../hooks/useProjectSocket";
 import { useTeamList } from "../team/TeamListLogic";
 import { useProjectRoleStore } from "../../stores/ProjectRoleStore";
 import { DangerZone } from "../../components/Project/DangerZone";
+import ChangePasswordPanel from "../../components/Profile/ChangePasswordPanel";
 import Loader from "../../components/Spinner";
 import ProjectForm from "../../components/ProjectSetting/ProjectForm";
 import ProjectMemberSetting from "../../components/ProjectSetting/ProjectMemberSetting";
@@ -32,6 +34,7 @@ export default function ProjectSettings() {
   const [imageFile, setImageFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState("");
   const [removeImage, setRemoveImage] = useState(false);
+  const [imageSyncPending, setImageSyncPending] = useState(false);
   const [activeTab, setActiveTab] = useState("general");
   const [initialValues, setInitialValues] = useState(null);
 
@@ -71,6 +74,7 @@ export default function ProjectSettings() {
     setPreviewUrl(project.image || "");
     setImageFile(null);
     setRemoveImage(false);
+    setImageSyncPending(false);
     setInitialValues(defaults);
   }, [project]);
 
@@ -84,6 +88,28 @@ export default function ProjectSettings() {
       removeImage
     );
   }, [form, imageFile, removeImage, initialValues]);
+
+  useProjectSocket(projectId, (payload) => {
+    const action = payload?.action || payload?.type;
+    if (action !== "image_uploaded" && action !== "project_updated") return;
+
+    const imageUrl = payload?.image_url || payload?.imageUrl || null;
+    if (imageUrl) {
+      setPreviewUrl(imageUrl);
+      setImageSyncPending(false);
+
+      if (activeProject?.id && String(activeProject.id) === String(projectId)) {
+        setActiveProject({
+          ...(activeProject || {}),
+          image: imageUrl,
+        });
+      }
+
+      queryClient.invalidateQueries({ queryKey: ["activeProject"] });
+      queryClient.invalidateQueries({ queryKey: ["projects"] });
+      queryClient.invalidateQueries({ queryKey: ["project-settings", projectId] });
+    }
+  });
 
   useEffect(() => {
     const handleBeforeUnload = (event) => {
@@ -108,12 +134,14 @@ export default function ProjectSettings() {
     onSuccess: (response) => {
       const updatedProject = response?.project;
       if (updatedProject) {
+        const safeActiveProject = activeProject || {};
+
         setActiveProject({
-          ...activeProject,
+          ...safeActiveProject,
           id: updatedProject.id,
           name: updatedProject.name,
           description: updatedProject.description,
-          image: updatedProject.image,
+          image: updatedProject.image || safeActiveProject.image || "",
           is_solo: updatedProject.is_solo,
         });
       }
@@ -125,18 +153,17 @@ export default function ProjectSettings() {
 
       toast.success("Project settings saved successfully.");
 
-      const latestImage = updatedProject?.image || "";
       setForm({
         name: updatedProject?.name || "",
         description: updatedProject?.description || "",
       });
-      setPreviewUrl(latestImage);
+      setPreviewUrl(updatedProject?.image || (imageFile ? previewUrl : activeProject?.image || ""));
       setImageFile(null);
       setRemoveImage(false);
       setInitialValues({
         name: updatedProject?.name || "",
         description: updatedProject?.description || "",
-        image: latestImage,
+        image: updatedProject?.image || (imageFile ? previewUrl : activeProject?.image || ""),
       });
     },
     onError: (error) => {
@@ -154,6 +181,7 @@ export default function ProjectSettings() {
 
     setImageFile(file);
     setRemoveImage(false);
+    setImageSyncPending(false);
     const localUrl = URL.createObjectURL(file);
     setPreviewUrl(localUrl);
   };
@@ -162,6 +190,7 @@ export default function ProjectSettings() {
     setImageFile(null);
     setRemoveImage(true);
     setPreviewUrl("");
+    setImageSyncPending(false);
   };
 
   const handleResetChanges = () => {
@@ -201,6 +230,7 @@ export default function ProjectSettings() {
       return;
     }
 
+    setImageSyncPending(Boolean(imageFile && !removeImage));
     saveMutation.mutate();
   };
 
@@ -263,13 +293,6 @@ export default function ProjectSettings() {
           >
             Members
           </button>
-          <button
-            type="button"
-            onClick={() => setActiveTab("danger")}
-            className={`rounded-lg px-3 py-2 text-sm font-semibold transition ${activeTab === "danger" ? "bg-red-600 text-white dark:bg-red-500" : "border border-red-300 text-red-600 hover:bg-red-50 dark:border-red-500/50 dark:text-red-400 dark:hover:bg-red-950/30"}`}
-          >
-            Danger Zone
-          </button>
         </div>
       </div>
 
@@ -287,6 +310,7 @@ export default function ProjectSettings() {
           imageFile={imageFile}
           isDirty={isDirty}
           handleResetChanges={handleResetChanges}
+          imageLoading={imageSyncPending || (saveMutation.isPending && Boolean(imageFile && !removeImage))}
           />
         )}
 
@@ -295,23 +319,15 @@ export default function ProjectSettings() {
           <ProjectMemberSetting  projectId={projectId} teamData={teamData} role={role} navigate={navigate} project={project} />
         )}
 
-        {activeTab === "general" && <div className="space-y-6">
-          <ProjectInfo project={project} />
+        {activeTab === "general" && (
+          <div className="space-y-6">
+            <ProjectInfo project={project} />
 
-          {canEdit && <DangerZone projectId={projectId} />}
-        </div>}
-
-        {activeTab === "danger" && (
-          <div className="lg:col-span-2">
-            {canEdit ? (
-              <DangerZone projectId={projectId} />
-            ) : (
-              <div className="rounded-2xl border border-amber-300 bg-amber-50 p-5 text-sm text-amber-700 dark:border-amber-500/40 dark:bg-amber-950/20 dark:text-amber-300">
-                Only project admin can use danger zone actions.
-              </div>
-            )}
+            {canEdit && <DangerZone projectId={projectId} />}
           </div>
         )}
+
+        {/* Danger Zone tab removed (Danger Zone remains visible under General when allowed) */}
       </div>
     </div>
   );

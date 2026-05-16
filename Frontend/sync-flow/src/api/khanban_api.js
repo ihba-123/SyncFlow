@@ -52,7 +52,6 @@ export const khanbanService = {
       const res = await api.get(`projects/${project_id}/tasks/`, { params });
       return Array.isArray(res.data) ? res.data.map(normalizeTask) : [];
     } catch (error) {
-      console.error("Error fetching tasks:", error);
       throw error;
     }
   },
@@ -63,7 +62,6 @@ export const khanbanService = {
       const res = await api.post(`projects/${project_id}/tasks/`, taskData);
       return normalizeTask(res.data);
     } catch (error) {
-      console.error("Error creating task:", error);
       throw error;
     }
   },
@@ -74,7 +72,6 @@ export const khanbanService = {
       const res = await api.put(`projects/${project_id}/tasks/${task_id}/`, taskData);
       return normalizeTask(res.data);
     } catch (error) { 
-      console.error("Error updating task:", error);
       throw error;
     }
   },
@@ -86,7 +83,6 @@ export const khanbanService = {
       const res = await api.put(`projects/${project_id}/tasks/${task_id}/`, payload);
       return normalizeTask(res.data);
     } catch (error) {
-      console.error("Error reordering task:", error);
       throw error;
     }
   },
@@ -100,7 +96,6 @@ export const khanbanService = {
       if (error.response?.status === 404) {
         return { message: "Task already deleted" };
       }
-      console.error("Error deleting task:", error);
       throw error;
     }
   },

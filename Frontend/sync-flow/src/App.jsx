@@ -3,13 +3,16 @@ import { Routes, Route, useParams } from "react-router-dom";
 import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignupPage";
 import Dashboard from "./pages/dashboard/Dashboard";
-import { ToastContainer } from "react-toastify";
+import { ToastContainer, Zoom } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import PublicRoute from "./routes/PublicRoute";
 import { useUserProfile } from "./hooks/UserProfile";
 import UserProfileEdit from "./features/profile/UserProfile";
 import useTheme from "./hooks/useTheme";
+import useSuppressConsoleErrors from "./hooks/useSuppressConsoleErrors";
 import { EditProfile } from "./features/profile/EditProfile";
+import ChangePassword from "./features/profile/ChangePassword";
 import ProgressBar from "./components/ui/ProgressBar";
 import WelcomePage from "./pages/dashboard/WelcomePage";
 import Project from "./pages/dashboard/Project";
@@ -23,29 +26,41 @@ import ProjectRestore from "./features/RestoreProject/ProjectRestore";
 import ProjectSettings from "./features/project/ProjectSettings";
 import { useProjectRole } from "./hooks/useProjectRole";
 import MessageUi from "./components/Message/MessageUi";
+import ForgotPassword from "./features/auth/ForgotPassword";
+
 const App = () => {
   <ProgressBar />;
   useTheme();
   useUserProfile();
   useProjectRole();
+  useSuppressConsoleErrors();
+  
+  // Detect current theme
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark' || 
+                 window.matchMedia('(prefers-color-scheme: dark)').matches;
+  
   return (
     <div>
       <ToastContainer
         position="top-right"
-        autoClose={3000} // 3 seconds
+        autoClose={3000}
         hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
+        newestOnTop={true}
+        closeOnClick={true}
         rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
+        pauseOnFocusLoss={false}
+        draggable={false}
+        pauseOnHover={false}
+        theme={isDark ? 'dark' : 'light'}
+        limit={2}
+        transition={Zoom}
       />
       <Routes>
         <Route element={<PublicRoute />}>
           <Route path="/" element={<LandingPageRoute />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignupPage />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
         </Route>
 
         <Route path="/messages" element={<MessageUi/>}/>
@@ -53,10 +68,13 @@ const App = () => {
         <Route element={<ProtectedRoute />}>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/dashboard/edit-profile" element={<EditProfile />} />
+          <Route path="/dashboard/change-password" element={<ChangePassword />} />
           <Route path="/dashboard/profile" element={<UserProfileEdit />} />
           <Route path="/dashboard/project" element={<Project/>} />
           <Route path="/dashboard/create-project" element={<CreateProject/>} />
           <Route path="/dashboard/solo-project" element={<SoloProject/>} />
+
+
           <Route path="/welcome/" element={<WelcomePage />} />  
           <Route path="/project-archive" element={<ProjectRestore/>} />
 

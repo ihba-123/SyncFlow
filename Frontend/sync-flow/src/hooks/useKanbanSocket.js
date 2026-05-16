@@ -1,6 +1,8 @@
 import { useEffect, useRef } from "react";
 import { useKanban } from "../stores/KanbanStore";
 import { useActiveProjectStore } from "../stores/ActiveProject";
+import useBackendAvailability from "./useBackendAvailability";
+import { getAccessToken } from "../utils/authToken";
 
 export const useKanbanSocket = () => {
   const activeProject = useActiveProjectStore((s) => s.activeProject);
@@ -8,10 +10,14 @@ export const useKanbanSocket = () => {
   const reconnectTimerRef = useRef(null);
   const reconnectAttemptsRef = useRef(0);
   const intentionalCloseRef = useRef(false);
+  const { isAvailable } = useBackendAvailability();
   const project_id = activeProject?.id;
+  const token = getAccessToken();
+
+  const MAX_RECONNECTS = 2;
 
   useEffect(() => {
-    if (!project_id) return;
+    if (!project_id || !isAvailable || !token) return;
 
     let cancelled = false;
 
@@ -41,19 +47,27 @@ export const useKanbanSocket = () => {
 
       cleanupSocket();
 
-      const socket = new WebSocket(`ws://localhost:8000/ws/kanban/${project_id}/`);
+      const url = new URL(`ws://localhost:8000/ws/kanban/${project_id}/`);
+      url.searchParams.set("token", token);
+      const socket = new WebSocket(url.toString());
       socketRef.current = socket;
       intentionalCloseRef.current = false;
 
       socket.onopen = () => {
         reconnectAttemptsRef.current = 0;
-        console.log("Kanban socket connected", project_id);
       };
 
       socket.onclose = () => {
         if (cancelled) return;
+        if (intentionalCloseRef.current) return;
+
         const attempt = reconnectAttemptsRef.current + 1;
         reconnectAttemptsRef.current = attempt;
+
+        if (attempt > MAX_RECONNECTS) {
+          return;
+        }
+
         const delay = Math.min(3000, 250 * attempt);
         reconnectTimerRef.current = setTimeout(connect, delay);
       };
@@ -74,8 +88,8 @@ export const useKanbanSocket = () => {
             }
             store.upsertTaskFromServer(data.task);
           }
-        } catch (error) {
-          console.error("Failed to parse kanban socket message", error);
+        } catch {
+          return;
         }
       };
     };
@@ -86,5 +100,5 @@ export const useKanbanSocket = () => {
       cancelled = true;
       cleanupSocket();
     };
-  }, [project_id]);
+  }, [project_id, isAvailable, token]);
 };

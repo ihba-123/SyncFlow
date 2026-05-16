@@ -18,6 +18,10 @@ DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 MEDIA_URL = '/media/'
 
+GOOGLE_CLIENT_ID = config('GOOGLE_CLIENT_ID')
+
+RESEND_API_KEY = config('RESEND_API_KEY')
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
@@ -58,6 +62,7 @@ INSTALLED_APPS = [
     'django_filters',
     'django.contrib.postgres',
     "activitylog",
+    'django_celery_results', 
     
 ]
 
@@ -174,7 +179,7 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 #Throttiling
-REST_FRAMEWORK = {
+REST_FRAMEWORK = {  
     "DEFAULT_PAGINATION_CLASS": 
         "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 20,
@@ -185,13 +190,16 @@ REST_FRAMEWORK = {
     ),
     'DEFAULT_THROTTLE_CLASSES': [
         'rest_framework.throttling.AnonRateThrottle',
+        'rest_framework.throttling.UserRateThrottle'
     ],
 
 
     'DEFAULT_THROTTLE_RATES': { 
         'anon': '100/hour',
+        'user': '1000/hour',
         'login': '30/min',
         'refresh': '120/min',
+        'google_oauth': '20/min',
     },
 
 }
@@ -219,9 +227,24 @@ SIMPLE_JWT = {
 }
 
 
+
+
 # DRF Spectacular settings
 SPECTACULAR_SETTINGS = {
     'TITLE': 'SyncFlow API',
     'DESCRIPTION': 'API documentation for SyncFlow backend.',
     'VERSION': '1.0.0',
 }
+
+
+CELERY_WORKER_POOL = 'solo' 
+CELERY_BROKER_URL = 'redis://localhost:6379/0'
+CELERY_RESULT_BACKEND = 'django-db'  # saves results to your DB
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'UTC'
+
+# Optional: retry failed tasks
+CELERY_TASK_ACKS_LATE = True
+CELERY_WORKER_PREFETCH_MULTIPLIER = 1

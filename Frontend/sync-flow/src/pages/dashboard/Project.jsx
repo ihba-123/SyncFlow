@@ -16,6 +16,9 @@ import { SoloProject } from "../../features/project/SoloProject";
 import { TeamProject } from "../../features/project/TeamProject";
 import { useNavigate } from "react-router-dom";
 import { useSetActiveProject } from "../../hooks/useSetActiveProject";
+import useProjectSocket from "../../hooks/useProjectSocket";
+import { showError } from "../../services/toastService";
+import { getErrorMessage } from "../../utils/errorMessages";
 
 const Project = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -23,6 +26,7 @@ const Project = () => {
   const { mutateAsync: setActiveProjects, isLoading } = useSetActiveProject();
   const queryClient = useQueryClient();
   const resetActiveProject = useActiveProjectStore((state) => state.reset);
+  const activeProject = useActiveProjectStore((state) => state.activeProject);
   const [viewMode, setViewMode] = useState(() => {
     const savedMode = localStorage.getItem("projectViewMode");
     if (savedMode) return savedMode;
@@ -44,6 +48,14 @@ const Project = () => {
       setIsSolo(shouldBeSolo);
     }
   }, [viewMode, resetActiveProject, queryClient, setIsSolo, is_solo]);
+
+  // Subscribe to global project list updates so cards refresh when any project changes
+  useProjectSocket('all', (payload) => {
+    const action = payload?.action || payload?.type;
+    if (action === "image_uploaded" || action === "project_updated") {
+      queryClient.invalidateQueries({ queryKey: ["projects"] });
+    }
+  });
 
   const {
     data: projects,
@@ -91,7 +103,7 @@ const Project = () => {
       await setActiveProjects(project.id);
       navigate(`/projects/${project.id}`);
     } catch (error) {
-      console.error("Failed to sync project before navigation", error);
+      showError(getErrorMessage(error, "Failed to open the project."));
     }
   };
 

@@ -1,6 +1,11 @@
+import uuid
+
+from django.conf import settings
 from django.db import models
 from django.contrib.auth.models import BaseUserManager, AbstractBaseUser, PermissionsMixin
 from django.contrib.postgres.indexes import GinIndex
+from django.utils import timezone
+
 from .utils.managers import UserQuerySet
 
 # Custom manager with search methods
@@ -26,7 +31,12 @@ class User(AbstractBaseUser, PermissionsMixin):
     username = models.CharField(max_length=200, unique=True, null=True, blank=True)
     is_active = models.BooleanField(default=True)
     is_admin = models.BooleanField(default=False)
+    otp_secret = models.CharField(max_length=255, null=True, blank=True)
     has_completed_onboarding = models.BooleanField(default=False)
+    otp_created_at = models.DateTimeField(
+        null=True,
+        blank=True
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     last_active_project = models.ForeignKey("team.Project", on_delete=models.SET_NULL, null=True, blank=True ,related_name="last_active_user")

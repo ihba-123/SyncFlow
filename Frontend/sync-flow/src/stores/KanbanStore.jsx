@@ -1,5 +1,7 @@
 import { create } from "zustand";
 import { khanbanService } from "../api/khanban_api";
+import { showError } from "../services/toastService";
+import { getErrorMessage } from "../utils/errorMessages";
 
 const normalizeTaskForStore = (task) => ({
   ...task,
@@ -26,8 +28,8 @@ export const useKanban = create((set, get) => ({
 
   // ── DRAG-AND-DROP STATE ──
   draggingTaskId: null, // id of the task currently being dragged
-  hoverColId: null,     // id of the column currently hovered
-  hoverIndex: null,     // index of the position hovered in that column
+  hoverColId: null, // id of the column currently hovered
+  hoverIndex: null, // index of the position hovered in that column
   pendingTaskIds: new Set(),
 
   // ── MODAL ACTIONS ──
@@ -40,17 +42,20 @@ export const useKanban = create((set, get) => ({
   startDragging: (taskId) => set({ draggingTaskId: taskId }), // Begin dragging a task
   setHover: (colId, index) => set({ hoverColId: colId, hoverIndex: index }), // Track hover position
   clearHover: () => set({ hoverColId: null, hoverIndex: null }), // Clear hover state
-  endDragging: () => set({ draggingTaskId: null, hoverColId: null, hoverIndex: null }), // Stop dragging
-  markPendingTask: (taskId) => set((state) => {
-    const nextPendingTaskIds = new Set(state.pendingTaskIds);
-    nextPendingTaskIds.add(String(taskId));
-    return { pendingTaskIds: nextPendingTaskIds };
-  }),
-  clearPendingTask: (taskId) => set((state) => {
-    const nextPendingTaskIds = new Set(state.pendingTaskIds);
-    nextPendingTaskIds.delete(String(taskId));
-    return { pendingTaskIds: nextPendingTaskIds };
-  }),
+  endDragging: () =>
+    set({ draggingTaskId: null, hoverColId: null, hoverIndex: null }), // Stop dragging
+  markPendingTask: (taskId) =>
+    set((state) => {
+      const nextPendingTaskIds = new Set(state.pendingTaskIds);
+      nextPendingTaskIds.add(String(taskId));
+      return { pendingTaskIds: nextPendingTaskIds };
+    }),
+  clearPendingTask: (taskId) =>
+    set((state) => {
+      const nextPendingTaskIds = new Set(state.pendingTaskIds);
+      nextPendingTaskIds.delete(String(taskId));
+      return { pendingTaskIds: nextPendingTaskIds };
+    }),
   isPendingTask: (taskId) => get().pendingTaskIds.has(String(taskId)),
 
   // ── COLUMN UPDATES ──
@@ -78,12 +83,14 @@ export const useKanban = create((set, get) => ({
       if (!targetCol) return { cols: nextCols };
 
       targetCol.tasks = [...targetCol.tasks, normalizedTask].sort((a, b) =>
-        (a.order || "").localeCompare(b.order || "")
+        (a.order || "").localeCompare(b.order || ""),
       );
 
       return { cols: nextCols };
     });
   },
+
+  
 
   // ── SAVE TASK (CREATE / EDIT) ──
   saveTask: async (project_id, taskData, mode, taskId = null) => {
@@ -96,27 +103,39 @@ export const useKanban = create((set, get) => ({
         set((state) => ({
           cols: state.cols.map((c) =>
             c.id === newTask.status
-              ? { ...c, tasks: [...c.tasks, newTask].sort((a, b) => (a.order || "").localeCompare(b.order || "")) }
-              : c
+              ? {
+                  ...c,
+                  tasks: [...c.tasks, newTask].sort((a, b) =>
+                    (a.order || "").localeCompare(b.order || ""),
+                  ),
+                }
+              : c,
           ),
         }));
       } else if (mode === "edit") {
         // Call API to update existing task
-        const updatedTask = await khanbanService.updateTask(project_id, taskId, taskData);
+        const updatedTask = await khanbanService.updateTask(
+          project_id,
+          taskId,
+          taskData,
+        );
 
         // Replace task in its column
         set((state) => ({
           cols: state.cols.map((c) => ({
             ...c,
-            tasks: c.tasks.map((t) => (t.id === updatedTask.id ? updatedTask : t)).sort((a, b) => (a.order || "").localeCompare(b.order || "")),
+            tasks: c.tasks
+              .map((t) => (t.id === updatedTask.id ? updatedTask : t))
+              .sort((a, b) => (a.order || "").localeCompare(b.order || "")),
           })),
         }));
       }
       get().closeModal(); // Close modal after success
     } catch (err) {
-      console.error("Error saving task:", err);
+      showError(getErrorMessage(err, "Unable to save the task."));
     }
   },
+
 
   // ── DELETE TASK ──
   deleteTask: async (project_id, taskId, colId) => {
@@ -132,9 +151,10 @@ export const useKanban = create((set, get) => ({
       }));
       get().closeModal(); // Close modal after deletion
     } catch (err) {
-      console.error("Error deleting task:", err);
+      showError(getErrorMessage(err, "Unable to delete the task."));
     }
   },
+
 
   // ── BUILD COLUMNS FROM RAW TASKS ──
   // Converts flat task list from backend into columns with sorted order
@@ -143,17 +163,29 @@ export const useKanban = create((set, get) => ({
 
     tasks.forEach((task) => {
       const normalizedTask = normalizeTaskForStore(task);
-      const normalizedStatus = normalizedTask.status === "inprogress" ? "in_progress" : normalizedTask.status;
-      if (colsMap[normalizedStatus]) colsMap[normalizedStatus].push(normalizedTask);
+      const normalizedStatus =
+        normalizedTask.status === "inprogress"
+          ? "in_progress"
+          : normalizedTask.status;
+      if (colsMap[normalizedStatus])
+        colsMap[normalizedStatus].push(normalizedTask);
     });
+
 
     // Return array of columns sorted by task order (fractional ordering)
     return Object.keys(colsMap).map((key) => ({
       id: key,
-      title: key === "in_progress" ? "In Progress" : key.charAt(0).toUpperCase() + key.slice(1),
-      tasks: colsMap[key].sort((a, b) => (a.order || "").localeCompare(b.order || "")),
+      title:
+        key === "in_progress"
+          ? "In Progress"
+          : key.charAt(0).toUpperCase() + key.slice(1),
+      tasks: colsMap[key].sort((a, b) =>
+        (a.order || "").localeCompare(b.order || ""),
+      ),
     }));
   },
+
+
 
   // ── REORDER TASKS OPTIMISTICALLY ──
   // Pure local update used by DnD for immediate, flicker-free movement.
@@ -164,7 +196,9 @@ export const useKanban = create((set, get) => ({
     if (!fromCol || !toCol) return false;
 
     const normalizedTaskId = String(taskId);
-    const fromIndex = fromCol.tasks.findIndex((t) => String(t.id) === normalizedTaskId);
+    const fromIndex = fromCol.tasks.findIndex(
+      (t) => String(t.id) === normalizedTaskId,
+    );
     if (fromIndex < 0) return false;
 
     const task = fromCol.tasks[fromIndex];
@@ -191,6 +225,4 @@ export const useKanban = create((set, get) => ({
 
     return true;
   },
-  
 }));
-

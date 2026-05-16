@@ -1,6 +1,5 @@
 import { ShieldCheck } from "lucide-react";
 import { buildConicGradient } from "../../utils/dashboardUtils";
-import { LineChart } from "../../components/DashboardComponent/LineChart";
 
 export function MetricCard({ icon: Icon, label, value, detail, accent = "#1392ec" }) {
   return (
@@ -147,9 +146,6 @@ export function BarChart({ items, total, emptyLabel }) {
     </div>
   );
 }
-
-// Line chart component
-<LineChart/>
 
 
 

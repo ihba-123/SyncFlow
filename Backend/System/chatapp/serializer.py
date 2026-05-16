@@ -142,15 +142,41 @@ class ChatUserSerializer(serializers.ModelSerializer):
     
     def get_content(self,obj):
         return obj.decrypted_content
-
+    
     def get_attachment(self, obj):
         try:
-            if obj.attachment:
-                return self._build_cloudinary_url(obj.attachment, resource_type="raw")
-            return None
-        except Exception:
+            if not obj.attachment:
+                return None
+
+            attachment = obj.attachment
+            if hasattr(attachment, "build_url"):
+                try:
+                    return attachment.build_url(
+                        resource_type="raw",
+                        secure=True,
+                        sign_url=True,
+                    )
+                except Exception:
+                    pass
+
+            if hasattr(attachment, "url") and attachment.url:
+                return attachment.url
+
+            raw_value = str(attachment)
+            if raw_value.startswith("http://") or raw_value.startswith("https://"):
+                return raw_value
+
+            return cloudinary.utils.cloudinary_url(
+                raw_value,
+                resource_type="raw",
+                secure=True,
+                sign_url=True,
+            )[0]
+
+        except Exception as e:
             return None
 
+    
     def get_images(self, obj):
         try:
             if obj.images:

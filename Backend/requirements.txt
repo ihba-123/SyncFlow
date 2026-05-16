@@ -11,5 +11,6 @@ channels_redis==4.1.0
 
 cloudinary==1.41.0
 django-cloudinary-storage==0.3.0
+google-auth==2.40.3
 
 psycopg2-binary==2.9.9

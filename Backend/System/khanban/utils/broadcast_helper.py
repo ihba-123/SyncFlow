@@ -1,3 +1,4 @@
+from django.db import transaction
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 import logging
@@ -9,19 +10,21 @@ logger = logging.getLogger(__name__)
 # ====================== BROADCAST HELPERS ======================
 def broadcast_task_update(project_id, task_data):
     """Send task updates to all websocket clients in the project group"""
-    try:
-        channel_layer = get_channel_layer()
-        if channel_layer:
-            async_to_sync(channel_layer.group_send)(
-                f"kanban_{project_id}",
-                {"type": "task_update", "task": task_data}
-            )
-            async_to_sync(channel_layer.group_send)(
-                f"project_{project_id}",
-                {"type": "task_update", "task": task_data}
-            )
-    except Exception as e:
-        logger.error(f"Failed to broadcast task update: {e}")
+    def send():
+        try:
+            channel_layer = get_channel_layer()
+            if channel_layer:
+                async_to_sync(channel_layer.group_send)(
+                    f"kanban_{project_id}",
+                    {"type": "task_update", "task": task_data}
+                )
+                async_to_sync(channel_layer.group_send)(
+                    f"project_{project_id}",
+                    {"type": "task_update", "task": task_data}
+                )
+        except Exception as e:
+            logger.error(f"Failed to broadcast task update: {e}")
+    transaction.on_commit(send)
 
 def create_activity_log(project, user, action, details=""):
     """Create activity log and broadcast if team project"""
@@ -35,26 +38,28 @@ def create_activity_log(project, user, action, details=""):
 
 def broadcast_activity_log(project_id, log):
     """Send activity log updates to all websocket clients"""
-    try:
-        channel_layer = get_channel_layer()
-        if channel_layer:
-            payload = {
-                "type": "activity_log",
-                "log": {
-                    "id": log.id,
-                    "user": log.user.email if log.user else "System",
-                    "action": log.action,
-                    "details": log.details,
-                    "created_at": log.created_at.isoformat()
+    def send():
+        try:
+            channel_layer = get_channel_layer()
+            if channel_layer:
+                payload = {
+                    "type": "activity_log",
+                    "log": {
+                        "id": log.id,
+                        "user": log.user.email if log.user else "System",
+                        "action": log.action,
+                        "details": log.details,
+                        "created_at": log.created_at.isoformat()
+                    }
                 }
-            }
-            async_to_sync(channel_layer.group_send)(
-                f"kanban_{project_id}",
-                payload
-            )
-            async_to_sync(channel_layer.group_send)(
-                f"project_{project_id}",
-                payload
-            )
-    except Exception as e:
-        logger.error(f"Failed to broadcast activity log: {e}")
+                async_to_sync(channel_layer.group_send)(
+                    f"kanban_{project_id}",
+                    payload
+                )
+                async_to_sync(channel_layer.group_send)(
+                    f"project_{project_id}",
+                    payload
+                )
+        except Exception as e:
+            logger.error(f"Failed to broadcast activity log: {e}")
+    transaction.on_commit(send)

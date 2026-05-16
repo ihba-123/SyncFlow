@@ -7,6 +7,7 @@ import { toast } from "react-toastify";
 import { Button, CircularProgress } from "@mui/material";
 import { Settings } from "lucide-react";
 import { useProject } from "../../hooks/useProject";
+import { clearAccessToken } from "../../utils/authToken";
 
 const Logout = () => {
   const navigate = useNavigate();
@@ -19,6 +20,7 @@ const Logout = () => {
     queryClient.clear(); 
   
     clearUser();
+    clearAccessToken();
   
     // localStorage.removeItem("isAuthenticated");
     // localStorage.removeItem("project-active-storage");
@@ -28,13 +30,14 @@ const Logout = () => {
     onError: () => {
       queryClient.removeQueries({ queryKey: ["auth"], exact: true });
       clearUser();
+      clearAccessToken();
       navigate("/login", { replace: true });
       toast.success("Logged out");
     },
   });
 
   return (
-    <button className="w-full flex text-red-700 items-center gap-2 px-3 py-2 text-sm rounded-md cursor-pointer text-destructive"
+    <button className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-md cursor-pointer text-red-700"
       onClick={() => mutation.mutate()}
       disabled={mutation.isPending}
     >

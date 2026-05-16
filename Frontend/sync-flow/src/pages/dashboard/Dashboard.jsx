@@ -27,7 +27,7 @@ import {
 } from "../../utils/dashboardUtils";
 import { ChartPanel } from "./DashboardSections";
 import { DashboardSkeleton } from "../../components/skeleton/DashboardSkeleton";
-import { LineChart } from "../../components/DashboardComponent/LineChart";
+import { BarChart as TrendBarChart } from "../../components/DashboardComponent/BarChart";
 import MetricCards from "../../components/DashboardComponent/MetricCards";
 import ChartComponent from "../../components/DashboardComponent/ChartComponent";
 import ChartPanelComponent from "../../components/DashboardComponent/ChartPanelComponent";
@@ -157,6 +157,7 @@ export default function Dashboard() {
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(56,189,248,0.18),transparent_34%),radial-gradient(circle_at_top_right,rgba(139,92,246,0.16),transparent_32%),radial-gradient(circle_at_bottom_left,rgba(16,185,129,0.12),transparent_30%)] dark:bg-[radial-gradient(circle_at_top_left,rgba(56,189,248,0.12),transparent_34%),radial-gradient(circle_at_top_right,rgba(139,92,246,0.12),transparent_32%),radial-gradient(circle_at_bottom_left,rgba(16,185,129,0.1),transparent_30%)]" />
 
       <main className="relative mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+        
      
     <WelcomeCard  
       name={data}
@@ -265,14 +266,14 @@ export default function Dashboard() {
               isSoloProject={isSoloProject}
             />
 
-            {/* // Renders the activity trend line chart using the ChartPanel component and LineChart */}
-            <section className="grid gap-6 xl:grid-cols-1">
+            {/* // Renders the activity trend bar chart using the ChartPanel component and TrendBarChart */}
+            {/* <section className="grid gap-6 xl:grid-cols-1">
               <ChartPanel
                 title="Activity trend"
                 subtitle="Daily completed tasks for the last 7 days."
                 icon={Activity}
               >
-                <LineChart
+                <TrendBarChart
                   series={lineTrendSeries}
                   title="Activity trend"
                   xLabel="Days"
@@ -280,7 +281,7 @@ export default function Dashboard() {
                   emptyLabel="No activity trend data available yet."
                 />
               </ChartPanel>
-            </section>
+            </section> */}
 
             <section className="grid gap-4 md:grid-cols-3">
               <div className="rounded-sm border border-white/70 bg-white/85 p-5 backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/70">

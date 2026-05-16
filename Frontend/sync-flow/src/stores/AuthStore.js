@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { clearAccessToken } from "../utils/authToken";
 
 export const useAuthStore = create((set) => ({
   user: null,
@@ -15,11 +16,14 @@ export const useAuthStore = create((set) => ({
     }),
 
   clearUser: () =>
-    set({
-      user: null,
-      is_Authenticated: false,
-      hasCheckedAuth: true, 
+    set(() => {
+      clearAccessToken();
+      return {
+        user: null,
+        is_Authenticated: false,
+        hasCheckedAuth: true,
+      };
     }),
-      markChecked: () =>
+  markChecked: () =>
     set({ hasCheckedAuth: true }),
 }));
